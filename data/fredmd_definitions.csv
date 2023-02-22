@@ -1,0 +1,136 @@
+id,tcode,ttype,fred,description,gsi,gsi:description,group,edited
+1,5,First difference of natural log: ln(x)-ln(x-1),RPI,Real Personal Income,M_14386177,PI,Output and Income,FALSE
+2,5,First difference of natural log: ln(x)-ln(x-1),W875RX1,Real personal income ex transfer receipts,M_145256755,PI less transfers,Output and Income,FALSE
+3,5,First difference of natural log: ln(x)-ln(x-1),DPCERA3M086SBEA,Real personal consumption expenditures,M_123008274,Real Consumption,"Consumption, Orders, and Inventories",FALSE
+4,5,First difference of natural log: ln(x)-ln(x-1),CMRMTSPLx,Real Manu. and Trade Industries Sales,M_110156998,M&T sales,"Consumption, Orders, and Inventories",TRUE
+5,5,First difference of natural log: ln(x)-ln(x-1),RETAILx,Retail and Food Services Sales,M_130439509,Retail sales,"Consumption, Orders, and Inventories",TRUE
+6,5,First difference of natural log: ln(x)-ln(x-1),INDPRO,IP Index,M_116460980,IP: total,Output and Income,FALSE
+7,5,First difference of natural log: ln(x)-ln(x-1),IPFPNSS,IP: Final Products and Nonindustrial Supplies,M_116460981,IP: products,Output and Income,FALSE
+8,5,First difference of natural log: ln(x)-ln(x-1),IPFINAL,IP: Final Products (Market Group),M_116461268,IP: nal prod,Output and Income,FALSE
+9,5,First difference of natural log: ln(x)-ln(x-1),IPCONGD,IP: Consumer Goods,M_116460982,IP: cons gds,Output and Income,FALSE
+10,5,First difference of natural log: ln(x)-ln(x-1),IPDCONGD,IP: Durable Consumer Goods,M_116460983,IP: cons dble,Output and Income,FALSE
+11,5,First difference of natural log: ln(x)-ln(x-1),IPNCONGD,IP: Nondurable Consumer Goods,M_116460988,IP: cons nondble,Output and Income,FALSE
+12,5,First difference of natural log: ln(x)-ln(x-1),IPBUSEQ,IP: Business Equipment,M_116460995,IP: bus eqpt,Output and Income,FALSE
+13,5,First difference of natural log: ln(x)-ln(x-1),IPMAT,IP: Materials,M_116461002,IP: matls,Output and Income,FALSE
+14,5,First difference of natural log: ln(x)-ln(x-1),IPDMAT,IP: Durable Materials,M_116461004,IP: dble matls,Output and Income,FALSE
+15,5,First difference of natural log: ln(x)-ln(x-1),IPNMAT,IP: Nondurable Materials,M_116461008,IP: nondble matls,Output and Income,FALSE
+16,5,First difference of natural log: ln(x)-ln(x-1),IPMANSICS,IP: Manufacturing (SIC),M_116461013,IP: mfg,Output and Income,FALSE
+17,5,First difference of natural log: ln(x)-ln(x-1),IPB51222s,IP: Residential Utilities,M_116461276,IP: res util,Output and Income,FALSE
+18,5,First difference of natural log: ln(x)-ln(x-1),IPFUELS,IP: Fuels,M_116461275,IP: fuels,Output and Income,FALSE
+19,1,Level (i.e. no transformation): x(t),NAPMPI,ISM Manufacturing: Production Index,M_110157212,NAPM prodn,Output and Income,FALSE
+20,2,First difference: x(t)-x(t-1),CUMFNS,Capacity Utilization: Manufacturing,M_116461602,Cap util,Output and Income,FALSE
+21,2,First difference: x(t)-x(t-1),HWI,Help-Wanted Index for United States,,Help wanted indx,Labor Market,TRUE
+22,2,First difference: x(t)-x(t-1),HWIURATIO,Ratio of Help Wanted/No. Unemployed,M_110156531,Help wanted/unemp,Labor Market,TRUE
+23,5,First difference of natural log: ln(x)-ln(x-1),CLF16OV,Civilian Labor Force,M_110156467,Emp CPS total,Labor Market,FALSE
+24,5,First difference of natural log: ln(x)-ln(x-1),CE16OV,Civilian Employment,M_110156498,Emp CPS nonag,Labor Market,FALSE
+25,2,First difference: x(t)-x(t-1),UNRATE,Civilian Unemployment Rate,M_110156541,U: all,Labor Market,FALSE
+26,2,First difference: x(t)-x(t-1),UEMPMEAN,Average Duration of Unemployment (Weeks),M_110156528,U: mean duration,Labor Market,FALSE
+27,5,First difference of natural log: ln(x)-ln(x-1),UEMPLT5,Civilians Unemployed - Less Than 5 Weeks,M_110156527,U < 5 wks,Labor Market,FALSE
+28,5,First difference of natural log: ln(x)-ln(x-1),UEMP5TO14,Civilians Unemployed for 5-14 Weeks,M_110156523,U 5-14 wks,Labor Market,FALSE
+29,5,First difference of natural log: ln(x)-ln(x-1),UEMP15OV,Civilians Unemployed - 15 Weeks & Over,M_110156524,U 15+ wks,Labor Market,FALSE
+30,5,First difference of natural log: ln(x)-ln(x-1),UEMP15T26,Civilians Unemployed for 15-26 Weeks,M_110156525,U 15-26 wks,Labor Market,FALSE
+31,5,First difference of natural log: ln(x)-ln(x-1),UEMP27OV,Civilians Unemployed for 27 Weeks and Over,M_110156526,U 27+ wks,Labor Market,FALSE
+32,5,First difference of natural log: ln(x)-ln(x-1),CLAIMSx,Initial Claims,M_15186204,UI claims,Labor Market,TRUE
+33,5,First difference of natural log: ln(x)-ln(x-1),PAYEMS,All Employees: Total nonfarm,M_123109146,Emp: total,Labor Market,FALSE
+34,5,First difference of natural log: ln(x)-ln(x-1),USGOOD,All Employees: Goods-Producing Industries,M_123109172,Emp: gds prod,Labor Market,FALSE
+35,5,First difference of natural log: ln(x)-ln(x-1),CES1021000001,All Employees: Mining and Logging: Mining,M_123109244,Emp: mining,Labor Market,FALSE
+36,5,First difference of natural log: ln(x)-ln(x-1),USCONS,All Employees: Construction,M_123109331,Emp: const,Labor Market,FALSE
+37,5,First difference of natural log: ln(x)-ln(x-1),MANEMP,All Employees: Manufacturing,M_123109542,Emp: mfg,Labor Market,FALSE
+38,5,First difference of natural log: ln(x)-ln(x-1),DMANEMP,All Employees: Durable goods,M_123109573,Emp: dble gds,Labor Market,FALSE
+39,5,First difference of natural log: ln(x)-ln(x-1),NDMANEMP,All Employees: Nondurable goods,M_123110741,Emp: nondbles,Labor Market,FALSE
+40,5,First difference of natural log: ln(x)-ln(x-1),SRVPRD,All Employees: Service-Providing Industries,M_123109193,Emp: services,Labor Market,FALSE
+41,5,First difference of natural log: ln(x)-ln(x-1),USTPU,"All Employees: Trade, Transportation & Utilities",M_123111543,Emp: TTU,Labor Market,FALSE
+42,5,First difference of natural log: ln(x)-ln(x-1),USWTRADE,All Employees: Wholesale Trade,M_123111563,Emp: wholesale,Labor Market,FALSE
+43,5,First difference of natural log: ln(x)-ln(x-1),USTRADE,All Employees: Retail Trade,M_123111867,Emp: retail,Labor Market,FALSE
+44,5,First difference of natural log: ln(x)-ln(x-1),USFIRE,All Employees: Financial Activities,M_123112777,Emp: FIRE,Labor Market,FALSE
+45,5,First difference of natural log: ln(x)-ln(x-1),USGOVT,All Employees: Government,M_123114411,Emp: Govt,Labor Market,FALSE
+46,1,Level (i.e. no transformation): x(t),CES0600000007,Avg Weekly Hours : Goods-Producing,M_140687274,Avg hrs,Labor Market,FALSE
+47,2,First difference: x(t)-x(t-1),AWOTMAN,Avg Weekly Overtime Hours : Manufacturing,M_123109554,Overtime: mfg,Labor Market,FALSE
+48,1,Level (i.e. no transformation): x(t),AWHMAN,Avg Weekly Hours : Manufacturing,M_14386098,Avg hrs: mfg,Labor Market,FALSE
+49,1,Level (i.e. no transformation): x(t),NAPMEI,ISM Manufacturing: Employment Index,M_110157206,NAPM empl,Labor Market,FALSE
+50,4,Natural log: ln(x),HOUST,Housing Starts: Total New Privately Owned,M_110155536,Starts: nonfarm,Housing,FALSE
+51,4,Natural log: ln(x),HOUSTNE,"Housing Starts, Northeast",M_110155538,Starts: NE,Housing,FALSE
+52,4,Natural log: ln(x),HOUSTMW,"Housing Starts, Midwest",M_110155537,Starts: MW,Housing,FALSE
+53,4,Natural log: ln(x),HOUSTS,"Housing Starts, South",M_110155543,Starts: South,Housing,FALSE
+54,4,Natural log: ln(x),HOUSTW,"Housing Starts, West",M_110155544,Starts: West,Housing,FALSE
+55,4,Natural log: ln(x),PERMIT,New Private Housing Permits (SAAR),M_110155532,BP: total,Housing,FALSE
+56,4,Natural log: ln(x),PERMITNE,"New Private Housing Permits, Northeast (SAAR)",M_110155531,BP: NE,Housing,FALSE
+57,4,Natural log: ln(x),PERMITMW,"New Private Housing Permits, Midwest (SAAR)",M_110155530,BP: MW,Housing,FALSE
+58,4,Natural log: ln(x),PERMITS,"New Private Housing Permits, South (SAAR)",M_110155533,BP: South,Housing,FALSE
+59,4,Natural log: ln(x),PERMITW,"New Private Housing Permits, West (SAAR)",M_110155534,BP: West,Housing,FALSE
+60,1,Level (i.e. no transformation): x(t),NAPM,ISM : PMI Composite Index,M_110157208,PMI,"Consumption, Orders, and Inventories",FALSE
+61,1,Level (i.e. no transformation): x(t),NAPMNOI,ISM : New Orders Index,M_110157210,NAPM new ordrs,"Consumption, Orders, and Inventories",FALSE
+62,1,Level (i.e. no transformation): x(t),NAPMSDI,ISM : Supplier Deliveries Index,M_110157205,NAPM vendor del,"Consumption, Orders, and Inventories",FALSE
+63,1,Level (i.e. no transformation): x(t),NAPMII,ISM : Inventories Index,M_110157211,NAPM Invent,"Consumption, Orders, and Inventories",FALSE
+64,5,First difference of natural log: ln(x)-ln(x-1),ACOGNO,New Orders for Consumer Goods,M_14385863,Orders: cons gds,"Consumption, Orders, and Inventories",FALSE
+65,5,First difference of natural log: ln(x)-ln(x-1),AMDMNOx,New Orders for Durable Goods,M_14386110,Orders: dble gds,"Consumption, Orders, and Inventories",TRUE
+66,5,First difference of natural log: ln(x)-ln(x-1),ANDENOx,New Orders for Nondefense Capital Goods,M_178554409,Orders: cap gds,"Consumption, Orders, and Inventories",TRUE
+67,5,First difference of natural log: ln(x)-ln(x-1),AMDMUOx,Un lled Orders for Durable Goods,M_14385946,Unf orders: dble,"Consumption, Orders, and Inventories",TRUE
+68,5,First difference of natural log: ln(x)-ln(x-1),BUSINVx,Total Business Inventories,M_15192014,M&T invent,"Consumption, Orders, and Inventories",TRUE
+69,2,First difference: x(t)-x(t-1),ISRATIOx,Total Business: Inventories to Sales Ratio,M_15191529,M&T invent/sales,"Consumption, Orders, and Inventories",TRUE
+70,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),M1SL,M1 Money Stock,M_110154984,M1,Money and Credit,FALSE
+71,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),M2SL,M2 Money Stock,M_110154985,M2,Money and Credit,FALSE
+72,5,First difference of natural log: ln(x)-ln(x-1),M2REAL,Real M2 Money Stock,M_110154985,M2 (real),Money and Credit,FALSE
+73,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),AMBSL,St. Louis Adjusted Monetary Base,M_110154995,MB,Money and Credit,FALSE
+74,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),TOTRESNS,Total Reserves of Depository Institutions,M_110155011,Reserves tot,Money and Credit,FALSE
+75,7,First difference of percent change: (x(t)/x(t-1)-1)-(x(t-1)/x(t-2)-1),NONBORRES,Reserves Of Depository Institutions,M_110155009,Reserves nonbor,Money and Credit,FALSE
+76,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),BUSLOANS,Commercial and Industrial Loans,BUSLOANS,C&I loan plus,Money and Credit,FALSE
+77,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),REALLN,Real Estate Loans at All Commercial Banks,BUSLOANS,DC&I loans,Money and Credit,FALSE
+78,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),NONREVSL,Total Nonrevolving Credit,M_110154564,Cons credit,Money and Credit,FALSE
+79,2,First difference: x(t)-x(t-1),CONSPI,Nonrevolving consumer credit to Personal Income,M_110154569,Inst cred/PI,Money and Credit,TRUE
+80,5,First difference of natural log: ln(x)-ln(x-1),S&P 500,S&P s Common Stock Price Index: Composite,M_110155044,S&P 500,Stock Market,TRUE
+81,5,First difference of natural log: ln(x)-ln(x-1),S&P: indust,S&P s Common Stock Price Index: Industrials,M_110155047,S&P: indust,Stock Market,TRUE
+82,2,First difference: x(t)-x(t-1),S&P div yield,S&P s Composite Common Stock: Dividend Yield,,S&P div yield,Stock Market,TRUE
+83,5,First difference of natural log: ln(x)-ln(x-1),S&P PE ratio,S&P s Composite Common Stock: Price-Earnings Ratio,,S&P PE ratio,Stock Market,TRUE
+84,2,First difference: x(t)-x(t-1),FEDFUNDS,E?ective Federal Funds Rate,M_110155157,Fed Funds,Interest and Exchange Rates,FALSE
+85,2,First difference: x(t)-x(t-1),CP3Mx,3-Month AA Financial Commercial Paper Rate,CPF3M,Comm paper,Interest and Exchange Rates,TRUE
+86,2,First difference: x(t)-x(t-1),TB3MS,3-Month Treasury Bill:,M_110155165,3 mo T-bill,Interest and Exchange Rates,FALSE
+87,2,First difference: x(t)-x(t-1),TB6MS,6-Month Treasury Bill:,M_110155166,6 mo T-bill,Interest and Exchange Rates,FALSE
+88,2,First difference: x(t)-x(t-1),GS1,1-Year Treasury Rate,M_110155168,1 yr T-bond,Interest and Exchange Rates,FALSE
+89,2,First difference: x(t)-x(t-1),GS5,5-Year Treasury Rate,M_110155174,5 yr T-bond,Interest and Exchange Rates,FALSE
+90,2,First difference: x(t)-x(t-1),GS10,10-Year Treasury Rate,M_110155169,10 yr T-bond,Interest and Exchange Rates,FALSE
+91,2,First difference: x(t)-x(t-1),AAA,Moody s Seasoned Aaa Corporate Bond Yield,,Aaa bond,Interest and Exchange Rates,FALSE
+92,2,First difference: x(t)-x(t-1),BAA,Moody s Seasoned Baa Corporate Bond Yield,,Baa bond,Interest and Exchange Rates,FALSE
+93,1,Level (i.e. no transformation): x(t),COMPAPFFx,3-Month Commercial Paper Minus FEDFUNDS,,CP-FF spread,Interest and Exchange Rates,TRUE
+94,1,Level (i.e. no transformation): x(t),TB3SMFFM,3-Month Treasury C Minus FEDFUNDS,,3 mo-FF spread,Interest and Exchange Rates,FALSE
+95,1,Level (i.e. no transformation): x(t),TB6SMFFM,6-Month Treasury C Minus FEDFUNDS,,6 mo-FF spread,Interest and Exchange Rates,FALSE
+96,1,Level (i.e. no transformation): x(t),T1YFFM,1-Year Treasury C Minus FEDFUNDS,,1 yr-FF spread,Interest and Exchange Rates,FALSE
+97,1,Level (i.e. no transformation): x(t),T5YFFM,5-Year Treasury C Minus FEDFUNDS,,5 yr-FF spread,Interest and Exchange Rates,FALSE
+98,1,Level (i.e. no transformation): x(t),T10YFFM,10-Year Treasury C Minus FEDFUNDS,,10 yr-FF spread,Interest and Exchange Rates,FALSE
+99,1,Level (i.e. no transformation): x(t),AAAFFM,Moody s Aaa Corporate Bond Minus FEDFUNDS,,Aaa-FF spread,Interest and Exchange Rates,FALSE
+100,1,Level (i.e. no transformation): x(t),BAAFFM,Moody s Baa Corporate Bond Minus FEDFUNDS,,Baa-FF spread,Interest and Exchange Rates,FALSE
+101,5,First difference of natural log: ln(x)-ln(x-1),TWEXMMTH,Trade Weighted U.S. Dollar Index: Major Currencies,,Ex rate: avg,Interest and Exchange Rates,FALSE
+102,5,First difference of natural log: ln(x)-ln(x-1),EXSZUSx,Switzerland / U.S. Foreign Exchange Rate,M_110154768,Ex rate: Switz,Interest and Exchange Rates,TRUE
+103,5,First difference of natural log: ln(x)-ln(x-1),EXJPUSx,Japan / U.S. Foreign Exchange Rate,M_110154755,Ex rate: Japan,Interest and Exchange Rates,TRUE
+104,5,First difference of natural log: ln(x)-ln(x-1),EXUSUKx,U.S. / U.K. Foreign Exchange Rate,M_110154772,Ex rate: UK,Interest and Exchange Rates,TRUE
+105,5,First difference of natural log: ln(x)-ln(x-1),EXCAUSx,Canada / U.S. Foreign Exchange Rate,M_110154744,EX rate: Canada,Interest and Exchange Rates,TRUE
+106,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),WPSFD49207,PPI: Finished Goods,M110157517,PPI: n gds,Prices,FALSE
+107,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),WPSFD49502,PPI: Finished Consumer Goods,M110157508,PPI: cons gds,Prices,FALSE
+108,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),WPSID61,PPI: Intermediate Materials,M_110157527,PPI: int matls,Prices,FALSE
+109,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),WPSID62,PPI: Crude Materials,M_110157500,PPI: crude matls,Prices,FALSE
+110,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),OILPRICEx,"Crude Oil, spliced WTI and Cushing",M_110157273,Spot market price,Prices,TRUE
+111,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),PPICMM,PPI: Metals and metal products:,M_110157335,PPI: nonferrous,Prices,FALSE
+112,1,Level (i.e. no transformation): x(t),NAPMPRI,ISM Manufacturing: Prices Index,M_110157204,NAPM com price,Prices,FALSE
+113,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CPIAUCSL,CPI : All Items,M_110157323,CPI-U: all,Prices,FALSE
+114,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CPIAPPSL,CPI : Apparel,M_110157299,CPI-U: apparel,Prices,FALSE
+115,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CPITRNSL,CPI : Transportation,M_110157302,CPI-U: transp,Prices,FALSE
+116,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CPIMEDSL,CPI : Medical Care,M_110157304,CPI-U: medical,Prices,FALSE
+117,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CUSR0000SAC,CPI : Commodities,M_110157314,CPI-U: comm.,Prices,FALSE
+118,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CUSR0000SAD,CPI : Durables,M_110157315,CPI-U: dbles,Prices,FALSE
+119,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CUSR0000SAS,CPI : Services,M_110157325,CPI-U: services,Prices,FALSE
+120,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CPIULFSL,CPI : All Items Less Food,M_110157328,CPI-U: ex food,Prices,FALSE
+121,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CUSR0000SA0L2,CPI : All items less shelter,M_110157329,CPI-U: ex shelter,Prices,FALSE
+122,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CUSR0000SA0L5,CPI : All items less medical care,M_110157330,CPI-U: ex med,Prices,FALSE
+123,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),PCEPI,Personal Cons. Expend.: Chain Index,gmdc,PCE de,Prices,FALSE
+124,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),DDURRG3M086SBEA,Personal Cons. Exp: Durable goods,gmdcd,PCE de : dlbes,Prices,FALSE
+125,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),DNDGRG3M086SBEA,Personal Cons. Exp: Nondurable goods,gmdcn,PCE de : nondble,Prices,FALSE
+126,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),DSERRG3M086SBEA,Personal Cons. Exp: Services,gmdcs,PCE de : service,Prices,FALSE
+127,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CES0600000008,Avg Hourly Earnings : Goods-Producing,M_123109182,AHE: goods,Labor Market,FALSE
+128,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CES2000000008,Avg Hourly Earnings : Construction,M_123109341,AHE: const,Labor Market,FALSE
+129,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),CES3000000008,Avg Hourly Earnings : Manufacturing,M_123109552,AHE: mfg,Labor Market,FALSE
+130,2,First difference: x(t)-x(t-1),UMCSENTx,Consumer Sentiment Index,hhsntn,Consumer expect,"Consumption, Orders, and Inventories",TRUE
+131,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),MZMSL,MZM Money Stock,,,Money and Credit,FALSE
+132,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),DTCOLNVHFNM,Consumer Motor Vehicle Loans Outstanding,,,Money and Credit,FALSE
+133,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),DTCTHFNM,Total Consumer Loans and Leases Outstanding,,,Money and Credit,FALSE
+134,6,Second difference of natural log: (ln(x)-ln(x-1))-(ln(x-1)-ln(x-2)),INVEST,Securities in Bank Credit at All Commercial Banks,,,Money and Credit,FALSE
+135,1,Level (i.e. no transformation): x(t),VXOCLSx,VXO,,,Stock Market,TRUE
