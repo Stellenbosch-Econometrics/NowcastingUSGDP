@@ -9,7 +9,7 @@ plot(fscale(data_q))
 
 groups <- fread("data/FRED/groups.csv", skip = 1)
 
-# Overall
+# Global Factors
 ic <- ICr(data_m)
 plot(ic)
 screeplot(ic) # 2 Global factors is ok
