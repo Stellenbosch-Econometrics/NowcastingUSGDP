@@ -1,0 +1,125 @@
+,description,group
+0,Real Personal Income,Output and Income
+1,Real personal income ex transfer receipts,Output and Income
+2,Real personal consumption expenditures,"Consumption, Orders, and Inventories"
+3,Real Manu. and Trade Industries Sales,"Consumption, Orders, and Inventories"
+4,Retail and Food Services Sales,"Consumption, Orders, and Inventories"
+5,IP Index,Output and Income
+6,IP: Final Products and Nonindustrial Supplies,Output and Income
+7,IP: Final Products (Market Group),Output and Income
+8,IP: Consumer Goods,Output and Income
+9,IP: Durable Consumer Goods,Output and Income
+10,IP: Nondurable Consumer Goods,Output and Income
+11,IP: Business Equipment,Output and Income
+12,IP: Materials,Output and Income
+13,IP: Durable Materials,Output and Income
+14,IP: Nondurable Materials,Output and Income
+15,IP: Manufacturing (SIC),Output and Income
+16,IP: Fuels,Output and Income
+17,Capacity Utilization: Manufacturing,Output and Income
+18,Help-Wanted Index for United States,Labor Market
+19,Ratio of Help Wanted/No. Unemployed,Labor Market
+20,Civilian Labor Force,Labor Market
+21,Civilian Employment,Labor Market
+22,Civilian Unemployment Rate,Labor Market
+23,Average Duration of Unemployment (Weeks),Labor Market
+24,Civilians Unemployed - Less Than 5 Weeks,Labor Market
+25,Civilians Unemployed for 5-14 Weeks,Labor Market
+26,Civilians Unemployed - 15 Weeks & Over,Labor Market
+27,Civilians Unemployed for 15-26 Weeks,Labor Market
+28,Civilians Unemployed for 27 Weeks and Over,Labor Market
+29,Initial Claims,Labor Market
+30,All Employees: Total nonfarm,Labor Market
+31,All Employees: Goods-Producing Industries,Labor Market
+32,All Employees: Mining and Logging: Mining,Labor Market
+33,All Employees: Construction,Labor Market
+34,All Employees: Manufacturing,Labor Market
+35,All Employees: Durable goods,Labor Market
+36,All Employees: Nondurable goods,Labor Market
+37,All Employees: Service-Providing Industries,Labor Market
+38,"All Employees: Trade, Transportation & Utilities",Labor Market
+39,All Employees: Wholesale Trade,Labor Market
+40,All Employees: Retail Trade,Labor Market
+41,All Employees: Financial Activities,Labor Market
+42,All Employees: Government,Labor Market
+43,Avg Weekly Hours : Goods-Producing,Labor Market
+44,Avg Weekly Overtime Hours : Manufacturing,Labor Market
+45,Avg Weekly Hours : Manufacturing,Labor Market
+46,Housing Starts: Total New Privately Owned,Housing
+47,"Housing Starts, Northeast",Housing
+48,"Housing Starts, Midwest",Housing
+49,"Housing Starts, South",Housing
+50,"Housing Starts, West",Housing
+51,New Private Housing Permits (SAAR),Housing
+52,"New Private Housing Permits, Northeast (SAAR)",Housing
+53,"New Private Housing Permits, Midwest (SAAR)",Housing
+54,"New Private Housing Permits, South (SAAR)",Housing
+55,"New Private Housing Permits, West (SAAR)",Housing
+56,New Orders for Consumer Goods,"Consumption, Orders, and Inventories"
+57,New Orders for Durable Goods,"Consumption, Orders, and Inventories"
+58,New Orders for Nondefense Capital Goods,"Consumption, Orders, and Inventories"
+59,Un lled Orders for Durable Goods,"Consumption, Orders, and Inventories"
+60,Total Business Inventories,"Consumption, Orders, and Inventories"
+61,Total Business: Inventories to Sales Ratio,"Consumption, Orders, and Inventories"
+62,M1 Money Stock,Money and Credit
+63,M2 Money Stock,Money and Credit
+64,Real M2 Money Stock,Money and Credit
+65,Total Reserves of Depository Institutions,Money and Credit
+66,Reserves Of Depository Institutions,Money and Credit
+67,Commercial and Industrial Loans,Money and Credit
+68,Real Estate Loans at All Commercial Banks,Money and Credit
+69,Total Nonrevolving Credit,Money and Credit
+70,Nonrevolving consumer credit to Personal Income,Money and Credit
+71,S&P s Common Stock Price Index: Composite,Stock Market
+72,S&P s Common Stock Price Index: Industrials,Stock Market
+73,S&P s Composite Common Stock: Dividend Yield,Stock Market
+74,S&P s Composite Common Stock: Price-Earnings Ratio,Stock Market
+75,E?ective Federal Funds Rate,Interest and Exchange Rates
+76,3-Month AA Financial Commercial Paper Rate,Interest and Exchange Rates
+77,3-Month Treasury Bill:,Interest and Exchange Rates
+78,6-Month Treasury Bill:,Interest and Exchange Rates
+79,1-Year Treasury Rate,Interest and Exchange Rates
+80,5-Year Treasury Rate,Interest and Exchange Rates
+81,10-Year Treasury Rate,Interest and Exchange Rates
+82,Moody s Seasoned Aaa Corporate Bond Yield,Interest and Exchange Rates
+83,Moody s Seasoned Baa Corporate Bond Yield,Interest and Exchange Rates
+84,3-Month Commercial Paper Minus FEDFUNDS,Interest and Exchange Rates
+85,3-Month Treasury C Minus FEDFUNDS,Interest and Exchange Rates
+86,6-Month Treasury C Minus FEDFUNDS,Interest and Exchange Rates
+87,1-Year Treasury C Minus FEDFUNDS,Interest and Exchange Rates
+88,5-Year Treasury C Minus FEDFUNDS,Interest and Exchange Rates
+89,10-Year Treasury C Minus FEDFUNDS,Interest and Exchange Rates
+90,Moody s Aaa Corporate Bond Minus FEDFUNDS,Interest and Exchange Rates
+91,Moody s Baa Corporate Bond Minus FEDFUNDS,Interest and Exchange Rates
+92,Switzerland / U.S. Foreign Exchange Rate,Interest and Exchange Rates
+93,Japan / U.S. Foreign Exchange Rate,Interest and Exchange Rates
+94,U.S. / U.K. Foreign Exchange Rate,Interest and Exchange Rates
+95,Canada / U.S. Foreign Exchange Rate,Interest and Exchange Rates
+96,PPI: Finished Goods,Prices
+97,PPI: Finished Consumer Goods,Prices
+98,PPI: Intermediate Materials,Prices
+99,PPI: Crude Materials,Prices
+100,"Crude Oil, spliced WTI and Cushing",Prices
+101,PPI: Metals and metal products:,Prices
+102,CPI : All Items,Prices
+103,CPI : Apparel,Prices
+104,CPI : Transportation,Prices
+105,CPI : Medical Care,Prices
+106,CPI : Commodities,Prices
+107,CPI : Durables,Prices
+108,CPI : Services,Prices
+109,CPI : All Items Less Food,Prices
+110,CPI : All items less shelter,Prices
+111,CPI : All items less medical care,Prices
+112,Personal Cons. Expend.: Chain Index,Prices
+113,Personal Cons. Exp: Durable goods,Prices
+114,Personal Cons. Exp: Nondurable goods,Prices
+115,Personal Cons. Exp: Services,Prices
+116,Avg Hourly Earnings : Goods-Producing,Labor Market
+117,Avg Hourly Earnings : Construction,Labor Market
+118,Avg Hourly Earnings : Manufacturing,Labor Market
+119,Consumer Sentiment Index,"Consumption, Orders, and Inventories"
+120,Consumer Motor Vehicle Loans Outstanding,Money and Credit
+121,Total Consumer Loans and Leases Outstanding,Money and Credit
+122,Securities in Bank Credit at All Commercial Banks,Money and Credit
+123,"Real Gross Domestic Product, 3 Decimal (Billions of Chained 2012 Dollars)",Output and Income
