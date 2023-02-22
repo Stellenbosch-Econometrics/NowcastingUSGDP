@@ -85,7 +85,7 @@ rgdp_factors_blocked <- factors_blocked %>% merge(data_q[, 1] %>% setColnames("r
 # Linear Model
 gdp_lm <- lm(rgdp_growth ~., qDF(rgdp_factors_agg))
 summary(gdp_lm)
-plot(gdp_lm)
+# plot(gdp_lm)
 ts.plot(rgdp_factors_agg[, "rgdp_growth"])
 lines(fitted(gdp_lm), col = "red")
 
@@ -105,12 +105,12 @@ plot(cv_lasso_blocked)
 fit_lasso_blocked_min <- cbind(icpt = 1, factors_blocked) %*% as.matrix(coef(cv_lasso_blocked, s = "lambda.min"))
 fit_lasso_blocked_1se <- cbind(icpt = 1, factors_blocked) %*% as.matrix(coef(cv_lasso_blocked, s = "lambda.1se"))
 
-ts.plot(rgdp_factors_agg[, "rgdp_growth"])
-lines(fitted(gdp_lm), col = "red")
-lines(fit_lasso_min, col = "blue")
-lines(fit_lasso_1se, col = "green")
-lines(fit_lasso_blocked_min, col = "blue", lty = 2)
-lines(fit_lasso_blocked_1se, col = "green", lty = 2)
+# ts.plot(rgdp_factors_agg[, "rgdp_growth"])
+# lines(fitted(gdp_lm), col = "red")
+# lines(fit_lasso_min, col = "blue")
+# lines(fit_lasso_1se, col = "green")
+# lines(fit_lasso_blocked_min, col = "blue", lty = 2)
+# lines(fit_lasso_blocked_1se, col = "green", lty = 2)
 
 fit_all <- rgdp_factors_agg[, "rgdp_growth"] %>% 
   cbind(lm = fitted(gdp_lm), lasso_min = unattrib(fit_lasso_min), lasso_1se = unattrib(fit_lasso_1se),
@@ -122,7 +122,9 @@ sapply(qDF(fit_all), metrics, unattrib(rgdp_factors_agg[, "rgdp_growth"]))
 
 fit_all %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction")
 
-# Now the Nowcast / Forecast
+#
+# Now the Nowcast / Forecast ----------------------
+#
 VARselect(factors, lag.max = 15)
 # Taking 2 lags
 factor_VAR <- VAR(factors, 2)
@@ -139,10 +141,10 @@ factor_fcst_blocked <- cbind(factor_fcst_mat %>% ss(month(index(.)) %% 3L == 1L)
 fcst_lasso_blocked_min <- cbind(icpt = 1, factor_fcst_blocked) %*% as.matrix(coef(cv_lasso_blocked, s = "lambda.min")) %>% 
   setColnames("fcst_lasso_blocked_min")
 
-gdp_ts <- tsbox::ts_ts(rgdp_factors_agg[, "rgdp_growth"])
-ts.plot(gdp_ts, xlim = c(start(gdp_ts)[1], end(gdp_ts)[1]+2))
-lines(copyAttrib(fit_lasso_blocked_min, gdp_ts), col = "red")
-lines(`tsp<-`(ts(fcst_lasso_blocked_min), tsp(tsbox::ts_ts(factor_fcst_blocked))), col = "red", lty = 2)
+# gdp_ts <- tsbox::ts_ts(rgdp_factors_agg[, "rgdp_growth"])
+# ts.plot(gdp_ts, xlim = c(start(gdp_ts)[1], end(gdp_ts)[1]+2))
+# lines(copyAttrib(fit_lasso_blocked_min, gdp_ts), col = "red")
+# lines(`tsp<-`(ts(fcst_lasso_blocked_min), tsp(tsbox::ts_ts(factor_fcst_blocked))), col = "red", lty = 2)
 
 fcst_data <- rgdp_factors_agg[, "rgdp_growth"] %>% 
   cbind(lasso_blocked_min = unattrib(fit_lasso_blocked_min)) %>% 
@@ -151,8 +153,4 @@ fcst_data <- rgdp_factors_agg[, "rgdp_growth"] %>%
 last_nmiss <- whichNA(fcst_data[, "fcst_lasso_blocked_min"]) %>% last()
 fcst_data[last_nmiss, "fcst_lasso_blocked_min"] <- fcst_data[last_nmiss, "lasso_blocked_min"]
 
-fcst_data %>% plot(legend.loc = "topleft", lwd = 1)
-
-ts.plot(gdp_ts, xlim = c(start(gdp_ts)[1], end(gdp_ts)[1]+2))
-lines(copyAttrib(fit_lasso_blocked_min, gdp_ts), col = "red")
-lines(`tsp<-`(ts(fcst_lasso_blocked_min), tsp(tsbox::ts_ts(factor_fcst_blocked))), col = "red", lty = 2)
+fcst_data %>% plot(legend.loc = "topleft", lwd = 1, main = "US GDP Nowcast")
