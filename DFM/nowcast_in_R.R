@@ -1,11 +1,11 @@
 library(fastverse)
 fastverse_extend(xts, africamonitor, dfms, vars, glmnet)
 
-data_m <- fread("data/FRED/monthly_transformed.csv") %>% tfm(V1 = am_as_date(V1)) %>% fsubset(V1 >= "1980-01-01") %>% as.xts()
-plot(fscale(data_m))
+data_m <- fread("data/FRED/monthly_transformed.csv") %>% tfm(V1 = am_as_date(V1)) %>% fsubset(V1 >= "1990-01-01") %>% as.xts()
+plot(fscale(data_m), lwd = 1)
 
-data_q <- fread("data/FRED/quarterly_transformed.csv") %>% tfm(V1 = am_as_date(V1)) %>% fsubset(V1 >= "1980-01-01") %>% as.xts()
-plot(fscale(data_q))
+data_q <- fread("data/FRED/quarterly_transformed.csv") %>% tfm(V1 = am_as_date(V1)) %>% fsubset(V1 >= "1990-01-01") %>% as.xts()
+plot(fscale(data_q), lwd = 1)
 
 groups <- fread("data/FRED/groups.csv", skip = 1)
 
@@ -20,6 +20,15 @@ mod <- DFM(data_m, 2, 4)
 plot(mod)
 summary(mod)
 plot(predict(mod))
+
+# Global Model (for comparison)
+glob_mod <- DFM(data_m, 9, 4)
+plot(glob_mod)
+summary(glob_mod)
+plot(predict(glob_mod))
+
+factors_glob <- glob_mod$F_qml %>% copyMostAttrib(data_m)
+plot(fscale(factors_glob), lwd = 1)
 
 # By Groups
 data_m_groups <- groups %>% ss(1:(fnrow(.)-1L)) %>% rsplit(V2 ~ V3) %>% lapply(function(x) data_m[, x])
@@ -72,15 +81,27 @@ factors <- cbind(
 ) %>% copyMostAttrib(data_m)
 
 dim(factors)
-plot(fscale(factors))
+plot(fscale(factors), lwd = 1)
+
 factors_agg <- apply.quarterly(factors, mean)
 index(factors_agg) %<>% lubridate::`month<-`(month(.)-2L)
 rgdp_factors_agg <- factors_agg %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
 
-factors_blocked <- cbind(factors %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
-                         factors %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
-                         factors %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
-rgdp_factors_blocked <- factors_blocked %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
+factors_wide <- cbind(factors %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
+                      factors %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
+                      factors %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
+rgdp_factors_wide <- factors_wide %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
+
+# Same for global model
+factors_glob_agg <- apply.quarterly(factors_glob, mean)
+index(factors_glob_agg) %<>% lubridate::`month<-`(month(.)-2L)
+rgdp_factors_glob_agg <- factors_glob_agg %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
+
+factors_glob_wide <- cbind(factors_glob %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
+                           factors_glob %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
+                           factors_glob %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
+rgdp_factors_glob_wide <- factors_glob_wide %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
+
 
 # Linear Model
 gdp_lm <- lm(rgdp_growth ~., qDF(rgdp_factors_agg))
@@ -97,30 +118,62 @@ plot(cv_lasso)
 fit_lasso_min <- cbind(icpt = 1, factors_agg) %*% as.matrix(coef(cv_lasso, s = "lambda.min"))
 fit_lasso_1se <- cbind(icpt = 1, factors_agg) %*% as.matrix(coef(cv_lasso, s = "lambda.1se"))
 
-# Blocked LASSO
-cv_lasso_blocked <- cv.glmnet(x = qM(rgdp_factors_blocked[, -ncol(rgdp_factors_blocked)]), 
-                              y = unattrib(rgdp_factors_blocked[, "rgdp_growth"]), 
-                              nfolds = nrow(rgdp_factors_blocked), grouped = FALSE)
-plot(cv_lasso_blocked)
-fit_lasso_blocked_min <- cbind(icpt = 1, factors_blocked) %*% as.matrix(coef(cv_lasso_blocked, s = "lambda.min"))
-fit_lasso_blocked_1se <- cbind(icpt = 1, factors_blocked) %*% as.matrix(coef(cv_lasso_blocked, s = "lambda.1se"))
+# Wide LASSO
+cv_lasso_wide <- cv.glmnet(x = qM(rgdp_factors_wide[, -ncol(rgdp_factors_wide)]), 
+                           y = unattrib(rgdp_factors_wide[, "rgdp_growth"]), 
+                           nfolds = nrow(rgdp_factors_wide), grouped = FALSE)
+plot(cv_lasso_wide)
+fit_lasso_wide_min <- cbind(icpt = 1, factors_wide) %*% as.matrix(coef(cv_lasso_wide, s = "lambda.min"))
+fit_lasso_wide_1se <- cbind(icpt = 1, factors_wide) %*% as.matrix(coef(cv_lasso_wide, s = "lambda.1se"))
 
 # ts.plot(rgdp_factors_agg[, "rgdp_growth"])
 # lines(fitted(gdp_lm), col = "red")
 # lines(fit_lasso_min, col = "blue")
 # lines(fit_lasso_1se, col = "green")
-# lines(fit_lasso_blocked_min, col = "blue", lty = 2)
-# lines(fit_lasso_blocked_1se, col = "green", lty = 2)
+# lines(fit_lasso_wide_min, col = "blue", lty = 2)
+# lines(fit_lasso_wide_1se, col = "green", lty = 2)
 
 fit_all <- rgdp_factors_agg[, "rgdp_growth"] %>% 
   cbind(lm = fitted(gdp_lm), lasso_min = unattrib(fit_lasso_min), lasso_1se = unattrib(fit_lasso_1se),
-        blocked_lasso_min = unattrib(fit_lasso_blocked_min), blocked_lasso_1se = unattrib(fit_lasso_blocked_1se))
+        wide_lasso_min = unattrib(fit_lasso_wide_min), wide_lasso_1se = unattrib(fit_lasso_wide_1se))
+
+fit_all %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction")
+
+# Same for global model
+gdp_lm_glob <- lm(rgdp_growth ~., qDF(rgdp_factors_glob_agg))
+summary(gdp_lm_glob)
+# plot(gdp_lm)
+ts.plot(rgdp_factors_glob_agg[, "rgdp_growth"])
+lines(fitted(gdp_lm_glob), col = "red")
+
+# LASSO
+cv_lasso_glob <- cv.glmnet(x = qM(rgdp_factors_glob_agg[, -ncol(rgdp_factors_glob_agg)]), 
+                           y = unattrib(rgdp_factors_glob_agg[, "rgdp_growth"]), 
+                           nfolds = nrow(rgdp_factors_glob_agg), grouped = FALSE)
+plot(cv_lasso_glob)
+fit_lasso_glob_min <- cbind(icpt = 1, factors_glob_agg) %*% as.matrix(coef(cv_lasso_glob, s = "lambda.min"))
+fit_lasso_glob_1se <- cbind(icpt = 1, factors_glob_agg) %*% as.matrix(coef(cv_lasso_glob, s = "lambda.1se"))
+
+# Wide LASSO
+cv_lasso_glob_wide <- cv.glmnet(x = qM(rgdp_factors_glob_wide[, -ncol(rgdp_factors_glob_wide)]), 
+                                y = unattrib(rgdp_factors_glob_wide[, "rgdp_growth"]), 
+                                nfolds = nrow(rgdp_factors_glob_wide), grouped = FALSE)
+plot(cv_lasso_glob_wide)
+fit_lasso_glob_wide_min <- cbind(icpt = 1, factors_glob_wide) %*% as.matrix(coef(cv_lasso_glob_wide, s = "lambda.min"))
+fit_lasso_glob_wide_1se <- cbind(icpt = 1, factors_glob_wide) %*% as.matrix(coef(cv_lasso_glob_wide, s = "lambda.1se"))
+
+fit_all_glob <- rgdp_factors_glob_agg[, "rgdp_growth"] %>% 
+  cbind(lm = fitted(gdp_lm_glob), lasso_min = unattrib(fit_lasso_glob_min), lasso_1se = unattrib(fit_lasso_glob_1se),
+        wide_lasso_min = unattrib(fit_lasso_glob_wide_min), wide_lasso_1se = unattrib(fit_lasso_glob_wide_1se))
+
+fit_all_glob %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction")
+
 
 # Evaluation
 metrics <- function(x, y) c(r_squared = cor(x, y)^2, MAE = mean(abs(x - y)))
 sapply(qDF(fit_all), metrics, unattrib(rgdp_factors_agg[, "rgdp_growth"]))
-
-fit_all %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction")
+sapply(qDF(fit_all_glob), metrics, unattrib(rgdp_factors_glob_agg[, "rgdp_growth"]))
+# -> lm is better for global model, but lasso on blocked model is best
 
 #
 # Now the Nowcast / Forecast ----------------------
@@ -129,28 +182,62 @@ VARselect(factors, lag.max = 15)
 # Taking 2 lags
 factor_VAR <- VAR(factors, 2)
 factor_fcst <- predict(factor_VAR, n.ahead = 12) # 1 year ahead
-plot(factor_fcst, plot.type = "single")
+# plot(factor_fcst, plot.type = "single")
 
 factor_fcst_mat <- factor_fcst$fcst %>% lapply(function(x) x[, "fcst"]) %>% do.call(what = cbind) %>% 
   xts(order.by = seq(last(index(factors)), length.out = 13, by = "month")[-1L], frequency = 12)
 
-factor_fcst_blocked <- cbind(factor_fcst_mat %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
-                             factor_fcst_mat %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
-                             factor_fcst_mat %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
+factor_fcst_wide <- cbind(factor_fcst_mat %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
+                          factor_fcst_mat %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
+                          factor_fcst_mat %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
 
-fcst_lasso_blocked_min <- cbind(icpt = 1, factor_fcst_blocked) %*% as.matrix(coef(cv_lasso_blocked, s = "lambda.min")) %>% 
-  setColnames("fcst_lasso_blocked_min")
+fcst_lasso_wide_min <- cbind(icpt = 1, factor_fcst_wide) %*% as.matrix(coef(cv_lasso_wide, s = "lambda.min")) %>% 
+  setColnames("fcst_lasso_wide_min")
 
 # gdp_ts <- tsbox::ts_ts(rgdp_factors_agg[, "rgdp_growth"])
 # ts.plot(gdp_ts, xlim = c(start(gdp_ts)[1], end(gdp_ts)[1]+2))
-# lines(copyAttrib(fit_lasso_blocked_min, gdp_ts), col = "red")
-# lines(`tsp<-`(ts(fcst_lasso_blocked_min), tsp(tsbox::ts_ts(factor_fcst_blocked))), col = "red", lty = 2)
+# lines(copyAttrib(fit_lasso_wide_min, gdp_ts), col = "red")
+# lines(`tsp<-`(ts(fcst_lasso_wide_min), tsp(tsbox::ts_ts(factor_fcst_wide))), col = "red", lty = 2)
 
 fcst_data <- rgdp_factors_agg[, "rgdp_growth"] %>% 
-  cbind(lasso_blocked_min = unattrib(fit_lasso_blocked_min)) %>% 
-  merge(fcst_lasso_blocked_min %>% copyMostAttrib(factor_fcst_blocked)) 
+  cbind(lasso_wide_min = unattrib(fit_lasso_wide_min),
+        lm = unattrib(fitted(gdp_lm))) %>% 
+  merge(fcst_lasso_wide_min %>% copyMostAttrib(factor_fcst_wide)) %>%
+  merge(cbind(icpt = 1, apply.quarterly(factor_fcst_mat, mean)) %*% coef(gdp_lm) %>% 
+          copyMostAttrib(factor_fcst_wide) %>% setColnames("fcst_lm")) %>%
+  ss(j = .c(rgdp_growth, lasso_wide_min, fcst_lasso_wide_min, lm, fcst_lm))
 
-last_nmiss <- whichNA(fcst_data[, "fcst_lasso_blocked_min"]) %>% last()
-fcst_data[last_nmiss, "fcst_lasso_blocked_min"] <- fcst_data[last_nmiss, "lasso_blocked_min"]
+last_nmiss <- whichNA(fcst_data[, "fcst_lasso_wide_min"]) %>% last()
+fcst_data[last_nmiss, "fcst_lasso_wide_min"] <- fcst_data[last_nmiss, "lasso_wide_min"]
+fcst_data[last_nmiss, "fcst_lm"] <- fcst_data[last_nmiss, "lm"]
 
 fcst_data %>% plot(legend.loc = "topleft", lwd = 1, main = "US GDP Nowcast")
+
+# Same for global model
+factor_glob_fcst <- predict(glob_mod, 12) # 1 year ahead
+plot(factor_glob_fcst, xlim = c(350, 410), ylim = frange(factor_glob_fcst$F_fcst))
+
+factor_glob_fcst_mat <- factor_glob_fcst$F_fcst %>% 
+  xts(order.by = seq(last(index(factors)), length.out = 13, by = "month")[-1L], frequency = 12)
+
+factor_glob_fcst_wide <- cbind(factor_glob_fcst_mat %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
+                               factor_glob_fcst_mat %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
+                               factor_glob_fcst_mat %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
+
+fcst_lasso_glob_wide_min <- cbind(icpt = 1, factor_glob_fcst_wide) %*% as.matrix(coef(cv_lasso_glob_wide, s = "lambda.min")) %>% 
+  setColnames("fcst_lasso_wide_min")
+
+fcst_data_glob <- rgdp_factors_glob_agg[, "rgdp_growth"] %>% 
+  cbind(lasso_wide_min = unattrib(fit_lasso_glob_wide_min),
+        lm = unattrib(fitted(gdp_lm_glob))) %>% 
+  merge(fcst_lasso_glob_wide_min %>% copyMostAttrib(factor_glob_fcst_wide)) %>%
+  merge(cbind(icpt = 1, apply.quarterly(factor_glob_fcst_mat, mean)) %*% coef(gdp_lm_glob) %>% 
+          copyMostAttrib(factor_glob_fcst_wide) %>% setColnames("fcst_lm")) %>%
+  ss(j = .c(rgdp_growth, lasso_wide_min, fcst_lasso_wide_min, lm, fcst_lm))
+
+last_nmiss <- whichNA(fcst_data_glob[, "fcst_lasso_wide_min"]) %>% last()
+fcst_data_glob[last_nmiss, "fcst_lasso_wide_min"] <- fcst_data_glob[last_nmiss, "lasso_wide_min"]
+fcst_data_glob[last_nmiss, "fcst_lm"] <- fcst_data_glob[last_nmiss, "lm"]
+
+fcst_data_glob %>% plot(legend.loc = "topleft", lwd = 1, main = "US GDP Nowcast")
+
