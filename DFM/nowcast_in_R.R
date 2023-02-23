@@ -137,7 +137,7 @@ fit_all <- rgdp_factors_agg[, "rgdp_growth"] %>%
   cbind(lm = fitted(gdp_lm), lasso_min = unattrib(fit_lasso_min), lasso_1se = unattrib(fit_lasso_1se),
         wide_lasso_min = unattrib(fit_lasso_wide_min), wide_lasso_1se = unattrib(fit_lasso_wide_1se))
 
-fit_all %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction")
+fit_all %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction from Blocked DFM")
 
 # Same for global model
 gdp_lm_glob <- lm(rgdp_growth ~., qDF(rgdp_factors_glob_agg))
@@ -166,7 +166,7 @@ fit_all_glob <- rgdp_factors_glob_agg[, "rgdp_growth"] %>%
   cbind(lm = fitted(gdp_lm_glob), lasso_min = unattrib(fit_lasso_glob_min), lasso_1se = unattrib(fit_lasso_glob_1se),
         wide_lasso_min = unattrib(fit_lasso_glob_wide_min), wide_lasso_1se = unattrib(fit_lasso_glob_wide_1se))
 
-fit_all_glob %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction")
+fit_all_glob %>% plot(legend.loc = "topleft", lwd = 1, main = "DFM Prediction from Global DFM")
 
 
 # Evaluation
@@ -211,7 +211,7 @@ last_nmiss <- whichNA(fcst_data[, "fcst_lasso_wide_min"]) %>% last()
 fcst_data[last_nmiss, "fcst_lasso_wide_min"] <- fcst_data[last_nmiss, "lasso_wide_min"]
 fcst_data[last_nmiss, "fcst_lm"] <- fcst_data[last_nmiss, "lm"]
 
-fcst_data %>% plot(legend.loc = "topleft", lwd = 1, main = "US GDP Nowcast")
+fcst_data %>% plot(legend.loc = "topleft", lwd = 1, main = "US GDP Nowcast from Blocked DFM")
 
 # Same for global model
 factor_glob_fcst <- predict(glob_mod, 12) # 1 year ahead
@@ -239,5 +239,5 @@ last_nmiss <- whichNA(fcst_data_glob[, "fcst_lasso_wide_min"]) %>% last()
 fcst_data_glob[last_nmiss, "fcst_lasso_wide_min"] <- fcst_data_glob[last_nmiss, "lasso_wide_min"]
 fcst_data_glob[last_nmiss, "fcst_lm"] <- fcst_data_glob[last_nmiss, "lm"]
 
-fcst_data_glob %>% plot(legend.loc = "topleft", lwd = 1, main = "US GDP Nowcast")
+fcst_data_glob %>% plot(legend.loc = "topleft", lwd = 1, main = "US GDP Nowcast from Global DFM")
 
