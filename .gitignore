@@ -40,3 +40,5 @@ vignettes/*.pdf
 
 # code-worskspace
 *.code-workspace
+
+.vscode/
