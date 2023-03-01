@@ -42,3 +42,5 @@ vignettes/*.pdf
 *.code-workspace
 
 .vscode/
+
+feature-engineering/
