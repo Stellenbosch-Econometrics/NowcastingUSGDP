@@ -5,6 +5,9 @@
         },
         {
             "path": "../NowCastingGDP"
+        },
+        {
+            "path": "../../Code/Computational/dhopp"
         }
     ]
 }

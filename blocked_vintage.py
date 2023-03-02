@@ -87,6 +87,7 @@ older_vintages = {v: create_fredmd_blocked(v) for v in vintage_names}
 # %%
 # Saving older vintages
 for k, v in older_vintages.items():
-    v["final_mq_transformed"].to_csv("data/FRED/blocked/vintage_{}.csv".format(k.replace("-", "_")), 
-                                     index_label="year_quarter")
+    v["final_mq_transformed"].to_csv("data/FRED/blocked/vintage_{}.csv".format(k.replace("-", "_")), index_label="year_quarter")
 
+
+# %%
