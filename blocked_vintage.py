@@ -1,8 +1,10 @@
-# %% Import Libaries
+# %% 
+# Import libaries
 import numpy as np
 import pandas as pd
 
 # %% See Appendix at: https://s3.amazonaws.com/real.stlouisfed.org/wp/2015/2015-012.pdf
+# Function to transform data
 def transform(column, transforms):
     transformation = transforms[column.name]
     # 1 => No transformation
@@ -29,6 +31,7 @@ def transform(column, transforms):
     return column
 
 # %% 
+# Main function to download and processs data
 def create_fredmd_blocked(vintage):
     base_url = 'https://files.stlouisfed.org/files/htdocs/fred-md'
     # 1. Download FRED-MD
