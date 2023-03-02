@@ -7,6 +7,17 @@ import matplotlib.pyplot as plt
 from darts.models import NBEATSModel
 from darts import TimeSeries
 from darts.metrics import rmse
+from darts.dataprocessing.transformers import Scaler
+import warnings
+import logging
+
+warnings.filterwarnings("ignore")
+logging.getLogger("pytorch_lightning").setLevel(logging.CRITICAL)
+logging.getLogger("darts.models.forecasting.pl_forecasting_module").setLevel(logging.CRITICAL)
+logging.getLogger("darts.models.forecasting.nbeats").setLevel(logging.CRITICAL)
+logging.getLogger("darts.models.forecasting.torch_forecasting_model").setLevel(logging.CRITICAL)
+logging.getLogger("darts.models.forecasting.torch_forecasting_model").setLevel(logging.CRITICAL)
+
 
 df = pd.read_csv('../data/FRED/blocked/vintage_2019_01.csv')
 
@@ -25,12 +36,16 @@ covariate_data.dropna(axis=1, how='any', inplace=True) # Drops about 221 columns
 gdp_series = TimeSeries.from_dataframe(gdp_data, time_col='year_quarter')
 covariate_series = TimeSeries.from_dataframe(covariate_data, time_col="year_quarter")
 
+scaler = Scaler()
+gdp_series = scaler.fit_transform(gdp_series)
+covariate_series = scaler.fit_transform(covariate_series)
+
 # %%
 gdp_train, gdp_val = gdp_series.split_before(0.8) 
 cov_train, cov_val = covariate_series.split_before(0.8)
 
 model_nbeats = NBEATSModel(
-    input_chunk_length=80, output_chunk_length=1, n_epochs=100, random_state=42
+    input_chunk_length=80, output_chunk_length=1, n_epochs=20, random_state=42
 )
 
 model_nbeats.fit(gdp_train, 
