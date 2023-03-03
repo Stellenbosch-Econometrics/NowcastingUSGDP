@@ -45,7 +45,7 @@ gdp_train, gdp_val = gdp_series.split_before(0.8)
 cov_train, cov_val = covariate_series.split_before(0.8)
 
 model_nbeats = NBEATSModel(
-    input_chunk_length=80, output_chunk_length=1, n_epochs=20, random_state=42
+    input_chunk_length=50, output_chunk_length=1, n_epochs=100, random_state=42
 )
 
 model_nbeats.fit(gdp_train, 
@@ -57,8 +57,8 @@ pred_beats = model_nbeats.predict(series = gdp_train,
                                   n = 1)
 
 # %%
-#gdp_series[:-20].plot()
-#pred_beats.plot()
+gdp_series[:-20].plot()
+pred_beats.plot()
 
 # %%
 pred_series = model_nbeats.historical_forecasts(
@@ -81,5 +81,6 @@ def display_forecast(pred_series, ts_transformed, forecast_type, start_date=None
     )
     plt.legend()
 
-display_forecast(pred_series, gdp_series[:-13], "1 quarter")
+display_forecast(pred_series, gdp_series[:-1], "1 quarter")
+
 # %%
