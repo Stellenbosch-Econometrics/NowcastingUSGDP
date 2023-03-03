@@ -45,4 +45,4 @@ vignettes/*.pdf
 
 feature-engineering/
 
-# test/
+test/lightning_logs/
