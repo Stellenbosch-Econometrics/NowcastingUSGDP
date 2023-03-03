@@ -1,7 +1,7 @@
 
 # %%
 
-## Going to use the NeuralForecast package from Nixtla. Focus on the NBEATS model no covariates. Univariate modelling. 
+## Going to use the NeuralForecast package from Nixtla. Focus on the NHITS model no covariates. Univariate modelling. 
 
 import numpy as np
 import pandas as pd
