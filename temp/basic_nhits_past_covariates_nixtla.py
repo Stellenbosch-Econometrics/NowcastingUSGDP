@@ -1,5 +1,5 @@
 
-# %%
+## %%
 
 # Try and model using NeuralForecast package. NHITS model with past covariates. 
 
@@ -35,21 +35,22 @@ df.insert(2, "y", df.pop("y"))
 df = df.iloc[:, :5]
 df.tail()
 
-# %%
 # plt.figure(figsize=(15,5))
 # plt.plot(df[df['unique_id']==1.0]['ds'], df[df['unique_id']==1.0]['y'])
 # plt.xlabel('Date')
 # plt.ylabel('GDP growth rate')
 # plt.grid()
-# %%
+
 horizon = 2 # day-ahead daily forecast
 model = NHITS(h = 2,
               input_size = 20,
               hist_exog_list = ['RPI_m1', 'RPI_m2'],
               scaler_type = 'robust'
-                )
-# %%
+            )
 nf = NeuralForecast(models=[model], freq='Q')
-# %%
 nf.fit(df=df)
-# %%
+
+Y_hat_df = nf.predict()
+
+Y_hat_df = Y_hat_df.reset_index()
+Y_hat_df.head()
