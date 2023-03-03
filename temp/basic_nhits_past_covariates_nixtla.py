@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 from neuralforecast import NeuralForecast
 from neuralforecast.models import NHITS
 
+import logging
+logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
+
 
 df = pd.read_csv('../data/FRED/blocked/vintage_2019_01.csv')
 
@@ -38,4 +41,15 @@ df.tail()
 # plt.xlabel('Date')
 # plt.ylabel('GDP growth rate')
 # plt.grid()
+# %%
+horizon = 2 # day-ahead daily forecast
+model = NHITS(h = 2,
+              input_size = 20,
+              hist_exog_list = ['RPI_m1', 'RPI_m2'],
+              scaler_type = 'robust'
+                )
+# %%
+nf = NeuralForecast(models=[model], freq='Q')
+# %%
+nf.fit(df=df)
 # %%
