@@ -56,34 +56,33 @@ future_covariates = covariates.drop(columns=missing_cols)
 pcc_list = past_covariates.columns.tolist()
 fcc_list = future_covariates.columns.tolist()
 
-# merge target_df with past_covariates
-df = pd.merge(target_df, past_covariates, left_index=True, right_index=True)
+df = pd.merge(target_df, future_covariates, left_index=True, right_index=True)
 
-# merge target_df with future_covariates
-df_new = pd.merge(target_df, future_covariates,
-                  left_index=True, right_index=True)
+# past covariates are the pain in the ass!
+past_covariates = past_covariates[:-1]
+past_covariates = past_covariates.iloc[:, :1]
 
-mask = df_new.columns.isin(fcc_list)
-cols_to_shift = df_new.columns[mask]
-df_new[cols_to_shift] = df_new[cols_to_shift].shift(-1)
+df = pd.merge(df, past_covariates, left_index=True, right_index=True)
 
-# exclude last row of df_new
-df_new = df_new.iloc[:-1]
-
-# count missing values in df_new
-# df_new.isnull().sum().sum()
+# remove the last row of df
+df = df.iloc[:-1]
 
 horizon = 2  # day-ahead daily forecast
 model = NHITS(h=horizon,
               input_size=10*horizon,
-              # hist_exog_list=pcc_list,
+              hist_exog_list=['RPI_m3'],
               futr_exog_list=fcc_list,
               scaler_type='robust',
               max_steps=10  # epochs
               )
 nf = NeuralForecast(models=[model], freq='Q')
-nf.fit(df=df_new)
+nf.fit(df=df)
 
-Y_hat_df = nf.predict()
+futr_df = pd.merge(target_df, future_covariates,
+                   left_index=True, right_index=True)
+futr_df = futr_df.drop(columns="y")
+futr_df = futr_df.iloc[-1:]
+
+Y_hat_df = nf.predict(futr_df=futr_df)
 
 Y_hat_df
