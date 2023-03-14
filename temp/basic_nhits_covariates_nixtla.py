@@ -43,27 +43,47 @@ nixtla_struct(df)
 # 2. Will need to generate values for the missing values that are one period before the missing value for the target variable.
 # 3. Need to repeat the nowcasting process for each of the vintages (some iteration over the different files in the directory).
 
+target_cols = ["unique_id", "ds", "y"]
 
-# Problem 1
+target_df = df[target_cols]
+covariates = df.drop(columns=target_cols)
 
-null_rows = df[df['y'].isnull()].index.tolist()
-if null_rows:
-    print(null_rows[0])
-else:
-    print("No null values found")
+missing_cols = covariates.columns[covariates.isnull().any()]
+past_covariates = covariates.filter(missing_cols)
+future_covariates = covariates.drop(columns=missing_cols)
 
-    # extract column names in a list
-column_names = df.columns.tolist()
+# column names of df to list
+pcc_list = past_covariates.columns.tolist()
+fcc_list = future_covariates.columns.tolist()
+
+# merge target_df with past_covariates
+df = pd.merge(target_df, past_covariates, left_index=True, right_index=True)
+
+# merge target_df with future_covariates
+df_new = pd.merge(target_df, future_covariates,
+                  left_index=True, right_index=True)
+
+mask = df_new.columns.isin(fcc_list)
+cols_to_shift = df_new.columns[mask]
+df_new[cols_to_shift] = df_new[cols_to_shift].shift(-1)
+
+# exclude last row of df_new
+df_new = df_new.iloc[:-1]
+
+# count missing values in df_new
+# df_new.isnull().sum().sum()
 
 horizon = 2  # day-ahead daily forecast
 model = NHITS(h=horizon,
               input_size=10*horizon,
-              hist_exog_list=['RPI_m1', 'RPI_m2'],
-              scaler_type='robust'
+              # hist_exog_list=pcc_list,
+              futr_exog_list=fcc_list,
+              scaler_type='robust',
+              max_steps=10  # epochs
               )
 nf = NeuralForecast(models=[model], freq='Q')
-nf.fit(df=df)
+nf.fit(df=df_new)
 
 Y_hat_df = nf.predict()
 
-Y_hat_df["NHITS"]
+Y_hat_df
