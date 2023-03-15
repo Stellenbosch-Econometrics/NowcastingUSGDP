@@ -6,6 +6,8 @@ import os
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.ar_model import AutoReg
+from statsmodels.tsa.statespace.kalman_smoother import KalmanSmoother
+from statsmodels.tsa.statespace.tools import diff
 from neuralforecast.models import NHITS
 from neuralforecast import NeuralForecast
 
@@ -50,15 +52,6 @@ def impute_missing_values_rolling_median(data, window_size):
 
 
 def impute_missing_values_bfill_ffill(data):
-    """
-    Impute missing values in multiple time series using backfill and forward fill.
-
-    Args:
-        data (pd.DataFrame): The time series data with missing values to impute. Each column represents a time series.
-
-    Returns:
-        pd.DataFrame: The imputed time series data.
-    """
     imputed_data = data.copy()
     imputed_data.fillna(method='bfill', inplace=True)
     imputed_data.fillna(method='ffill', inplace=True)
@@ -66,32 +59,12 @@ def impute_missing_values_bfill_ffill(data):
 
 
 def impute_missing_values_interpolate(data, method='linear'):
-    """
-    Impute missing values in multiple time series using interpolation.
-
-    Args:
-        data (pd.DataFrame): The time series data with missing values to impute. Each column represents a time series.
-        method (str): The interpolation method to use. Default is 'linear'.
-
-    Returns:
-        pd.DataFrame: The imputed time series data.
-    """
     imputed_data = data.copy()
     imputed_data.interpolate(method=method, inplace=True)
     return imputed_data
 
 
 def impute_missing_values_ar_multiseries(data, lags=1):
-    """
-    Impute missing values in multiple time series using an autoregressive model.
-
-    Args:
-        data (pd.DataFrame): The time series data with missing values to impute. Each column represents a time series.
-        lags (int): The number of lags to use in the autoregressive model.
-
-    Returns:
-        pd.DataFrame: The imputed time series data.
-    """
     imputed_data = data.copy()
 
     for col in data.columns:
@@ -118,6 +91,35 @@ def impute_missing_values_ar_multiseries(data, lags=1):
     return imputed_data
 
 
+def impute_missing_values_kalman_smoother(data, order=1):
+    imputed_data = data.copy()
+
+    for col in data.columns:
+        y = imputed_data[col].values
+        n = len(y)
+        mask = np.isnan(y)
+        ksm = KalmanSmoother(n, k_endog=1, k_states=order,
+                             initialization='approximate_diffuse')
+        ksm['design'] = np.eye(order)
+        ksm['obs_cov'] = np.eye(1)
+        ksm['transition'] = np.eye(order)
+        ksm['state_cov'] = np.eye(order)
+
+        y_diff = diff(y, order, axis=0)
+        y_diff = np.concatenate((np.zeros(order), y_diff))
+
+        y[mask] = 0
+        ksm.bind(y[:, None])
+        ksm.initialize_known(np.zeros(order), np.eye(order))
+
+        smoothed_state = ksm.smooth()
+
+        y_imputed = np.cumsum(y_diff * ~mask) + y[mask]
+        imputed_data[col] = y_imputed
+
+    return imputed_data
+
+
 def create_neural_forecast_model(horizon, pcc_list, fcc_list):
     model = NHITS(h=horizon,
                   input_size=50 * horizon,
@@ -126,6 +128,38 @@ def create_neural_forecast_model(horizon, pcc_list, fcc_list):
                   scaler_type='robust',
                   max_steps=100)
     return NeuralForecast(models=[model], freq='Q')
+
+
+def impute_missing_values_nhits(data, horizon=1):
+    imputed_data = data.copy()
+
+    for col in data.columns:
+        train = data[col].dropna()
+        test_indices = data[col].isnull()
+        test = data.loc[test_indices, col]
+
+        if len(test) == 0:
+            continue
+
+        # Prepare the input data for the NHITS model
+        df = pd.DataFrame({'ds': train.index, 'y': train.values})
+        df['unique_id'] = col
+
+        # Train the NHITS model
+        nf = create_neural_forecast_model(horizon, [], [])
+        nf.fit(df=df)
+
+        # Prepare the "future" data for the test set
+        futr_df = pd.DataFrame({'ds': test.index})
+        futr_df['unique_id'] = col
+
+        # Use the trained NHITS model to generate predictions for the test set
+        Y_hat_df = nf.predict(futr_df=futr_df)
+
+        # Replace the missing values in the original time series with the predicted values
+        imputed_data.loc[test_indices, col] = Y_hat_df['y_hat'].values
+
+    return imputed_data
 
 
 # df = load_data('../data/FRED/blocked/vintage_2019_01.csv')
