@@ -23,6 +23,64 @@ def load_data(file_path):
     return df
 
 
+def impute_missing_values_mean(data):
+    imputed_data = data.copy()
+    imputed_data.apply(lambda x: x.fillna(x.mean()), axis=0)
+    return imputed_data
+
+
+def impute_missing_values_median(data):
+    imputed_data = data.copy()
+    imputed_data.apply(lambda x: x.fillna(x.median()), axis=0)
+    return imputed_data
+
+
+def impute_missing_values_rolling_mean(data, window_size):
+    imputed_data = data.copy()
+    imputed_data.fillna(data.rolling(window=window_size,
+                        min_periods=1, center=True).mean(), inplace=True)
+    return imputed_data
+
+
+def impute_missing_values_rolling_median(data, window_size):
+    imputed_data = data.copy()
+    imputed_data.fillna(data.rolling(window=window_size,
+                        min_periods=1, center=True).median(), inplace=True)
+    return imputed_data
+
+
+def impute_missing_values_bfill_ffill(data):
+    """
+    Impute missing values in multiple time series using backfill and forward fill.
+
+    Args:
+        data (pd.DataFrame): The time series data with missing values to impute. Each column represents a time series.
+
+    Returns:
+        pd.DataFrame: The imputed time series data.
+    """
+    imputed_data = data.copy()
+    imputed_data.fillna(method='bfill', inplace=True)
+    imputed_data.fillna(method='ffill', inplace=True)
+    return imputed_data
+
+
+def impute_missing_values_interpolate(data, method='linear'):
+    """
+    Impute missing values in multiple time series using interpolation.
+
+    Args:
+        data (pd.DataFrame): The time series data with missing values to impute. Each column represents a time series.
+        method (str): The interpolation method to use. Default is 'linear'.
+
+    Returns:
+        pd.DataFrame: The imputed time series data.
+    """
+    imputed_data = data.copy()
+    imputed_data.interpolate(method=method, inplace=True)
+    return imputed_data
+
+
 def impute_missing_values_ar_multiseries(data, lags=1):
     """
     Impute missing values in multiple time series using an autoregressive model.
@@ -62,7 +120,7 @@ def impute_missing_values_ar_multiseries(data, lags=1):
 
 def create_neural_forecast_model(horizon, pcc_list, fcc_list):
     model = NHITS(h=horizon,
-                  input_size=10 * horizon,
+                  input_size=50 * horizon,
                   hist_exog_list=pcc_list,
                   futr_exog_list=fcc_list,
                   scaler_type='robust',
@@ -97,6 +155,9 @@ def create_neural_forecast_model(horizon, pcc_list, fcc_list):
 # futr_df = futr_df.drop(columns="y").iloc[-1:]
 
 # Y_hat_df = nf.predict(futr_df=futr_df)
+
+# Y_hat_df.iloc[0, 1]
+
 # Y_hat_df
 
 
@@ -132,9 +193,28 @@ def forecast_vintages(vintage_files, horizon=1):
 
         Y_hat_df = nf.predict(futr_df=futr_df)
 
-        results[file_name] = Y_hat_df
+        forecast_value = Y_hat_df.iloc[0, 1]
+
+        results[file_name] = forecast_value
 
     return results
+
+
+vintage_files = [
+    '../data/FRED/blocked/vintage_2019_01.csv',
+    '../data/FRED/blocked/vintage_2019_02.csv',
+    '../data/FRED/blocked/vintage_2019_03.csv',
+    '../data/FRED/blocked/vintage_2019_04.csv'
+]
+
+forecast_results = forecast_vintages(vintage_files)
+for file_name, result in forecast_results.items():
+    # Extract year and month from the file path
+    year, month = os.path.splitext(os.path.basename(file_name))[
+        0].split("_")[1:3]
+
+    print(f"Results for {year}-{month}:")
+    print(result)
 
 
 def get_files_in_directory(directory):
@@ -146,5 +226,9 @@ vintage_files = get_files_in_directory(data_directory)
 forecast_results = forecast_vintages(vintage_files)
 
 for file_name, result in forecast_results.items():
-    print(f"Results for {file_name}:")
+    # Extract year and month from the file path
+    year, month = os.path.splitext(os.path.basename(file_name))[
+        0].split("_")[1:3]
+
+    print(f"Results for {year}-{month}:")
     print(result)
