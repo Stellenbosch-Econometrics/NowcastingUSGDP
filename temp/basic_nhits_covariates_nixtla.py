@@ -38,42 +38,40 @@ def nixtla_struct(df):
 
 nixtla_struct(df)
 
-# Three problems to solve:
-# 1. Need to specify which are the past and future covariates. However, this will change with each of the vintages used.
-# 2. Will need to generate values for the missing values that are one period before the missing value for the target variable.
-# 3. Need to repeat the nowcasting process for each of the vintages (some iteration over the different files in the directory).
+# Main problems are
+# 1. Imputation of missing values
+# 2. Need to repeat the nowcasting process for each of the vintages (some iteration over the different files in the directory).
 
+# target vs covariates
 target_cols = ["unique_id", "ds", "y"]
-
 target_df = df[target_cols]
 covariates = df.drop(columns=target_cols)
 
+# past vs future covariates
 missing_cols = covariates.columns[covariates.isnull().any()]
 past_covariates = covariates.filter(missing_cols)
 future_covariates = covariates.drop(columns=missing_cols)
 
-# column names of df to list
 pcc_list = past_covariates.columns.tolist()
 fcc_list = future_covariates.columns.tolist()
 
+# future covariates at same date as target
 df = pd.merge(target_df, future_covariates, left_index=True, right_index=True)
 
-# past covariates are the pain in the ass!
-past_covariates = past_covariates[:-1]
-past_covariates = past_covariates.iloc[:, :1]
+# impute / forecast missing values -- this is the simplest approach.
+past_covariates.fillna(method='ffill', inplace=True)
+past_covariates.fillna(method='bfill', inplace=True)
 
 df = pd.merge(df, past_covariates, left_index=True, right_index=True)
-
-# remove the last row of df
 df = df.iloc[:-1]
 
-horizon = 2  # day-ahead daily forecast
+horizon = 2
 model = NHITS(h=horizon,
               input_size=10*horizon,
-              hist_exog_list=['RPI_m3'],
+              hist_exog_list=pcc_list,
               futr_exog_list=fcc_list,
               scaler_type='robust',
-              max_steps=10  # epochs
+              max_steps=100  # epochs
               )
 nf = NeuralForecast(models=[model], freq='Q')
 nf.fit(df=df)
