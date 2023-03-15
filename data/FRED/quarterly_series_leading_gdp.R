@@ -12,4 +12,5 @@ get_leading_series <- function(vintage) {
 leading_series <- lapply(blocked_datasets, get_leading_series)
 
 sapply(leading_series, identical, character(0))
-# Essentially no quarterly series is published before GDP
+# -> Essentially no quarterly series is published before GDP
+# -> This calls into question the usefulness of quarterly data for forecasting GDP
