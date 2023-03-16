@@ -1,20 +1,32 @@
 library(fastverse)
 fastverse_extend(xts, africamonitor, dfms, vars, glmnet)
 
-data_m <- fread("data/FRED/monthly_transformed.csv") %>% tfm(V1 = am_as_date(V1)) %>% fsubset(V1 >= "1990-01-01") %>% as.xts()
+prepcode <- function(x) toupper(sub(" ", "", x, fixed = TRUE))
+
+data_m <- fread("data/FRED/MD/vintage_2023_02.csv") %>% 
+          fmutate(V1 = am_as_date(V1)) %>% 
+          frename(prepcode) %>% 
+          fsubset(V1 >= "1990-01-01") %>% as.xts()
 plot(fscale(data_m), lwd = 1)
 
-data_q <- fread("data/FRED/quarterly_transformed.csv") %>% tfm(V1 = am_as_date(V1)) %>% fsubset(V1 >= "1990-01-01") %>% as.xts()
+data_q <- fread("data/FRED/QD/vintage_2023_02.csv") %>% 
+          fmutate(V1 = am_as_date(V1)) %>% 
+          frename(prepcode) %>% 
+          fsubset(V1 >= "1990-01-01") %>% as.xts()
 plot(fscale(data_q), lwd = 1)
 
-groups <- fread("data/FRED/groups.csv", skip = 1)
+groups <- fread("data/FRED/FRED-MD Appendix/FRED-MD_updated_appendix.csv") %>% 
+          fmutate(fred = prepcode(fred))
+
+# Check
+ckmatch(colnames(data_m), groups$fred)
 
 # Global Factors
 ic <- ICr(data_m)
 plot(ic)
 screeplot(ic) # 2 Global factors is ok
 
-VARselect(ic$F_pca[, 1:2], lag.max = 20) # 4 lags
+VARselect(ic$F_pca[, 1:9]) # 4 lags
 
 mod <- DFM(data_m, 2, 4)
 plot(mod)
@@ -31,40 +43,40 @@ factors_glob <- glob_mod$F_qml %>% copyMostAttrib(data_m)
 plot(fscale(factors_glob), lwd = 1)
 
 # By Groups
-data_m_groups <- groups %>% ss(1:(fnrow(.)-1L)) %>% rsplit(V2 ~ V3) %>% lapply(function(x) data_m[, x])
+data_m_groups <- groups %>% rsplit(fred ~ group_name) %>% lapply(function(x) data_m[, x])
 data_m_groups %>% sapply(ncol)
 ic_groups <- data_m_groups %>% lapply(ICr)
 
 screeplot(ic_groups$`Consumption, Orders, and Inventories`) # 2 Factors
-VARselect(ic_groups$`Consumption, Orders, and Inventories`$F_pca[, 1:2], lag.max = 20) # 4 Lags
+VARselect(ic_groups$`Consumption, Orders, and Inventories`$F_pca[, 1:2]) # 4 Lags
 mod_coi <- DFM(data_m_groups$`Consumption, Orders, and Inventories`, 2, 4)
 
 screeplot(ic_groups$Housing)  # 1 Factor
-VARselect(ic_groups$Housing$F_pca[, 1], lag.max = 20) # 2 Lags
+VARselect(ic_groups$Housing$F_pca[, 1]) # 2 Lags
 mod_h <- DFM(data_m_groups$Housing, 1, 2)
 
-screeplot(ic_groups$`Interest and Exchange Rates`) # 2 Factors
-VARselect(ic_groups$`Interest and Exchange Rates`$F_pca[, 1:2], lag.max = 20) # 3 lags
+screeplot(ic_groups$`Interest and Exchange Rates`) # 1-2 Factors
+VARselect(ic_groups$`Interest and Exchange Rates`$F_pca[, 1]) # 3 lags
 mod_ie <- DFM(data_m_groups$`Interest and Exchange Rates`, 2, 3)
 
 screeplot(ic_groups$`Labor Market`) # 1 Factor
-VARselect(ic_groups$`Labor Market`$F_pca[, 1], lag.max = 20) # 1 lag
+VARselect(ic_groups$`Labor Market`$F_pca[, 1]) # 1 lag
 mod_l <- DFM(data_m_groups$`Labor Market`, 1, 1)
 
 screeplot(ic_groups$`Money and Credit`) # 2 Factors
-VARselect(ic_groups$`Money and Credit`$F_pca[, 1:2], lag.max = 20) # 2 lags
+VARselect(ic_groups$`Money and Credit`$F_pca[, 1:2]) # 4 lags
 mod_mc <- DFM(data_m_groups$`Money and Credit`, 2, 2)
 
 screeplot(ic_groups$`Output and Income`) # 1 Factor
-VARselect(ic_groups$`Output and Income`$F_pca[, 1], lag.max = 20) # 2 lags
+VARselect(ic_groups$`Output and Income`$F_pca[, 1]) # 2 lags
 mod_oi <- DFM(data_m_groups$`Output and Income`, 1, 2)
 
 screeplot(ic_groups$Prices) # 1 Factor
-VARselect(ic_groups$Prices$F_pca[, 1], lag.max = 20) # 1 lag 
+VARselect(ic_groups$Prices$F_pca[, 1]) # 1 lag 
 mod_p <- DFM(data_m_groups$Prices, 1, 1)
 
 screeplot(ic_groups$`Stock Market`) # 1 Factor
-VARselect(ic_groups$`Stock Market`$F_pca[, 1], lag.max = 20) # 1 lag
+VARselect(ic_groups$`Stock Market`$F_pca[, 1]) # 1 lag
 mod_sm <- DFM(data_m_groups$`Stock Market`, 1, 1)
 
 # Putting factors together
