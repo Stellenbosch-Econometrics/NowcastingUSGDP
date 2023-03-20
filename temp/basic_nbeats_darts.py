@@ -8,6 +8,7 @@ from darts.models import NBEATSModel
 from darts import TimeSeries
 from darts.metrics import rmse
 from darts.dataprocessing.transformers import Scaler
+from statsmodels.tsa.ar_model import AutoReg
 # from darts.utils import train_test_split
 import warnings
 import logging
@@ -16,7 +17,6 @@ import logging
 from darts.models import (
     BlockRNNModel,
 )
-
 
 warnings.filterwarnings("ignore")
 logging.getLogger("pytorch_lightning").setLevel(logging.CRITICAL)
@@ -61,6 +61,37 @@ df_future_covariates = df[[time_column] + future_covariates]
 gdp_data = gdp_data.iloc[:-1]
 df_past_covariates = df_past_covariates.iloc[:-1]
 
+
+def impute_missing_values_ar_multiseries(data, lags=1):
+    imputed_data = data.copy()
+
+    for col in data.columns:
+        while imputed_data[col].isnull().any():
+            not_null_indices = imputed_data[col].notnull()
+            train = imputed_data.loc[not_null_indices, col]
+            null_indices = imputed_data[col].isnull()
+            test_indices = imputed_data.loc[null_indices, col].index
+
+            model = AutoReg(train, lags=lags)
+            result = model.fit()
+
+            for index in test_indices:
+                if index - lags < 0:
+                    available_data = imputed_data.loc[:index - 1, col].values
+                else:
+                    available_data = imputed_data.loc[index -
+                                                      lags:index - 1, col].values
+                if np.isnan(available_data).any():
+                    continue
+                forecast = result.predict(start=len(train), end=len(train))
+                imputed_data.loc[index, col] = forecast.iloc[0]
+
+    return imputed_data
+
+
+df_past_covariates = impute_missing_values_ar_multiseries(df_past_covariates)
+
+
 # %%
 gdp_data["date"] = pd.to_datetime(gdp_data["date"])
 gdp_data.set_index("date", inplace=True)
@@ -91,13 +122,13 @@ train_gdp, val_gdp = ts_gdp[:-36], ts_gdp[-36:]
 
 # %%
 train_past_covariates, val_past_covariates = ts_past_covariates[:-
-                                                                24], ts_past_covariates[-24:]
+                                                                36], ts_past_covariates[-36:]
 
 # %%
 model_pastcov = BlockRNNModel(
     model="LSTM",
-    input_chunk_length=24,
-    output_chunk_length=12,
+    input_chunk_length=40,
+    output_chunk_length=5,
     n_epochs=100,
     # random_state=0,
 )
@@ -110,28 +141,11 @@ model_pastcov.fit(
 )
 
 # %%
-# # Calculate the number of time steps required for the past_covariates
-# required_covariate_steps = train_gdp.width + model_pastcov.input_chunk_length - 1
-
-# # Slice the ts_past_covariates to have the necessary time steps for the corresponding series
-# train_past_covariates_required = ts_past_covariates[:-36].last_n_points(required_covariate_steps)
-# val_past_covariates_required = ts_past_covariates[-36:].last_n_points(required_covariate_steps)
-
-# # Combine the train and validation past_covariates
-# complete_past_covariates = TimeSeries.from_series(train_past_covariates_required.pd_series().append(val_past_covariates_required.pd_series()))
-
-# # Train the model
-# model_pastcov.fit(series=train_gdp, past_covariates=train_past_covariates_required, verbose=False)
-
-# # Predict the next 10 time steps
-# pred_cov = model_pastcov.predict(n=10, series=train_gdp, past_covariates=complete_past_covariates)
-
-# %%
 pred_cov = model_pastcov.predict(
-    n=10, series=train_gdp, past_covariates=val_past_covariates)
+    n=5, series=train_gdp, past_covariates=train_past_covariates)
 
 # %%
-# ts_gdp.plot(label="actual")
+ts_gdp.plot(label="actual")
 pred_cov.plot(label="forecast")
 plt.legend()
 # %%
