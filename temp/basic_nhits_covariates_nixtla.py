@@ -161,38 +161,6 @@ def impute_missing_values_nhits(data, horizon=1):
 
     return imputed_data
 
-# # Below for demo purposes
-# df = load_data('../data/FRED/blocked/vintage_2019_01.csv')
-
-# target_df = df[["unique_id", "ds", "y"]]
-# covariates = df.drop(columns=["unique_id", "ds", "y"])
-
-# missing_cols = covariates.columns[covariates.isnull().any()]
-# past_covariates = covariates.filter(missing_cols)
-# future_covariates = covariates.drop(columns=missing_cols)
-
-# pcc_list = past_covariates.columns.tolist()
-# fcc_list = future_covariates.columns.tolist()
-
-# df = pd.merge(target_df, future_covariates, left_index=True, right_index=True)
-
-# df_pc = impute_missing_values_ar_multiseries(past_covariates, lags=1)
-# df = pd.merge(df, df_pc, left_index=True, right_index=True)
-# df = df.iloc[:-1]
-
-# horizon = 5
-# nf = create_neural_forecast_model(horizon, pcc_list, fcc_list)
-# nf.fit(df=df)
-
-# futr_df = pd.merge(target_df, future_covariates,
-#                    left_index=True, right_index=True)
-# futr_df = futr_df.drop(columns="y").iloc[-1:]
-
-# Y_hat_df = nf.predict(futr_df=futr_df)
-
-# Y_hat_df.iloc[0, 1]
-# # Above for demo purposes
-
 
 def forecast_vintages(vintage_files, horizon=1):
     results = {}

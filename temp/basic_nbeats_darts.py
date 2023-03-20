@@ -13,11 +13,6 @@ from statsmodels.tsa.ar_model import AutoReg
 import warnings
 import logging
 
-
-from darts.models import (
-    BlockRNNModel,
-)
-
 warnings.filterwarnings("ignore")
 logging.getLogger("pytorch_lightning").setLevel(logging.CRITICAL)
 logging.getLogger("darts.models.forecasting.pl_forecasting_module").setLevel(
@@ -108,6 +103,17 @@ df_past_covariates.set_index("date", inplace=True)
 ts_past_covariates = TimeSeries.from_dataframe(df_past_covariates)
 
 # %%
+# Make sure the timestamp column has a datetime64 data type
+df_future_covariates["date"] = pd.to_datetime(df_future_covariates["date"])
+
+# Set the timestamp column as the index
+df_future_covariates.set_index("date", inplace=True)
+
+# Convert the DataFrame to a TimeSeries object
+ts_future_covariates = TimeSeries.from_dataframe(df_future_covariates)
+
+
+# %%
 
 # We can also stack the past covariates, I think this is what Darts requires.
 column_time_series = [TimeSeries.from_dataframe(
@@ -118,17 +124,28 @@ for ts in column_time_series[1:]:
     stacked_past_covariates = TimeSeries.stack(stacked_past_covariates, ts)
 
 # %%
-train_gdp, val_gdp = ts_gdp[:-36], ts_gdp[-36:]
+# Scale the variables
+scaler_gdp, scaler_pc, scaler_fc = Scaler(), Scaler(), Scaler()
+gdp_scaled = scaler_gdp.fit_transform(ts_gdp)
+pc_scaled = scaler_pc.fit_transform(ts_past_covariates)
+fc_scaled = scaler_fc.fit_transform(ts_future_covariates)
+
 
 # %%
-train_past_covariates, val_past_covariates = ts_past_covariates[:-
-                                                                36], ts_past_covariates[-36:]
+train_gdp, val_gdp = gdp_scaled[:-12], gdp_scaled[-12:]
 
 # %%
-model_pastcov = BlockRNNModel(
-    model="LSTM",
-    input_chunk_length=40,
-    output_chunk_length=5,
+train_past_covariates, val_past_covariates = pc_scaled[:-
+                                                                12], pc_scaled[-12:]
+
+# %%
+train_future_covariates, val_future_covariates = fc_scaled[:-
+                                                                12], fc_scaled[-12:]
+
+# %%
+model_pastcov = NBEATSModel(
+    input_chunk_length=50,
+    output_chunk_length=10,
     n_epochs=100,
     # random_state=0,
 )
@@ -142,10 +159,10 @@ model_pastcov.fit(
 
 # %%
 pred_cov = model_pastcov.predict(
-    n=5, series=train_gdp, past_covariates=train_past_covariates)
+    n=10, series=train_gdp, past_covariates=train_past_covariates)
 
 # %%
-ts_gdp.plot(label="actual")
+gdp_scaled.plot(label="actual")
 pred_cov.plot(label="forecast")
 plt.legend()
 # %%
