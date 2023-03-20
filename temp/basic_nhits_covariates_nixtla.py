@@ -161,7 +161,7 @@ def impute_missing_values_nhits(data, horizon=1):
 
     return imputed_data
 
-
+# # Below for demo purposes
 # df = load_data('../data/FRED/blocked/vintage_2019_01.csv')
 
 # target_df = df[["unique_id", "ds", "y"]]
@@ -191,8 +191,7 @@ def impute_missing_values_nhits(data, horizon=1):
 # Y_hat_df = nf.predict(futr_df=futr_df)
 
 # Y_hat_df.iloc[0, 1]
-
-# Y_hat_df
+# # Above for demo purposes
 
 
 def forecast_vintages(vintage_files, horizon=1):
@@ -251,18 +250,18 @@ for file_name, result in forecast_results.items():
     print(result)
 
 
-def get_files_in_directory(directory):
-    return [os.path.join(directory, file) for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+# def get_files_in_directory(directory):
+#     return [os.path.join(directory, file) for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 
 
-data_directory = '../data/FRED/blocked/'
-vintage_files = get_files_in_directory(data_directory)
-forecast_results = forecast_vintages(vintage_files)
+# data_directory = '../data/FRED/blocked/'
+# vintage_files = get_files_in_directory(data_directory)
+# forecast_results = forecast_vintages(vintage_files)
 
-for file_name, result in forecast_results.items():
-    # Extract year and month from the file path
-    year, month = os.path.splitext(os.path.basename(file_name))[
-        0].split("_")[1:3]
+# for file_name, result in forecast_results.items():
+#     # Extract year and month from the file path
+#     year, month = os.path.splitext(os.path.basename(file_name))[
+#         0].split("_")[1:3]
 
-    print(f"Results for {year}-{month}:")
-    print(result)
+#     print(f"Results for {year}-{month}:")
+#     print(result)
