@@ -8,7 +8,7 @@ from darts.models import NBEATSModel
 from darts import TimeSeries
 from darts.metrics import rmse
 from darts.dataprocessing.transformers import Scaler
-from darts.utils import train_test_split
+# from darts.utils import train_test_split
 import warnings
 import logging
 
@@ -75,6 +75,7 @@ df_past_covariates.set_index("date", inplace=True)
 
 # Convert the DataFrame to a TimeSeries object
 ts_past_covariates = TimeSeries.from_dataframe(df_past_covariates)
+
 # %%
 
 # We can also stack the past covariates, I think this is what Darts requires.
@@ -89,33 +90,48 @@ for ts in column_time_series[1:]:
 train_gdp, val_gdp = ts_gdp[:-36], ts_gdp[-36:]
 
 # %%
-past_train_covariates, past_val_covariates = stacked_past_covariates[:-
-                                                                     36], stacked_past_covariates[-36:]
-
+train_past_covariates, val_past_covariates = ts_past_covariates[:-
+                                                                24], ts_past_covariates[-24:]
 
 # %%
 model_pastcov = BlockRNNModel(
     model="LSTM",
     input_chunk_length=24,
-    output_chunk_length=10,
+    output_chunk_length=12,
     n_epochs=100,
-    random_state=0,
+    # random_state=0,
 )
 
 # %%
 model_pastcov.fit(
     series=train_gdp,
-    past_covariates=past_train_covariates,
+    past_covariates=train_past_covariates,
     verbose=False,
 )
+
+# %%
+# # Calculate the number of time steps required for the past_covariates
+# required_covariate_steps = train_gdp.width + model_pastcov.input_chunk_length - 1
+
+# # Slice the ts_past_covariates to have the necessary time steps for the corresponding series
+# train_past_covariates_required = ts_past_covariates[:-36].last_n_points(required_covariate_steps)
+# val_past_covariates_required = ts_past_covariates[-36:].last_n_points(required_covariate_steps)
+
+# # Combine the train and validation past_covariates
+# complete_past_covariates = TimeSeries.from_series(train_past_covariates_required.pd_series().append(val_past_covariates_required.pd_series()))
+
+# # Train the model
+# model_pastcov.fit(series=train_gdp, past_covariates=train_past_covariates_required, verbose=False)
+
+# # Predict the next 10 time steps
+# pred_cov = model_pastcov.predict(n=10, series=train_gdp, past_covariates=complete_past_covariates)
+
 # %%
 pred_cov = model_pastcov.predict(
-    n=10, series=train_gdp, past_covariates=stacked_past_covariates)
+    n=10, series=train_gdp, past_covariates=val_past_covariates)
 
 # %%
 # ts_gdp.plot(label="actual")
 pred_cov.plot(label="forecast")
 plt.legend()
-# %%
-pred_cov
 # %%
