@@ -154,7 +154,7 @@ model_pastcov = NBEATSModel(
 model_pastcov.fit(
     series=train_gdp,
     past_covariates=train_past_covariates,
-    verbose=False,
+    verbose=True,
 )
 
 # %%
