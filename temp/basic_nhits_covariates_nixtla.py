@@ -58,11 +58,11 @@ def impute_missing_values_ar_multiseries(data, lags=1):
 
 def create_neural_forecast_model(horizon, pcc_list, fcc_list):
     model = NHITS(h=horizon,
-                  input_size=50 * horizon,
+                  input_size=70 * horizon,
                   hist_exog_list=pcc_list,
                   futr_exog_list=fcc_list,
                   scaler_type='robust',
-                  max_steps=100)
+                  max_steps=20)
     return NeuralForecast(models=[model], freq='Q')
 
 
@@ -75,19 +75,36 @@ def forecast_vintages(vintage_files, horizon=1):
         target_df = df[["unique_id", "ds", "y"]]
         covariates = df.drop(columns=["unique_id", "ds", "y"])
 
-        missing_cols = covariates.columns[covariates.isnull().any()]
-        past_covariates = covariates.filter(missing_cols)
-        future_covariates = covariates.drop(columns=missing_cols)
+        point_in_time = df.index[-2]
+
+        def has_missing_values_beyond_point(column, df, point_in_time):
+            return df.loc[df.index > point_in_time, column].isnull().any()
+
+        past_covariates = []
+        future_covariates = []
+
+        for column in covariates.columns:
+            if has_missing_values_beyond_point(column, covariates, point_in_time):
+                past_covariates.append(column)
+            else:
+                future_covariates.append(column)
+
+        past_covariates = df[past_covariates]
+        future_covariates = df[future_covariates]
 
         pcc_list = past_covariates.columns.tolist()
         fcc_list = future_covariates.columns.tolist()
 
-        df = pd.merge(target_df, future_covariates,
+        df_fc = impute_missing_values_ar_multiseries(future_covariates, lags=1)
+        df = pd.merge(target_df, df_fc,
                       left_index=True, right_index=True)
 
         df_pc = impute_missing_values_ar_multiseries(past_covariates, lags=1)
         df = pd.merge(df, df_pc, left_index=True, right_index=True)
-        df = df.iloc[:-1]
+
+        if pd.isna(df.loc[df.index[-1], 'y']):
+            # Remove the last row
+            df = df.iloc[:-1]
 
         nf = create_neural_forecast_model(horizon, pcc_list, fcc_list)
         nf.fit(df=df)
@@ -107,31 +124,14 @@ def forecast_vintages(vintage_files, horizon=1):
 
 # Run the code over selected vintage files.
 
-# vintage_files = [
-#     '../data/FRED/blocked/vintage_2019_01.csv',
-#     '../data/FRED/blocked/vintage_2019_02.csv',
-#     '../data/FRED/blocked/vintage_2019_03.csv',
-#     '../data/FRED/blocked/vintage_2019_04.csv'
-# ]
+vintage_files = [
+    '../data/FRED/blocked/vintage_2019_01.csv'
+    # '../data/FRED/blocked/vintage_2019_02.csv',
+    # '../data/FRED/blocked/vintage_2019_03.csv',
+    # '../data/FRED/blocked/vintage_2019_04.csv'
+]
 
-# forecast_results = forecast_vintages(vintage_files)
-# for file_name, result in forecast_results.items():
-#     # Extract year and month from the file path
-#     year, month = os.path.splitext(os.path.basename(file_name))[
-#         0].split("_")[1:3]
-
-#     print(f"Results for {year}-{month}:")
-#     print(result)
-
-
-def get_files_in_directory(directory):
-    return [os.path.join(directory, file) for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
-
-
-data_directory = '../data/FRED/blocked/'
-vintage_files = get_files_in_directory(data_directory)
 forecast_results = forecast_vintages(vintage_files)
-
 for file_name, result in forecast_results.items():
     # Extract year and month from the file path
     year, month = os.path.splitext(os.path.basename(file_name))[
@@ -140,4 +140,21 @@ for file_name, result in forecast_results.items():
     print(f"Results for {year}-{month}:")
     print(result)
 
-numerical_values = list(forecast_results.values())
+
+# def get_files_in_directory(directory):
+#     return [os.path.join(directory, file) for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+
+
+# data_directory = '../data/FRED/blocked/'
+# vintage_files = get_files_in_directory(data_directory)
+# forecast_results = forecast_vintages(vintage_files)
+
+# for file_name, result in forecast_results.items():
+#     # Extract year and month from the file path
+#     year, month = os.path.splitext(os.path.basename(file_name))[
+#         0].split("_")[1:3]
+
+#     print(f"Results for {year}-{month}:")
+#     print(result)
+
+# numerical_values = list(forecast_results.values())

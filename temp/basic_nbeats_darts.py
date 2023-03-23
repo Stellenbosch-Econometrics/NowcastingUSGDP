@@ -34,10 +34,8 @@ df = df.loc[:, df.columns != 'y']
 time_column = 'date'
 specific_point_in_time = df.iloc[-2][time_column]
 
-
 def has_missing_values_beyond_point(column, df, point_in_time):
     return df.loc[df[time_column] > point_in_time, column].isnull().any()
-
 
 past_covariates = []
 future_covariates = []
@@ -53,8 +51,14 @@ df_past_covariates = df[[time_column] + past_covariates]
 df_future_covariates = df[[time_column] + future_covariates]
 
 # %%
-gdp_data = gdp_data.iloc[:-1]
+# Check GDP data
+mask = gdp_data.isnull().any(axis=1)
+gdp_data = gdp_data[~mask]
+
+# gdp_data = gdp_data.iloc[:-1]
 df_past_covariates = df_past_covariates.iloc[:-1]
+
+# %%
 
 
 def impute_missing_values_ar_multiseries(data, lags=1):
@@ -85,7 +89,8 @@ def impute_missing_values_ar_multiseries(data, lags=1):
 
 
 df_past_covariates = impute_missing_values_ar_multiseries(df_past_covariates)
-
+df_future_covariates = impute_missing_values_ar_multiseries(
+    df_future_covariates)
 
 # %%
 gdp_data["date"] = pd.to_datetime(gdp_data["date"])
@@ -116,12 +121,12 @@ ts_future_covariates = TimeSeries.from_dataframe(df_future_covariates)
 # %%
 
 # We can also stack the past covariates, I think this is what Darts requires.
-column_time_series = [TimeSeries.from_dataframe(
-    df_past_covariates[[column]]) for column in df_past_covariates.columns]
+# column_time_series = [TimeSeries.from_dataframe(
+#     df_past_covariates[[column]]) for column in df_past_covariates.columns]
 
-stacked_past_covariates = column_time_series[0]
-for ts in column_time_series[1:]:
-    stacked_past_covariates = TimeSeries.stack(stacked_past_covariates, ts)
+# stacked_past_covariates = column_time_series[0]
+# for ts in column_time_series[1:]:
+#     stacked_past_covariates = TimeSeries.stack(stacked_past_covariates, ts)
 
 # %%
 # Scale the variables
@@ -136,17 +141,17 @@ train_gdp, val_gdp = gdp_scaled[:-12], gdp_scaled[-12:]
 
 # %%
 train_past_covariates, val_past_covariates = pc_scaled[:-
-                                                                12], pc_scaled[-12:]
+                                                       12], pc_scaled[-12:]
 
 # %%
 train_future_covariates, val_future_covariates = fc_scaled[:-
-                                                                12], fc_scaled[-12:]
+                                                           12], fc_scaled[-12:]
 
 # %%
 model_pastcov = NBEATSModel(
     input_chunk_length=50,
     output_chunk_length=10,
-    n_epochs=100,
+    n_epochs=10,
     # random_state=0,
 )
 
@@ -154,6 +159,7 @@ model_pastcov = NBEATSModel(
 model_pastcov.fit(
     series=train_gdp,
     past_covariates=train_past_covariates,
+    # future_covariates=train_future_covariates,
     verbose=True,
 )
 
