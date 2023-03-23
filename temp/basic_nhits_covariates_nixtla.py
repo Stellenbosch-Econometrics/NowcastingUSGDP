@@ -29,6 +29,27 @@ def load_data(file_path):
     return df
 
 
+def has_missing_values_beyond_point(column, df, point_in_time):
+    return df.loc[df.index > point_in_time, column].isnull().any()
+
+
+def separate_covariates(df, point_in_time):
+    covariates = df.drop(columns=["unique_id", "ds", "y"])
+
+    past_covariates = []
+    future_covariates = []
+
+    for column in covariates.columns:
+        if has_missing_values_beyond_point(column, covariates, point_in_time):
+            past_covariates.append(column)
+        else:
+            future_covariates.append(column)
+
+    past_covariates_df = df[past_covariates]
+    future_covariates_df = df[future_covariates]
+
+    return past_covariates_df, future_covariates_df
+
 def impute_missing_values_ar_multiseries(data, lags=1):
     imputed_data = data.copy()
 
@@ -55,7 +76,6 @@ def impute_missing_values_ar_multiseries(data, lags=1):
 
     return imputed_data
 
-
 def create_neural_forecast_model(horizon, pcc_list, fcc_list):
     model = NHITS(h=horizon,
                   input_size=70 * horizon,
@@ -65,7 +85,6 @@ def create_neural_forecast_model(horizon, pcc_list, fcc_list):
                   max_steps=20)
     return NeuralForecast(models=[model], freq='Q')
 
-
 def forecast_vintages(vintage_files, horizon=1):
     results = {}
 
@@ -73,33 +92,20 @@ def forecast_vintages(vintage_files, horizon=1):
         df = load_data(file_name)
 
         target_df = df[["unique_id", "ds", "y"]]
-        covariates = df.drop(columns=["unique_id", "ds", "y"])
 
         point_in_time = df.index[-2]
 
-        def has_missing_values_beyond_point(column, df, point_in_time):
-            return df.loc[df.index > point_in_time, column].isnull().any()
-
-        past_covariates = []
-        future_covariates = []
-
-        for column in covariates.columns:
-            if has_missing_values_beyond_point(column, covariates, point_in_time):
-                past_covariates.append(column)
-            else:
-                future_covariates.append(column)
-
-        past_covariates = df[past_covariates]
-        future_covariates = df[future_covariates]
+        past_covariates, future_covariates = separate_covariates(
+            df, point_in_time)
 
         pcc_list = past_covariates.columns.tolist()
         fcc_list = future_covariates.columns.tolist()
 
         df_fc = impute_missing_values_ar_multiseries(future_covariates, lags=1)
+        df_pc = impute_missing_values_ar_multiseries(past_covariates, lags=1)
+
         df = pd.merge(target_df, df_fc,
                       left_index=True, right_index=True)
-
-        df_pc = impute_missing_values_ar_multiseries(past_covariates, lags=1)
         df = pd.merge(df, df_pc, left_index=True, right_index=True)
 
         if pd.isna(df.loc[df.index[-1], 'y']):
@@ -120,7 +126,6 @@ def forecast_vintages(vintage_files, horizon=1):
         results[file_name] = forecast_value
 
     return results
-
 
 # Run the code over selected vintage files.
 
