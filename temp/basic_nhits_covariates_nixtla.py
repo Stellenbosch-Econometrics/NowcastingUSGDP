@@ -8,6 +8,8 @@ import pandas as pd
 from statsmodels.tsa.ar_model import AutoReg
 from neuralforecast.models import NHITS
 from neuralforecast import NeuralForecast
+from neuralforecast.auto import AutoNHITS
+from ray import tune
 
 import warnings
 from statsmodels.tools.sm_exceptions import ValueWarning
@@ -50,6 +52,7 @@ def separate_covariates(df, point_in_time):
 
     return past_covariates_df, future_covariates_df
 
+
 def impute_missing_values_ar_multiseries(data, lags=1):
     imputed_data = data.copy()
 
@@ -76,14 +79,18 @@ def impute_missing_values_ar_multiseries(data, lags=1):
 
     return imputed_data
 
-def create_neural_forecast_model(horizon, pcc_list, fcc_list):
-    model = NHITS(h=horizon,
-                  input_size=70 * horizon,
-                  hist_exog_list=pcc_list,
-                  futr_exog_list=fcc_list,
-                  scaler_type='robust',
-                  max_steps=20)
+
+def create_neural_forecast_model(horizon, nhits_config):
+    model = AutoNHITS(h=horizon, config=nhits_config, num_samples=5)
+
+    # model_1 = NHITS(h=horizon,
+    #                 input_size=70 * horizon,
+    #                 hist_exog_list=pcc_list,
+    #                 futr_exog_list=fcc_list,
+    #                 scaler_type='robust',
+    #                 max_steps=20)
     return NeuralForecast(models=[model], freq='Q')
+
 
 def forecast_vintages(vintage_files, horizon=1):
     results = {}
@@ -112,7 +119,25 @@ def forecast_vintages(vintage_files, horizon=1):
             # Remove the last row
             df = df.iloc[:-1]
 
-        nf = create_neural_forecast_model(horizon, pcc_list, fcc_list)
+        nhits_config = {
+            "hist_exog_list": tune.choice([pcc_list]),
+            "futr_exog_list": tune.choice([fcc_list]),
+            "learning_rate": tune.choice([1e-3]),
+            "max_steps": tune.choice([1000]),
+            "input_size": tune.choice([5 * horizon]),
+            "batch_size": tune.choice([7]),
+            "windows_batch_size": tune.choice([256]),
+            "n_pool_kernel_size": tune.choice([[2, 2, 2], [16, 8, 1]]),
+            "n_freq_downsample": tune.choice([[168, 24, 1], [24, 12, 1], [1, 1, 1]]),
+            "activation": tune.choice(['ReLU']),
+            "n_blocks":  tune.choice([[1, 1, 1]]),
+            "mlp_units":  tune.choice([[[512, 512], [512, 512], [512, 512]]]),
+            "interpolation_mode": tune.choice(['linear']),
+            "val_check_steps": tune.choice([100]),
+            "random_seed": tune.randint(1, 10),
+        }
+
+        nf = create_neural_forecast_model(horizon, nhits_config=nhits_config)
         nf.fit(df=df)
 
         futr_df = pd.merge(target_df, future_covariates,
@@ -125,9 +150,12 @@ def forecast_vintages(vintage_files, horizon=1):
 
         results[file_name] = forecast_value
 
+        print(nf.models[0].results.get_best_result().config)
+
     return results
 
 # Run the code over selected vintage files.
+
 
 vintage_files = [
     '../data/FRED/blocked/vintage_2019_01.csv'
@@ -163,3 +191,6 @@ for file_name, result in forecast_results.items():
 #     print(result)
 
 # numerical_values = list(forecast_results.values())
+
+
+# For hyperparameter tuning we get the results from nf.models[0].results.get_best_result().config
