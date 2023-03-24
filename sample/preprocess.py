@@ -1,8 +1,8 @@
 
+import warnings
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.ar_model import AutoReg
-import warnings
 from statsmodels.tools.sm_exceptions import ValueWarning
 warnings.filterwarnings("ignore", category=ValueWarning)
 
@@ -34,6 +34,13 @@ def separate_covariates(df, point_in_time):
         future_covariates_df = df[future_covariates]
 
     return past_covariates_df, future_covariates_df
+
+
+def impute_missing_values_interpolate(data, method='linear'):
+    imputed_data = data.copy()
+    imputed_data.interpolate(method=method, inplace=True)
+    imputed_data.bfill(inplace=True)
+    return imputed_data
 
 
 def impute_missing_values_ar_multiseries(data, lags=1):
@@ -69,12 +76,8 @@ def process_vintage_file(file_path):
     point_in_time = list(df[df['y'].isnull()].index)
     past_covariates, future_covariates = separate_covariates(df, point_in_time)
 
-    past_covariates_temp = past_covariates.iloc[:-1, :]
-    df_pc = impute_missing_values_ar_multiseries(past_covariates_temp, lags=1)
-    df_pc = pd.concat(
-        [df_pc, past_covariates.iloc[-1, :].to_frame().T], ignore_index=True)
-
-    df_fc = impute_missing_values_ar_multiseries(future_covariates, lags=1)
+    df_pc = impute_missing_values_interpolate(past_covariates)
+    df_fc = impute_missing_values_interpolate(future_covariates)
 
     df = pd.merge(target_df, df_fc, left_index=True, right_index=True)
     df = pd.merge(df, df_pc, left_index=True, right_index=True)
@@ -91,9 +94,17 @@ def process_vintage_file(file_path):
 
 
 vintage_files = [
-    '../data/FRED/blocked/vintage_2019_05.csv',
-    '../data/FRED/blocked/vintage_2019_06.csv',
-    '../data/FRED/blocked/vintage_2019_07.csv'
+    '../data/FRED/blocked/vintage_2019_08.csv',
+    '../data/FRED/blocked/vintage_2019_09.csv',
+    '../data/FRED/blocked/vintage_2019_10.csv'
 ]
 
-df, futr_df = process_vintage_file(vintage_files[1])
+df, futr_df = process_vintage_file(vintage_files[2])
+
+missing_values_count = df.isnull().sum().sum()
+print(f"There are {missing_values_count} missing values in the DataFrame.")
+
+missing_columns = df.columns[df.isnull().any()]
+print("Columns with missing values:", missing_columns)
+
+# There are still columns with missing values at the last value. Need to figure this out.
