@@ -42,7 +42,7 @@ gdp <- fread("data/FRED/QD/vintage_2023_02.csv", select = 1:2) %>%
 
 res %<>% merge(gdp, by = "year_quarter")
 
-res[, trel := (year_quarter - latest_gdp) * 4]
+res[, trel := as.integer((year_quarter - latest_gdp) * 4)]
 descr(res$trel)
 
 
