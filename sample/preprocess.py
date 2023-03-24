@@ -19,21 +19,16 @@ def load_data(file_path):
 
 def separate_covariates(df, point_in_time):
     covariates = df.drop(columns=["unique_id", "ds", "y"])
-    past_covariates = []
-    future_covariates = []
 
     if not point_in_time:
-        past_covariates = list(covariates.columns)
-        past_covariates_df = df[past_covariates]
+        past_covariates_df = df[covariates.columns]
         future_covariates_df = df[[]]
     else:
         point_in_time = point_in_time[0]
-
-        for column in covariates.columns:
-            if df.loc[df.index >= point_in_time, column].isnull().any():
-                past_covariates.append(column)
-            else:
-                future_covariates.append(column)
+        past_covariates = [
+            col for col in covariates.columns if df.loc[df.index >= point_in_time, col].isnull().any()]
+        future_covariates = [
+            col for col in covariates.columns if col not in past_covariates]
 
         past_covariates_df = df[past_covariates]
         future_covariates_df = df[future_covariates]
