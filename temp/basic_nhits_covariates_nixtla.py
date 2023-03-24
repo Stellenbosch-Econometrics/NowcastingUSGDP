@@ -6,10 +6,16 @@ import os
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.ar_model import AutoReg
-from statsmodels.tsa.statespace.kalman_smoother import KalmanSmoother
-from statsmodels.tsa.statespace.tools import diff
 from neuralforecast.models import NHITS
 from neuralforecast import NeuralForecast
+from neuralforecast.auto import AutoNHITS
+from ray import tune
+
+import warnings
+from statsmodels.tools.sm_exceptions import ValueWarning
+
+# Suppress ValueWarning from Statsmodels
+warnings.simplefilter("ignore", ValueWarning)
 
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -25,43 +31,26 @@ def load_data(file_path):
     return df
 
 
-def impute_missing_values_mean(data):
-    imputed_data = data.copy()
-    imputed_data.apply(lambda x: x.fillna(x.mean()), axis=0)
-    return imputed_data
+def has_missing_values_beyond_point(column, df, point_in_time):
+    return df.loc[df.index > point_in_time, column].isnull().any()
 
 
-def impute_missing_values_median(data):
-    imputed_data = data.copy()
-    imputed_data.apply(lambda x: x.fillna(x.median()), axis=0)
-    return imputed_data
+def separate_covariates(df, point_in_time):
+    covariates = df.drop(columns=["unique_id", "ds", "y"])
 
+    past_covariates = []
+    future_covariates = []
 
-def impute_missing_values_rolling_mean(data, window_size):
-    imputed_data = data.copy()
-    imputed_data.fillna(data.rolling(window=window_size,
-                        min_periods=1, center=True).mean(), inplace=True)
-    return imputed_data
+    for column in covariates.columns:
+        if has_missing_values_beyond_point(column, covariates, point_in_time):
+            past_covariates.append(column)
+        else:
+            future_covariates.append(column)
 
+    past_covariates_df = df[past_covariates]
+    future_covariates_df = df[future_covariates]
 
-def impute_missing_values_rolling_median(data, window_size):
-    imputed_data = data.copy()
-    imputed_data.fillna(data.rolling(window=window_size,
-                        min_periods=1, center=True).median(), inplace=True)
-    return imputed_data
-
-
-def impute_missing_values_bfill_ffill(data):
-    imputed_data = data.copy()
-    imputed_data.fillna(method='bfill', inplace=True)
-    imputed_data.fillna(method='ffill', inplace=True)
-    return imputed_data
-
-
-def impute_missing_values_interpolate(data, method='linear'):
-    imputed_data = data.copy()
-    imputed_data.interpolate(method=method, inplace=True)
-    return imputed_data
+    return past_covariates_df, future_covariates_df
 
 
 def impute_missing_values_ar_multiseries(data, lags=1):
@@ -91,108 +80,16 @@ def impute_missing_values_ar_multiseries(data, lags=1):
     return imputed_data
 
 
-def impute_missing_values_kalman_smoother(data, order=1):
-    imputed_data = data.copy()
+def create_neural_forecast_model(horizon, nhits_config):
+    model = AutoNHITS(h=horizon, config=nhits_config, num_samples=5)
 
-    for col in data.columns:
-        y = imputed_data[col].values
-        n = len(y)
-        mask = np.isnan(y)
-        ksm = KalmanSmoother(n, k_endog=1, k_states=order,
-                             initialization='approximate_diffuse')
-        ksm['design'] = np.eye(order)
-        ksm['obs_cov'] = np.eye(1)
-        ksm['transition'] = np.eye(order)
-        ksm['state_cov'] = np.eye(order)
-
-        y_diff = diff(y, order, axis=0)
-        y_diff = np.concatenate((np.zeros(order), y_diff))
-
-        y[mask] = 0
-        ksm.bind(y[:, None])
-        ksm.initialize_known(np.zeros(order), np.eye(order))
-
-        smoothed_state = ksm.smooth()
-
-        y_imputed = np.cumsum(y_diff * ~mask) + y[mask]
-        imputed_data[col] = y_imputed
-
-    return imputed_data
-
-
-def create_neural_forecast_model(horizon, pcc_list, fcc_list):
-    model = NHITS(h=horizon,
-                  input_size=50 * horizon,
-                  hist_exog_list=pcc_list,
-                  futr_exog_list=fcc_list,
-                  scaler_type='robust',
-                  max_steps=100)
+    # model_1 = NHITS(h=horizon,
+    #                 input_size=70 * horizon,
+    #                 hist_exog_list=pcc_list,
+    #                 futr_exog_list=fcc_list,
+    #                 scaler_type='robust',
+    #                 max_steps=20)
     return NeuralForecast(models=[model], freq='Q')
-
-
-def impute_missing_values_nhits(data, horizon=1):
-    imputed_data = data.copy()
-
-    for col in data.columns:
-        train = data[col].dropna()
-        test_indices = data[col].isnull()
-        test = data.loc[test_indices, col]
-
-        if len(test) == 0:
-            continue
-
-        # Prepare the input data for the NHITS model
-        df = pd.DataFrame({'ds': train.index, 'y': train.values})
-        df['unique_id'] = col
-
-        # Train the NHITS model
-        nf = create_neural_forecast_model(horizon, [], [])
-        nf.fit(df=df)
-
-        # Prepare the "future" data for the test set
-        futr_df = pd.DataFrame({'ds': test.index})
-        futr_df['unique_id'] = col
-
-        # Use the trained NHITS model to generate predictions for the test set
-        Y_hat_df = nf.predict(futr_df=futr_df)
-
-        # Replace the missing values in the original time series with the predicted values
-        imputed_data.loc[test_indices, col] = Y_hat_df['y_hat'].values
-
-    return imputed_data
-
-
-# df = load_data('../data/FRED/blocked/vintage_2019_01.csv')
-
-# target_df = df[["unique_id", "ds", "y"]]
-# covariates = df.drop(columns=["unique_id", "ds", "y"])
-
-# missing_cols = covariates.columns[covariates.isnull().any()]
-# past_covariates = covariates.filter(missing_cols)
-# future_covariates = covariates.drop(columns=missing_cols)
-
-# pcc_list = past_covariates.columns.tolist()
-# fcc_list = future_covariates.columns.tolist()
-
-# df = pd.merge(target_df, future_covariates, left_index=True, right_index=True)
-
-# df_pc = impute_missing_values_ar_multiseries(past_covariates, lags=1)
-# df = pd.merge(df, df_pc, left_index=True, right_index=True)
-# df = df.iloc[:-1]
-
-# horizon = 5
-# nf = create_neural_forecast_model(horizon, pcc_list, fcc_list)
-# nf.fit(df=df)
-
-# futr_df = pd.merge(target_df, future_covariates,
-#                    left_index=True, right_index=True)
-# futr_df = futr_df.drop(columns="y").iloc[-1:]
-
-# Y_hat_df = nf.predict(futr_df=futr_df)
-
-# Y_hat_df.iloc[0, 1]
-
-# Y_hat_df
 
 
 def forecast_vintages(vintage_files, horizon=1):
@@ -202,23 +99,45 @@ def forecast_vintages(vintage_files, horizon=1):
         df = load_data(file_name)
 
         target_df = df[["unique_id", "ds", "y"]]
-        covariates = df.drop(columns=["unique_id", "ds", "y"])
 
-        missing_cols = covariates.columns[covariates.isnull().any()]
-        past_covariates = covariates.filter(missing_cols)
-        future_covariates = covariates.drop(columns=missing_cols)
+        point_in_time = df.index[-2]
+
+        past_covariates, future_covariates = separate_covariates(
+            df, point_in_time)
 
         pcc_list = past_covariates.columns.tolist()
         fcc_list = future_covariates.columns.tolist()
 
-        df = pd.merge(target_df, future_covariates,
-                      left_index=True, right_index=True)
-
+        df_fc = impute_missing_values_ar_multiseries(future_covariates, lags=1)
         df_pc = impute_missing_values_ar_multiseries(past_covariates, lags=1)
-        df = pd.merge(df, df_pc, left_index=True, right_index=True)
-        df = df.iloc[:-1]
 
-        nf = create_neural_forecast_model(horizon, pcc_list, fcc_list)
+        df = pd.merge(target_df, df_fc,
+                      left_index=True, right_index=True)
+        df = pd.merge(df, df_pc, left_index=True, right_index=True)
+
+        if pd.isna(df.loc[df.index[-1], 'y']):
+            # Remove the last row
+            df = df.iloc[:-1]
+
+        nhits_config = {
+            "hist_exog_list": tune.choice([pcc_list]),
+            "futr_exog_list": tune.choice([fcc_list]),
+            "learning_rate": tune.choice([1e-3]),
+            "max_steps": tune.choice([1000]),
+            "input_size": tune.choice([5 * horizon]),
+            "batch_size": tune.choice([7]),
+            "windows_batch_size": tune.choice([256]),
+            "n_pool_kernel_size": tune.choice([[2, 2, 2], [16, 8, 1]]),
+            "n_freq_downsample": tune.choice([[168, 24, 1], [24, 12, 1], [1, 1, 1]]),
+            "activation": tune.choice(['ReLU']),
+            "n_blocks":  tune.choice([[1, 1, 1]]),
+            "mlp_units":  tune.choice([[[512, 512], [512, 512], [512, 512]]]),
+            "interpolation_mode": tune.choice(['linear']),
+            "val_check_steps": tune.choice([100]),
+            "random_seed": tune.randint(1, 10),
+        }
+
+        nf = create_neural_forecast_model(horizon, nhits_config=nhits_config)
         nf.fit(df=df)
 
         futr_df = pd.merge(target_df, future_covariates,
@@ -231,14 +150,18 @@ def forecast_vintages(vintage_files, horizon=1):
 
         results[file_name] = forecast_value
 
+        print(nf.models[0].results.get_best_result().config)
+
     return results
+
+# Run the code over selected vintage files.
 
 
 vintage_files = [
-    '../data/FRED/blocked/vintage_2019_01.csv',
-    '../data/FRED/blocked/vintage_2019_02.csv',
-    '../data/FRED/blocked/vintage_2019_03.csv',
-    '../data/FRED/blocked/vintage_2019_04.csv'
+    '../data/FRED/blocked/vintage_2019_01.csv'
+    # '../data/FRED/blocked/vintage_2019_02.csv',
+    # '../data/FRED/blocked/vintage_2019_03.csv',
+    # '../data/FRED/blocked/vintage_2019_04.csv'
 ]
 
 forecast_results = forecast_vintages(vintage_files)
@@ -251,18 +174,23 @@ for file_name, result in forecast_results.items():
     print(result)
 
 
-def get_files_in_directory(directory):
-    return [os.path.join(directory, file) for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
+# def get_files_in_directory(directory):
+#     return [os.path.join(directory, file) for file in os.listdir(directory) if os.path.isfile(os.path.join(directory, file))]
 
 
-data_directory = '../data/FRED/blocked/'
-vintage_files = get_files_in_directory(data_directory)
-forecast_results = forecast_vintages(vintage_files)
+# data_directory = '../data/FRED/blocked/'
+# vintage_files = get_files_in_directory(data_directory)
+# forecast_results = forecast_vintages(vintage_files)
 
-for file_name, result in forecast_results.items():
-    # Extract year and month from the file path
-    year, month = os.path.splitext(os.path.basename(file_name))[
-        0].split("_")[1:3]
+# for file_name, result in forecast_results.items():
+#     # Extract year and month from the file path
+#     year, month = os.path.splitext(os.path.basename(file_name))[
+#         0].split("_")[1:3]
 
-    print(f"Results for {year}-{month}:")
-    print(result)
+#     print(f"Results for {year}-{month}:")
+#     print(result)
+
+# numerical_values = list(forecast_results.values())
+
+
+# For hyperparameter tuning we get the results from nf.models[0].results.get_best_result().config
