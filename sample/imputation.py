@@ -1,5 +1,3 @@
-import logging
-import os
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.ar_model import AutoReg

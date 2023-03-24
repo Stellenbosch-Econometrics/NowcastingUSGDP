@@ -92,7 +92,7 @@ def create_neural_forecast_model(horizon, nhits_config):
     return NeuralForecast(models=[model], freq='Q')
 
 
-def forecast_vintages(vintage_files, horizon=1):
+def forecast_vintages(vintage_files, horizon=20):
     results = {}
 
     for file_name in vintage_files:
@@ -123,8 +123,8 @@ def forecast_vintages(vintage_files, horizon=1):
             "hist_exog_list": tune.choice([pcc_list]),
             "futr_exog_list": tune.choice([fcc_list]),
             "learning_rate": tune.choice([1e-3]),
-            "max_steps": tune.choice([1000]),
-            "input_size": tune.choice([5 * horizon]),
+            "max_steps": tune.choice([10]),
+            "input_size": tune.choice([8 * horizon]),
             "batch_size": tune.choice([7]),
             "windows_batch_size": tune.choice([256]),
             "n_pool_kernel_size": tune.choice([[2, 2, 2], [16, 8, 1]]),
@@ -150,7 +150,7 @@ def forecast_vintages(vintage_files, horizon=1):
 
         results[file_name] = forecast_value
 
-        print(nf.models[0].results.get_best_result().config)
+        # print(nf.models[0].results.get_best_result().config)
 
     return results
 
