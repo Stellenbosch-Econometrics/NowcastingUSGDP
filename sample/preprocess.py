@@ -8,66 +8,54 @@ warnings.filterwarnings("ignore", category=ValueWarning)
 
 
 def load_data(file_path):
-    df = pd.read_csv(file_path)
-    df = df.rename(columns={"year_quarter": "ds", "GDPC1": "y"})
-    df["unique_id"] = np.ones(len(df))
-    df["ds"] = pd.to_datetime(df["ds"])
-    df = df[["unique_id", "ds", "y"] +
-            [col for col in df.columns if col not in ["unique_id", "ds", "y"]]]
-    return df
+    return (pd.read_csv(file_path)
+            .rename(columns={"year_quarter": "ds", "GDPC1": "y"})
+            .assign(unique_id=np.ones(len(pd.read_csv(file_path))),
+                    ds=lambda df: pd.to_datetime(df['ds']))
+            .reorder_columns(["unique_id", "ds", "y"]))
 
 
 def separate_covariates(df, point_in_time):
     covariates = df.drop(columns=["unique_id", "ds", "y"])
 
     if not point_in_time:
-        past_covariates_df = df[covariates.columns]
-        future_covariates_df = df[[]]
-    else:
-        point_in_time = point_in_time[0]
-        past_covariates = [
-            col for col in covariates.columns if df.loc[df.index >= point_in_time, col].isnull().any()]
-        future_covariates = [
-            col for col in covariates.columns if col not in past_covariates]
+        return df[covariates.columns], df[[]]
 
-        past_covariates_df = df[past_covariates]
-        future_covariates_df = df[future_covariates]
+    point_in_time = point_in_time[0]
 
-    return past_covariates_df, future_covariates_df
+    mask = covariates.apply(lambda col: col.loc[col.index >= point_in_time - 1].isnull().any())
+
+    past_covariates = df[mask.index[mask]]
+    future_covariates = df[mask.index[~mask]]
+
+    return past_covariates, future_covariates
 
 
 def impute_missing_values_interpolate(data, method='linear'):
-    imputed_data = data.copy()
-    imputed_data.interpolate(method=method, inplace=True)
-    imputed_data.bfill(inplace=True)
-    return imputed_data
-
+    return data.interpolate(method=method).bfill()
 
 def impute_missing_values_ar_multiseries(data, lags=1):
-    imputed_data = data.copy()
-
-    for col in data.columns:
-        while imputed_data[col].isnull().any():
-            not_null_indices = imputed_data[col].notnull()
-            train = imputed_data.loc[not_null_indices, col]
-            null_indices = imputed_data[col].isnull()
-            test_indices = imputed_data.loc[null_indices, col].index
+    def impute_col(col, lags):
+        if col.isnull().any():
+            not_null_indices = col.notnull()
+            train = col.loc[not_null_indices]
+            null_indices = col.isnull()
 
             model = AutoReg(train, lags=lags)
             result = model.fit()
 
-            for index in test_indices:
+            for index, value in col.loc[null_indices].iteritems():
                 if index - lags < 0:
-                    available_data = imputed_data.loc[:index - 1, col].values
+                    available_data = col.loc[:index - 1].values
                 else:
-                    available_data = imputed_data.loc[index -
-                                                      lags:index - 1, col].values
+                    available_data = col.loc[index - lags:index - 1].values
                 if np.isnan(available_data).any():
                     continue
                 forecast = result.predict(start=len(train), end=len(train))
-                imputed_data.loc[index, col] = forecast.iloc[0]
+                col.loc[index] = forecast.iloc[0]
+        return col
 
-    return imputed_data
+    return data.apply(lambda col: impute_col(col, lags))
 
 
 def process_vintage_file(file_path):
@@ -79,18 +67,18 @@ def process_vintage_file(file_path):
     df_pc = impute_missing_values_interpolate(past_covariates)
     df_fc = impute_missing_values_interpolate(future_covariates)
 
-    df = pd.merge(target_df, df_fc, left_index=True, right_index=True)
-    df = pd.merge(df, df_pc, left_index=True, right_index=True)
+    df = (target_df
+          .merge(df_fc, left_index=True, right_index=True)
+          .merge(df_pc, left_index=True, right_index=True)
+          .dropna(subset=['y']))
 
-    if pd.isna(df.loc[df.index[-1], 'y']):
-        # Remove the last row
-        df = df.iloc[:-1]
-
-    futr_df = pd.merge(target_df, future_covariates,
-                       left_index=True, right_index=True)
-    futr_df = futr_df.drop(columns="y").iloc[-1:]
+    futr_df = (target_df
+               .merge(future_covariates, left_index=True, right_index=True)
+               .drop(columns="y")
+               .iloc[-1:])
 
     return df, futr_df
+
 
 
 vintage_files = [
