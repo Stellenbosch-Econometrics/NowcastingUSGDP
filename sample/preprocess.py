@@ -8,11 +8,13 @@ warnings.filterwarnings("ignore", category=ValueWarning)
 
 
 def load_data(file_path):
-    return (pd.read_csv(file_path)
-            .rename(columns={"year_quarter": "ds", "GDPC1": "y"})
-            .assign(unique_id=np.ones(len(pd.read_csv(file_path))),
-                    ds=lambda df: pd.to_datetime(df['ds']))
-            .reorder_columns(["unique_id", "ds", "y"]))
+    df = (pd.read_csv(file_path)
+          .rename(columns={"year_quarter": "ds", "GDPC1": "y"})
+          .assign(unique_id=np.ones(len(pd.read_csv(file_path))),
+                  ds=lambda df: pd.to_datetime(df['ds'])))
+    columns_order = ["unique_id", "ds", "y"] + [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
+    return df[columns_order]
+
 
 
 def separate_covariates(df, point_in_time):
@@ -23,7 +25,8 @@ def separate_covariates(df, point_in_time):
 
     point_in_time = point_in_time[0]
 
-    mask = covariates.apply(lambda col: col.loc[col.index >= point_in_time - 1].isnull().any())
+    mask = covariates.apply(
+        lambda col: col.loc[col.index >= point_in_time - 1].isnull().any())
 
     past_covariates = df[mask.index[mask]]
     future_covariates = df[mask.index[~mask]]
@@ -33,6 +36,7 @@ def separate_covariates(df, point_in_time):
 
 def impute_missing_values_interpolate(data, method='linear'):
     return data.interpolate(method=method).bfill()
+
 
 def impute_missing_values_ar_multiseries(data, lags=1):
     def impute_col(col, lags):
@@ -80,14 +84,13 @@ def process_vintage_file(file_path):
     return df, futr_df
 
 
-
 vintage_files = [
     '../data/FRED/blocked/vintage_2019_08.csv',
     '../data/FRED/blocked/vintage_2019_09.csv',
     '../data/FRED/blocked/vintage_2019_10.csv'
 ]
 
-df, futr_df = process_vintage_file(vintage_files[2])
+df, futr_df = process_vintage_file(vintage_files[0])
 
 missing_values_count = df.isnull().sum().sum()
 print(f"There are {missing_values_count} missing values in the DataFrame.")
