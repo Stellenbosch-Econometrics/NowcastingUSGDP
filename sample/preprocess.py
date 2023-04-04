@@ -2,7 +2,6 @@
 import warnings
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.ar_model import AutoReg
 from statsmodels.tools.sm_exceptions import ValueWarning
 warnings.filterwarnings("ignore", category=ValueWarning)
 
@@ -12,9 +11,9 @@ def load_data(file_path):
           .rename(columns={"year_quarter": "ds", "GDPC1": "y"})
           .assign(unique_id=np.ones(len(pd.read_csv(file_path))),
                   ds=lambda df: pd.to_datetime(df['ds'])))
-    columns_order = ["unique_id", "ds", "y"] + [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
+    columns_order = ["unique_id", "ds", "y"] + \
+        [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
     return df[columns_order]
-
 
 
 def separate_covariates(df, point_in_time):
@@ -38,30 +37,6 @@ def impute_missing_values_interpolate(data, method='linear'):
     return data.interpolate(method=method).bfill()
 
 
-def impute_missing_values_ar_multiseries(data, lags=1):
-    def impute_col(col, lags):
-        if col.isnull().any():
-            not_null_indices = col.notnull()
-            train = col.loc[not_null_indices]
-            null_indices = col.isnull()
-
-            model = AutoReg(train, lags=lags)
-            result = model.fit()
-
-            for index, value in col.loc[null_indices].iteritems():
-                if index - lags < 0:
-                    available_data = col.loc[:index - 1].values
-                else:
-                    available_data = col.loc[index - lags:index - 1].values
-                if np.isnan(available_data).any():
-                    continue
-                forecast = result.predict(start=len(train), end=len(train))
-                col.loc[index] = forecast.iloc[0]
-        return col
-
-    return data.apply(lambda col: impute_col(col, lags))
-
-
 def process_vintage_file(file_path):
     df = load_data(file_path)
     target_df = df[["unique_id", "ds", "y"]]
@@ -81,7 +56,7 @@ def process_vintage_file(file_path):
                .drop(columns="y")
                .iloc[-1:])
 
-    return df, futr_df
+    return target_df, df, futr_df
 
 
 vintage_files = [
@@ -90,7 +65,7 @@ vintage_files = [
     '../data/FRED/blocked/vintage_2019_10.csv'
 ]
 
-df, futr_df = process_vintage_file(vintage_files[0])
+target_df, df, futr_df = process_vintage_file(vintage_files[0])
 
 missing_values_count = df.isnull().sum().sum()
 print(f"There are {missing_values_count} missing values in the DataFrame.")
