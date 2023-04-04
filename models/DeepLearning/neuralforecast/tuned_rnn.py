@@ -11,8 +11,9 @@ import pandas as pd
 import warnings
 
 from neuralforecast import NeuralForecast
-from neuralforecast.auto import AutoNHITS
-os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
+from neuralforecast.auto import AutoRNN
+from neuralforecast.tsdataset import TimeSeriesDataset
+# os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
 ### Ignore warnings ###
 
@@ -86,32 +87,28 @@ def process_vintage_file(file_path):
 df, futr_df, pcc_list, fcc_list = process_vintage_file(
     "../../../data/FRED/blocked/vintage_2023_02.csv")
 
-horizon = 20
+horizon = 150
 
-nhits_config = {
+df_train = df[df.ds < '2020-01-01']
+df_test = df[df.ds > '2020-01-01']
+
+dataset, *_ = TimeSeriesDataset.from_df(df_train)
+
+config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
     "learning_rate": tune.choice([1e-3]),
     "max_steps": tune.choice([10]),
     "input_size": tune.choice([8 * horizon]),
-    "batch_size": tune.choice([7]),
-    "windows_batch_size": tune.choice([256]),
-    "n_pool_kernel_size": tune.choice([[2, 2, 2], [16, 8, 1]]),
-    "n_freq_downsample": tune.choice([[168, 24, 1], [24, 12, 1], [1, 1, 1]]),
-    "activation": tune.choice(['ReLU']),
-    "n_blocks":  tune.choice([[1, 1, 1]]),
-    "mlp_units":  tune.choice([[[512, 512], [512, 512], [512, 512]]]),
-    "interpolation_mode": tune.choice(['linear']),
-    "val_check_steps": tune.choice([100]),
+    "encoder_hidden_size": tune.choice([256]),
+    "val_check_steps": tune.choice([1]),
     "random_seed": tune.randint(1, 10),
 }
 
 
-def create_neural_forecast_model(horizon, nhits_config):
-    model = AutoNHITS(h=horizon, config=nhits_config, num_samples=5)
-    return NeuralForecast(models=[model], freq='Q')
 
+model = AutoRNN(h=horizon, num_samples=1, cpus=1)
 
-nf = create_neural_forecast_model(horizon, nhits_config=nhits_config)
+model.fit(dataset=dataset)
 
-nf.fit(df=df)
+### RNN model forecast ###
