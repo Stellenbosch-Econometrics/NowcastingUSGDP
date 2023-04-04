@@ -10,6 +10,7 @@ import warnings
 
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoNHITS
+os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 from ray import tune
 from statsmodels.tools.sm_exceptions import ValueWarning
 
@@ -83,7 +84,7 @@ def process_vintage_file(file_path):
 #### NHITS model tuning ####
 
 df, futr_df, pcc_list, fcc_list = process_vintage_file(
-    "../data/FRED/blocked/vintage_2023_02.csv")
+    "../../../data/FRED/blocked/vintage_2023_02.csv")
 
 horizon = 20
 
@@ -115,6 +116,6 @@ nf = create_neural_forecast_model(horizon, nhits_config=nhits_config)
 
 nf.fit(df=df)
 
-Y_hat_df = nf.predict(futr_df=futr_df)
-forecast_value = Y_hat_df.iloc[0, 1]
-results = forecast_value
+# Y_hat_df = nf.predict(futr_df=futr_df)
+# forecast_value = Y_hat_df.iloc[0, 1]
+# results = forecast_value
