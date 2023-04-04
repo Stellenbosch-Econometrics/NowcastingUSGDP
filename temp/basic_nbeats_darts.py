@@ -69,15 +69,15 @@ def process_vintage_file(file_path):
 # %%
 
 
-vintage_files = [
-    '../data/FRED/blocked/vintage_2019_08.csv',
-    '../data/FRED/blocked/vintage_2019_09.csv',
-    '../data/FRED/blocked/vintage_2019_10.csv',
-    '../data/FRED/blocked/vintage_2019_11.csv',
-    '../data/FRED/blocked/vintage_2019_12.csv'
-]
+# vintage_files = [
+#     '../data/FRED/blocked/vintage_2019_08.csv',
+#     '../data/FRED/blocked/vintage_2019_09.csv',
+#     '../data/FRED/blocked/vintage_2019_10.csv',
+#     '../data/FRED/blocked/vintage_2019_11.csv',
+#     '../data/FRED/blocked/vintage_2019_12.csv'
+# ]
 
-target_df, past_df, futr_df = process_vintage_file(vintage_files[1])
+# target_df, past_df, futr_df = process_vintage_file(vintage_files[1])
 
 # %%
 

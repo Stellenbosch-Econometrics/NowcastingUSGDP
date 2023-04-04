@@ -34,7 +34,9 @@ def separate_covariates(df, point_in_time):
 
 
 def impute_missing_values_interpolate(data, method='linear'):
-    return data.interpolate(method=method).bfill()
+    imputed_data = data.copy()
+    imputed_data.fillna(method='bfill', inplace=True)
+    return imputed_data.interpolate(method=method)
 
 
 def process_vintage_file(file_path):
@@ -49,7 +51,7 @@ def process_vintage_file(file_path):
     df = (target_df
           .merge(df_fc, left_index=True, right_index=True)
           .merge(df_pc, left_index=True, right_index=True)
-          .dropna(subset=['y']))
+          .iloc[:-1])
 
     futr_df = (target_df
                .merge(future_covariates, left_index=True, right_index=True)
