@@ -98,17 +98,17 @@ config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
     "learning_rate": tune.choice([1e-3]),
-    "max_steps": tune.choice([10]),
-    "input_size": tune.choice([8 * horizon]),
+    "max_steps": tune.choice([100]),
+    "input_size": tune.choice([48, 48*2, 48*3]),
     "encoder_hidden_size": tune.choice([256]),
     "val_check_steps": tune.choice([1]),
     "random_seed": tune.randint(1, 10),
 }
 
 
-
-model = AutoRNN(h=horizon, num_samples=1, cpus=1)
+model = AutoRNN(h=horizon, config=config, num_samples=1, cpus=1)
 
 model.fit(dataset=dataset)
 
 ### RNN model forecast ###
+10495415
