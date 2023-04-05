@@ -4,6 +4,8 @@
 
 from statsmodels.tools.sm_exceptions import ValueWarning
 from ray import tune
+import pickle
+import time
 import logging
 import os
 import numpy as np
@@ -25,6 +27,9 @@ logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 ### Data preprocessing ###
+
+
+start = time.time()
 
 
 def load_data(file_path):
@@ -85,22 +90,31 @@ def process_vintage_file(file_path):
     return df, futr_df, pcc_list, fcc_list
 
 
+def save_object(obj, filename):
+    with open(filename, 'wb') as output:
+        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+
+
 #### RNN model tuning ####
 
 df, futr_df, pcc_list, fcc_list = process_vintage_file(
-    "../../../data/FRED/blocked/vintage_2023_02.csv")
+    "../../../data/FRED/blocked/vintage_2018_05.csv")
 
-horizon = 1
+save_object(df, 'pickle_files/rnn_df.pickle')
+save_object(futr_df, 'pickle_files/rnn_futr_df.pickle')
+save_object(pcc_list, 'pickle_files/rnn_pcc_list.pickle')
+save_object(fcc_list, 'pickle_files/rnn_fcc_list.pickle')
 
-#df_train = df[df.ds < '2020-01-01']
-#df_test = df[df.ds > '2020-01-01']
+# forecast horizon
+horizon = 4
 
+# configuration possibilities
 config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
     "learning_rate": tune.choice([1e-3]),
-    "max_steps": tune.choice([1000]),
-    "input_size": tune.choice([50, 100, 200]),
+    "max_steps": tune.choice([500, 1000]),
+    "input_size": tune.choice([100]),
     "encoder_hidden_size": tune.choice([256]),
     "val_check_steps": tune.choice([1]),
     "random_seed": tune.randint(1, 10),
@@ -110,36 +124,19 @@ config = {
 # general rule is to set num_samples > 20
 
 #model = AutoRNN(h=horizon)
-model = AutoRNN(h=horizon, loss=MAE(), config=config, num_samples=1)
-
+model = AutoRNN(h=horizon, loss=MAE(), config=config, num_samples=30)
 nf = NeuralForecast(models=[model], freq='Q')
 nf.fit(df=df)
 
 
-# Find the hyperparameter values
-# nf.models[0].results.get_best_result().config
+# Storage of the best hyperparameter values
+best_config = nf.models[0].results.get_best_result().config
 
-### RNN model forecast ###
-fcst_model = nf.predict(futr_df=futr_df)
-
-Y_hat_df = nf.predict(futr_df=futr_df).reset_index()
-Y_hat_df.head()
+save_object(best_config, 'pickle_files/rnn_best_config.pickle')
 
 
-### Plot the results ###
-
-# # Concatenate the train and forecast dataframes
-# plot_df = pd.concat([df, Y_hat_df]).set_index('ds')
-
-# plt.figure(figsize=(12, 3))
-# plot_df[['y', 'AutoRNN']].plot(linewidth=2)
-
-# plt.title('AirPassengers Forecast', fontsize=10)
-# plt.ylabel('Monthly Passengers', fontsize=10)
-# plt.xlabel('Timestamp [t]', fontsize=10)
-# plt.axvline(x=plot_df.index[-horizon], color='k', linestyle='--', linewidth=2)
-# plt.legend(prop={'size': 10})
-# plt.show()
-
-
-# 10495415
+# save the specfic model
+nf.save(path='/saved_models/rnn/',
+        model_index=None,
+        overwrite=True,
+        save_dataset=True)
