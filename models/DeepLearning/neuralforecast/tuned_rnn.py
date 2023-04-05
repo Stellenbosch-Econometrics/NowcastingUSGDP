@@ -5,7 +5,6 @@
 from statsmodels.tools.sm_exceptions import ValueWarning
 from ray import tune
 import pickle
-import time
 import logging
 import os
 import numpy as np
@@ -15,8 +14,8 @@ import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN
-from neuralforecast.tsdataset import TimeSeriesDataset
-from ray.tune.search.hyperopt import HyperOptSearch
+#from neuralforecast.tsdataset import TimeSeriesDataset
+#from ray.tune.search.hyperopt import HyperOptSearch
 from neuralforecast.losses.pytorch import MAE
 # os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
@@ -27,9 +26,6 @@ logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 ### Data preprocessing ###
-
-
-start = time.time()
 
 
 def load_data(file_path):
@@ -113,7 +109,7 @@ config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
     "learning_rate": tune.choice([1e-3]),
-    "max_steps": tune.choice([500, 1000]),
+    "max_steps": tune.choice([500]),
     "input_size": tune.choice([100]),
     "encoder_hidden_size": tune.choice([256]),
     "val_check_steps": tune.choice([1]),
