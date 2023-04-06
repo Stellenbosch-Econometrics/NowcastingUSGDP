@@ -1,4 +1,6 @@
 
+# This code runs the full RNN model across all vintages. The model is tuned for each vintage.
+
 
 ### Package imports ###
 
@@ -60,7 +62,7 @@ def impute_missing_values_interpolate(data, method='linear'):
 
 ### Forecast across vintages ###
 
-def forecast_vintages(vintage_files, horizon=20):
+def forecast_vintages(vintage_files, horizon=4):
     results = {}
 
     for file_path in vintage_files:
@@ -94,32 +96,40 @@ def forecast_vintages(vintage_files, horizon=20):
             "hist_exog_list": tune.choice([pcc_list]),
             "futr_exog_list": tune.choice([fcc_list]),
             "learning_rate": tune.choice([1e-3]),
-            "max_steps": tune.choice([500]),
+            "max_steps": tune.choice([50]),
             "input_size": tune.choice([100]),
             "encoder_hidden_size": tune.choice([256]),
             "val_check_steps": tune.choice([1]),
             "random_seed": tune.randint(1, 10),
         }
 
-        model = AutoRNN(h=horizon, config=config, num_samples=30)
+        model = AutoRNN(h=horizon, config=config, num_samples=1)
         nf = NeuralForecast(models=[model], freq='Q')
         nf.fit(df=df)
 
         Y_hat_df = nf.predict(futr_df=futr_df)
 
-        forecast_value = Y_hat_df.iloc[0, 1]
+        forecast_value = Y_hat_df.iloc[:, 1]
 
         results[file_path] = forecast_value
 
     return results
 
+### Different vintages ###
+
 
 vintage_files = [
-    '../../../data/FRED/blocked/vintage_2019_01.csv'
-    # '../../../data/FRED/blocked/vintage_2019_02.csv',
-    # '../../../data/FRED/blocked/vintage_2019_03.csv',
-    # '../../../data/FRED/blocked/vintage_2019_04.csv'
+    f'../../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
+    for year in range(2018, 2024)
+    for month in range(1, 13)
+    if not (
+        (year == 2018 and month < 5) or
+        (year == 2023 and month > 2)
+    )
 ]
+
+
+### Capture all the results and print ###
 
 forecast_results = forecast_vintages(vintage_files)
 for file_name, result in forecast_results.items():
@@ -129,3 +139,7 @@ for file_name, result in forecast_results.items():
 
     print(f"Results for {year}-{month}:")
     print(result)
+
+
+# TODO: Work out the MAPE (loss metric for comparison)
+# TODO: Do the cross-validation
