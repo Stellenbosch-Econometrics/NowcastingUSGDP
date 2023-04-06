@@ -52,6 +52,7 @@ def separate_covariates(df, point_in_time):
 
     return past_covariates_df, future_covariates_df
 
+
 def impute_missing_values_interpolate(data, method='linear'):
     return data.interpolate(method=method)
 

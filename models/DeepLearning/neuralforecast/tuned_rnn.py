@@ -4,7 +4,6 @@
 
 from statsmodels.tools.sm_exceptions import ValueWarning
 from ray import tune
-import pickle
 import logging
 import os
 import numpy as np
@@ -14,8 +13,6 @@ import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN
-#from neuralforecast.tsdataset import TimeSeriesDataset
-#from ray.tune.search.hyperopt import HyperOptSearch
 from neuralforecast.losses.pytorch import MAE
 # os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
@@ -61,78 +58,74 @@ def impute_missing_values_interpolate(data, method='linear'):
     return imputed_data.interpolate(method=method)
 
 
-def process_vintage_file(file_path):
-    df = load_data(file_path)
-    target_df = df[["unique_id", "ds", "y"]]
-    point_in_time = list(df[df['y'].isnull()].index)
-    past_covariates, future_covariates = separate_covariates(df, point_in_time)
+### Forecast across vintages ###
 
-    df_pc = impute_missing_values_interpolate(past_covariates)
-    df_fc = impute_missing_values_interpolate(future_covariates)
+def forecast_vintages(vintage_files, horizon=20):
+    results = {}
 
-    pcc_list = past_covariates.columns.tolist()
-    fcc_list = future_covariates.columns.tolist()
+    for file_path in vintage_files:
 
-    df = (target_df
-          .merge(df_fc, left_index=True, right_index=True)
-          .merge(df_pc, left_index=True, right_index=True)
-          .iloc[:-1])
+        df = load_data(file_path)
+        target_df = df[["unique_id", "ds", "y"]]
 
-    futr_df = (target_df
-               .merge(future_covariates, left_index=True, right_index=True)
-               .drop(columns="y")
-               .iloc[-1:])
+        # point_in_time = df.index[-2]
+        point_in_time = list(df[df['y'].isnull()].index)
 
-    return df, futr_df, pcc_list, fcc_list
+        past_covariates, future_covariates = separate_covariates(
+            df, point_in_time)
 
+        df_pc = impute_missing_values_interpolate(past_covariates)
+        df_fc = impute_missing_values_interpolate(future_covariates)
 
-def save_object(obj, filename):
-    with open(filename, 'wb') as output:
-        pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
+        pcc_list = past_covariates.columns.tolist()
+        fcc_list = future_covariates.columns.tolist()
 
+        df = (target_df
+              .merge(df_fc, left_index=True, right_index=True)
+              .merge(df_pc, left_index=True, right_index=True)
+              .iloc[:-1])
 
-#### RNN model tuning ####
+        futr_df = (target_df
+                   .merge(future_covariates, left_index=True, right_index=True)
+                   .drop(columns="y")
+                   .iloc[-1:])
 
-df, futr_df, pcc_list, fcc_list = process_vintage_file(
-    "../../../data/FRED/blocked/vintage_2018_05.csv")
+        config = {
+            "hist_exog_list": tune.choice([pcc_list]),
+            "futr_exog_list": tune.choice([fcc_list]),
+            "learning_rate": tune.choice([1e-3]),
+            "max_steps": tune.choice([500]),
+            "input_size": tune.choice([100]),
+            "encoder_hidden_size": tune.choice([256]),
+            "val_check_steps": tune.choice([1]),
+            "random_seed": tune.randint(1, 10),
+        }
 
-save_object(df, 'pickle_files/rnn_df.pickle')
-save_object(futr_df, 'pickle_files/rnn_futr_df.pickle')
-save_object(pcc_list, 'pickle_files/rnn_pcc_list.pickle')
-save_object(fcc_list, 'pickle_files/rnn_fcc_list.pickle')
+        model = AutoRNN(h=horizon, config=config, num_samples=30)
+        nf = NeuralForecast(models=[model], freq='Q')
+        nf.fit(df=df)
 
-# forecast horizon
-horizon = 4
+        Y_hat_df = nf.predict(futr_df=futr_df)
 
-# configuration possibilities
-config = {
-    "hist_exog_list": tune.choice([pcc_list]),
-    "futr_exog_list": tune.choice([fcc_list]),
-    "learning_rate": tune.choice([1e-3]),
-    "max_steps": tune.choice([500]),
-    "input_size": tune.choice([100]),
-    "encoder_hidden_size": tune.choice([256]),
-    "val_check_steps": tune.choice([1]),
-    "random_seed": tune.randint(1, 10),
-}
+        forecast_value = Y_hat_df.iloc[0, 1]
 
+        results[file_path] = forecast_value
 
-# general rule is to set num_samples > 20
-
-#model = AutoRNN(h=horizon)
-model = AutoRNN(h=horizon, loss=MAE(), config=config, num_samples=30)
-nf = NeuralForecast(models=[model], freq='Q')
-nf.fit(df=df)
+    return results
 
 
-# Storage of the best hyperparameter values
-best_config = nf.models[0].results.get_best_result().config
+vintage_files = [
+    '../../../data/FRED/blocked/vintage_2019_01.csv'
+    # '../../../data/FRED/blocked/vintage_2019_02.csv',
+    # '../../../data/FRED/blocked/vintage_2019_03.csv',
+    # '../../../data/FRED/blocked/vintage_2019_04.csv'
+]
 
-save_object(best_config, 'pickle_files/rnn_best_config.pickle')
+forecast_results = forecast_vintages(vintage_files)
+for file_name, result in forecast_results.items():
+    # Extract year and month from the file path
+    year, month = os.path.splitext(os.path.basename(file_name))[
+        0].split("_")[1:3]
 
-
-# save the specfic model
-nf.save(path='/saved_models/rnn/',
-        model_index=None,
-        overwrite=True,
-        save_dataset=True)
+    print(f"Results for {year}-{month}:")
+    print(result)
