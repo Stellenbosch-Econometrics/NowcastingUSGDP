@@ -43,7 +43,7 @@ def separate_covariates(df, point_in_time):
     if not point_in_time:
         return df[covariates.columns], df[[]]
 
-    point_in_time = point_in_time[0]
+    # point_in_time = point_in_time[0]
 
     mask = covariates.apply(
         lambda col: col.loc[col.index >= point_in_time - 1].isnull().any())
@@ -70,8 +70,8 @@ def forecast_vintages(vintage_files, horizon=4):
         df = load_data(file_path)
         target_df = df[["unique_id", "ds", "y"]]
 
-        # point_in_time = df.index[-2]
-        point_in_time = list(df[df['y'].isnull()].index)
+        point_in_time = df.index[-2]
+        # point_in_time = list(df[df['y'].isnull()].index)
 
         past_covariates, future_covariates = separate_covariates(
             df, point_in_time)
@@ -109,7 +109,7 @@ def forecast_vintages(vintage_files, horizon=4):
 
         Y_hat_df = nf.predict(futr_df=futr_df)
 
-        forecast_value = Y_hat_df.iloc[:, 1]
+        forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
 
         results[file_path] = forecast_value
 
@@ -120,7 +120,7 @@ def forecast_vintages(vintage_files, horizon=4):
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
+    for year in range(2023, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
@@ -132,13 +132,18 @@ vintage_files = [
 ### Capture all the results and print ###
 
 forecast_results = forecast_vintages(vintage_files)
-for file_name, result in forecast_results.items():
-    # Extract year and month from the file path
-    year, month = os.path.splitext(os.path.basename(file_name))[
-        0].split("_")[1:3]
 
-    print(f"Results for {year}-{month}:")
-    print(result)
+# Step 1: Create an empty DataFrame with desired column names
+columns = [
+    f"{os.path.splitext(os.path.basename(file_name))[0].split('_')[1]}-{os.path.splitext(os.path.basename(file_name))[0].split('_')[2]}" for file_name in forecast_results.keys()]
+df_results = pd.DataFrame(columns=columns)
+
+# Step 2: Fill the DataFrame with the corresponding values
+for file_name, result in forecast_results.items():
+    year_month = f"{os.path.splitext(os.path.basename(file_name))[0].split('_')[1]}-{os.path.splitext(os.path.basename(file_name))[0].split('_')[2]}"
+    df_results[year_month] = result
+
+print(df_results)
 
 
 # TODO: Work out the MAPE (loss metric for comparison)
