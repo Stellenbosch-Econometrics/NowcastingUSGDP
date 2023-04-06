@@ -119,7 +119,7 @@ def forecast_vintages(vintage_files, horizon=4):
 
 
 vintage_files = [
-    f'../../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
+    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
     for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
