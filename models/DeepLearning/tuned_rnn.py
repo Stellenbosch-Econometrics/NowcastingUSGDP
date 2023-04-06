@@ -96,7 +96,7 @@ def forecast_vintages(vintage_files, horizon=4):
             "hist_exog_list": tune.choice([pcc_list]),
             "futr_exog_list": tune.choice([fcc_list]),
             "learning_rate": tune.choice([1e-3]),
-            "max_steps": tune.choice([50]),
+            "max_steps": tune.choice([500]),
             "input_size": tune.choice([100]),
             "encoder_hidden_size": tune.choice([256]),
             "val_check_steps": tune.choice([1]),

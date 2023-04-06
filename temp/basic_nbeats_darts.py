@@ -39,7 +39,7 @@ def separate_covariates(df, point_in_time):
     if not point_in_time:
         return df[covariates.columns], df[[]]
 
-    point_in_time = point_in_time[0]
+    # point_in_time = point_in_time[0]
 
     mask = covariates.apply(
         lambda col: col.loc[col.index >= point_in_time - 1].isnull().any())
@@ -58,7 +58,10 @@ def impute_missing_values_interpolate(data, method='linear'):
 def process_vintage_file(file_path):
     df = load_data(file_path)
     target_df = df[["date", "y"]].iloc[:-1]
-    point_in_time = list(df[df['y'].isnull()].index)
+
+    point_in_time = df.index[-2]
+    # point_in_time = list(df[df['y'].isnull()].index)
+    
     past_covariates, future_covariates = separate_covariates(df, point_in_time)
 
     past_df = impute_missing_values_interpolate(past_covariates).iloc[:-1]
@@ -140,7 +143,7 @@ train_future_covariates, val_future_covariates = fc_scaled[:-
 # %%
 model_pastcov = NBEATSModel(
     input_chunk_length=50,
-    output_chunk_length=10,
+    output_chunk_length=4, # we want 4 periods ahead
     n_epochs=10,
     # random_state=0,
 )
@@ -149,7 +152,7 @@ model_pastcov = NBEATSModel(
 model_pastcov.fit(
     series=gdp_scaled,
     past_covariates=pc_scaled,
-    # future_covariates=train_future_covariates,
+    future_covariates=fc_scaled,
     verbose=True,
 )
 
