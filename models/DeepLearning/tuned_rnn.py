@@ -62,7 +62,7 @@ def impute_missing_values_interpolate(data, method='linear'):
 
 ### Forecast across vintages ###
 
-def forecast_vintages(vintage_files, horizon=4):
+def forecast_vintages(vintage_files, horizon=1):
     results = {}
 
     for file_path in vintage_files:
@@ -134,7 +134,7 @@ def forecast_vintages(vintage_files, horizon=4):
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
+    for year in range(2018, 2019)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
