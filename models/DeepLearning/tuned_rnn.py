@@ -92,6 +92,20 @@ def forecast_vintages(vintage_files, horizon=4):
                    .drop(columns="y")
                    .iloc[-1:])
 
+        # default_config = {
+        #     "input_size_multiplier": [-1, 4, 16, 64],
+        #     "h": None,
+        #     "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+        #     "encoder_n_layers": tune.randint(1, 4),
+        #     "context_size": tune.choice([5, 10, 50]),
+        #     "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+        #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+        #     "max_steps": tune.choice([500, 1000]),
+        #     "batch_size": tune.choice([16, 32]),
+        #     "loss": None,
+        #     "random_seed": tune.randint(1, 20),
+        # }
+
         config = {
             "hist_exog_list": tune.choice([pcc_list]),
             "futr_exog_list": tune.choice([fcc_list]),
