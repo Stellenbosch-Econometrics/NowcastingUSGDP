@@ -95,15 +95,15 @@ def forecast_vintages(vintage_files, horizon=4):
         config = {
             "hist_exog_list": tune.choice([pcc_list]),
             "futr_exog_list": tune.choice([fcc_list]),
-            "learning_rate": tune.choice([1e-3]),
-            "max_steps": tune.choice([500]),
-            "input_size": tune.choice([100]),
-            "encoder_hidden_size": tune.choice([256]),
-            "val_check_steps": tune.choice([1]),
-            "random_seed": tune.randint(1, 10),
+            # "learning_rate": tune.choice([1e-3]),
+            # "max_steps": tune.choice([500]),
+            # "input_size": tune.choice([100]),
+            # "encoder_hidden_size": tune.choice([256]),
+            # "val_check_steps": tune.choice([1]),
+            # "random_seed": tune.randint(1, 10),
         }
 
-        model = AutoRNN(h=horizon, config=config, num_samples=1)
+        model = AutoRNN(h=horizon, config=config, num_samples=30)
         nf = NeuralForecast(models=[model], freq='Q')
         nf.fit(df=df)
 
@@ -120,14 +120,13 @@ def forecast_vintages(vintage_files, horizon=4):
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2023, 2024)
+    for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
         (year == 2023 and month > 2)
     )
 ]
-
 
 ### Capture all the results and print ###
 
@@ -143,8 +142,11 @@ for file_name, result in forecast_results.items():
     year_month = f"{os.path.splitext(os.path.basename(file_name))[0].split('_')[1]}-{os.path.splitext(os.path.basename(file_name))[0].split('_')[2]}"
     df_results[year_month] = result
 
-print(df_results)
+# print(df_results)
 
+
+results = pd.DataFrame(df_results)
+results.to_csv('../DeepLearning/results/rnn_results.csv', index=True)
 
 # TODO: Work out the MAPE (loss metric for comparison)
 # TODO: Do the cross-validation
