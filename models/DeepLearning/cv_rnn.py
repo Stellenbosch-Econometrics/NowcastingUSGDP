@@ -1,4 +1,7 @@
 
+# TODO: Work out the MAPE (loss metric for comparison)
+# TODO: Do the cross-validation
+
 from ray import tune
 import logging
 import os
@@ -12,6 +15,7 @@ from neuralforecast.auto import AutoRNN
 
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
 ### Data preprocessing ###
 
@@ -65,6 +69,7 @@ vintage_files = [
 file_path = vintage_files[-1]
 
 df = load_data(file_path)
+df['ds'] = df['ds'] - pd.Timedelta(days=1)
 target_df = df[["unique_id", "ds", "y"]]
 
 point_in_time = df.index[-2]
@@ -83,16 +88,11 @@ df = (target_df
       .merge(df_pc, left_index=True, right_index=True)
       .iloc[:-1])
 
-futr_df = (target_df
-           .merge(future_covariates, left_index=True, right_index=True)
-           .drop(columns="y")
-           .iloc[-1:])
-
 config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
     # "learning_rate": tune.choice([1e-3]),
-    "max_steps": tune.choice([50]),
+    "max_steps": tune.choice([500]),
     # "input_size": tune.choice([150]),
     # "encoder_hidden_size": tune.choice([256]),
     # "val_check_steps": tune.choice([1]),
@@ -100,8 +100,12 @@ config = {
     "scaler_type": tune.choice(["robust"])
 }
 
-model = AutoRNN(h=1, config=config, num_samples=2)
+model = AutoRNN(h=1, config=config, num_samples=10)
 
 nf = NeuralForecast(models=[model], freq='Q')
+# nf.fit(df=df)
 
-fcst_df = nf.cross_validation(df=df, n_windows=1, step_size=1)
+fcst_df = nf.cross_validation(df=df, n_windows=100, step_size=1)
+
+fcst_df = fcst_df.iloc[:, :5]
+print(fcst_df)

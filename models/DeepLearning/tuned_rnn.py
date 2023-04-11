@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN
 # from neuralforecast.losses.pytorch import MAE
-# os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
+os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
 ### Ignore warnings ###
 
@@ -68,6 +68,7 @@ def forecast_vintages(vintage_files, horizon=1):
     for file_path in vintage_files:
 
         df = load_data(file_path)
+        df['ds'] = df['ds'] - pd.Timedelta(days=1)
         target_df = df[["unique_id", "ds", "y"]]
 
         point_in_time = df.index[-2]
@@ -164,9 +165,5 @@ for file_name, result in forecast_results.items():
 
 results = pd.DataFrame(df_results)
 results.to_csv('../DeepLearning/results/rnn_results.csv', index=True)
-
-# TODO: Work out the MAPE (loss metric for comparison)
-# TODO: Do the cross-validation
-
 
 
