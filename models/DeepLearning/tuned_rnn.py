@@ -4,23 +4,23 @@
 
 ### Package imports ###
 
-from statsmodels.tools.sm_exceptions import ValueWarning
+# from statsmodels.tools.sm_exceptions import ValueWarning
 from ray import tune
 import logging
 import os
 import numpy as np
 import pandas as pd
-import warnings
+# import warnings
 import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN
-from neuralforecast.losses.pytorch import MAE
+# from neuralforecast.losses.pytorch import MAE
 # os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
 ### Ignore warnings ###
 
-warnings.simplefilter("ignore", ValueWarning)
+# warnings.simplefilter("ignore", ValueWarning)
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
@@ -110,14 +110,17 @@ def forecast_vintages(vintage_files, horizon=1):
             "hist_exog_list": tune.choice([pcc_list]),
             "futr_exog_list": tune.choice([fcc_list]),
             # "learning_rate": tune.choice([1e-3]),
-            # "max_steps": tune.choice([500]),
-            # "input_size": tune.choice([100]),
+            "max_steps": tune.choice([500]),
+            # "input_size": tune.choice([150]),
             # "encoder_hidden_size": tune.choice([256]),
             # "val_check_steps": tune.choice([1]),
             # "random_seed": tune.randint(1, 10),
+            "scaler_type": tune.choice(["robust"])
         }
 
-        model = AutoRNN(h=horizon, config=config, num_samples=30)
+        model = AutoRNN(h=horizon,
+                        config=config, num_samples=20)
+
         nf = NeuralForecast(models=[model], freq='Q')
         nf.fit(df=df)
 
@@ -134,7 +137,7 @@ def forecast_vintages(vintage_files, horizon=1):
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2019)
+    for year in range(2023, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
@@ -164,3 +167,6 @@ results.to_csv('../DeepLearning/results/rnn_results.csv', index=True)
 
 # TODO: Work out the MAPE (loss metric for comparison)
 # TODO: Do the cross-validation
+
+
+
