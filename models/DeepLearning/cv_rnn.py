@@ -63,7 +63,6 @@ vintage_files = [
     )
 ]
 
-
 ### Cross-validation ###
 
 file_path = vintage_files[-1]
@@ -100,12 +99,26 @@ config = {
     "scaler_type": tune.choice(["robust"])
 }
 
-model = AutoRNN(h=1, config=config, num_samples=10)
+model = AutoRNN(h=1, config=config, num_samples=20)
 
 nf = NeuralForecast(models=[model], freq='Q')
 # nf.fit(df=df)
 
-fcst_df = nf.cross_validation(df=df, n_windows=100, step_size=1)
+fcst_df = nf.cross_validation(df=df, n_windows=150, step_size=1)
 
 fcst_df = fcst_df.iloc[:, :5]
 print(fcst_df)
+
+
+plt.figure(figsize=(10, 6))
+plt.plot(fcst_df['ds'], fcst_df['y'], label='y',
+         marker='o', linestyle='-', markersize=2)
+plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
+         label='AutoRNN', marker='o', linestyle='--', markersize=2)
+
+plt.xlabel('Date')
+plt.ylabel('Values')
+plt.title('y vs. AutoRNN')
+plt.legend()
+
+plt.show()

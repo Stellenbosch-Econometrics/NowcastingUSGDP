@@ -138,7 +138,7 @@ def forecast_vintages(vintage_files, horizon=1):
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2023, 2024)
+    for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
@@ -148,7 +148,8 @@ vintage_files = [
 
 ### Capture all the results and print ###
 
-forecast_results = forecast_vintages(vintage_files)
+forecast_results = forecast_vintages(vintage_files[0]) # Just the first vintage
+# forecast_results = forecast_vintages(vintage_files) # All vintages
 
 # Step 1: Create an empty DataFrame with desired column names
 columns = [
