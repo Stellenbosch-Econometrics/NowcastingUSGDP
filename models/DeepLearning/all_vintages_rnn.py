@@ -1,28 +1,25 @@
 
 # This code runs the full RNN model across all vintages. The model is tuned for each vintage.
 
+# TODO: Include lagged variables in the model
 
 ### Package imports ###
 
-# from statsmodels.tools.sm_exceptions import ValueWarning
 from ray import tune
 import logging
 import os
 import numpy as np
 import pandas as pd
-# import warnings
 import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN
-# from neuralforecast.losses.pytorch import MAE
-os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
 ### Ignore warnings ###
 
-# warnings.simplefilter("ignore", ValueWarning)
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
 ### Data preprocessing ###
 
@@ -42,8 +39,6 @@ def separate_covariates(df, point_in_time):
 
     if not point_in_time:
         return df[covariates.columns], df[[]]
-
-    # point_in_time = point_in_time[0]
 
     mask = covariates.apply(
         lambda col: col.loc[col.index >= point_in_time - 1].isnull().any())
@@ -72,7 +67,6 @@ def forecast_vintages(vintage_files, horizon=1):
         target_df = df[["unique_id", "ds", "y"]]
 
         point_in_time = df.index[-2]
-        # point_in_time = list(df[df['y'].isnull()].index)
 
         past_covariates, future_covariates = separate_covariates(
             df, point_in_time)
@@ -148,7 +142,8 @@ vintage_files = [
 
 ### Capture all the results and print ###
 
-forecast_results = forecast_vintages(vintage_files[0]) # Just the first vintage
+forecast_results = forecast_vintages(
+    vintage_files[0])  # Just the first vintage
 # forecast_results = forecast_vintages(vintage_files) # All vintages
 
 # Step 1: Create an empty DataFrame with desired column names
@@ -166,5 +161,3 @@ for file_name, result in forecast_results.items():
 
 results = pd.DataFrame(df_results)
 results.to_csv('../DeepLearning/results/rnn_results.csv', index=True)
-
-

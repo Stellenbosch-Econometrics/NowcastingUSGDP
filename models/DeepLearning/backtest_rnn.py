@@ -1,5 +1,4 @@
 
-# TODO: Work out the MAPE (loss metric for comparison)
 
 from ray import tune
 import logging
@@ -11,6 +10,7 @@ import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN
+from neuralforecast.losses.numpy import mse, mae
 
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -109,17 +109,37 @@ fcst_df = fcst_df.iloc[:, :5]
 print(fcst_df)
 
 
-plt.figure(figsize=(10, 6))
-plt.plot(fcst_df['ds'], fcst_df['y'], label='y',
-         marker='o', linestyle='-', markersize=2)
-plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
-         label='AutoRNN', marker='o', linestyle='--', markersize=2)
+# plt.figure(figsize=(10, 6))
+# plt.plot(fcst_df['ds'], fcst_df['y'], label='y',
+#          marker='o', linestyle='-', markersize=2)
+# plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
+#          label='AutoRNN', marker='o', linestyle='--', markersize=2)
 
-plt.xlabel('Date')
-plt.ylabel('Values')
-plt.title('Actual vs. RNN estimate')
-plt.legend()
+# plt.xlabel('Date')
+# plt.ylabel('Values')
+# plt.title('Actual vs. RNN estimate')
+# plt.legend()
 
-plt.show()
+# plt.show()
 
 ### Model performance ###
+
+
+def evaluate(df):
+    eval_ = {}
+    models = df.loc[:, ~df.columns.str.contains(
+        'unique_id|y|ds|cutoff')].columns
+    for model in models:
+        eval_[model] = {}
+        for metric in [mse, mae]:
+            eval_[model][metric.__name__] = metric(
+                df['y'].values, df[model].values)
+    eval_df = pd.DataFrame(eval_).rename_axis('metric')
+    return eval_df
+
+
+fcst_df.groupby('ds').apply(lambda df: evaluate(df))
+
+# This gives me the individual performance metrics for each time period. 
+
+# TODO: Get the average performance metrics
