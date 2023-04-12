@@ -1,6 +1,5 @@
 
 # TODO: Work out the MAPE (loss metric for comparison)
-# TODO: Do the cross-validation
 
 from ray import tune
 import logging
@@ -99,7 +98,7 @@ config = {
     "scaler_type": tune.choice(["robust"])
 }
 
-model = AutoRNN(h=1, config=config, num_samples=20)
+model = AutoRNN(h=1, config=config, num_samples=5)
 
 nf = NeuralForecast(models=[model], freq='Q')
 # nf.fit(df=df)
@@ -118,7 +117,9 @@ plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
 
 plt.xlabel('Date')
 plt.ylabel('Values')
-plt.title('y vs. AutoRNN')
+plt.title('Actual vs. RNN estimate')
 plt.legend()
 
 plt.show()
+
+### Model performance ###
