@@ -28,7 +28,7 @@ nc_data_diff <- list(gdp = list(), blocked = list(), global = list())
 ynam <- "GDPC1"
 
 # Nowcasting Loop
-for (i in vintages_m[1:2]) {
+for (i in vintages_m) {
   
   it <- substr(i, 9, 15)
   print(it)

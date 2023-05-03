@@ -1,7 +1,8 @@
 library(fastverse)
 fastverse_extend(xts, africamonitor, dfms, vars, glmnet)
 
-prepcode <- function(x) toupper(sub(" ", "", x, fixed = TRUE))
+
+
 
 data_m <- fread("data/FRED/MD/vintage_2023_02.csv") %>% 
           fmutate(V1 = am_as_date(V1)) %>% 
@@ -17,6 +18,14 @@ plot(fscale(data_q), lwd = 1)
 
 groups <- fread("data/FRED/FRED-MD Appendix/FRED-MD_updated_appendix.csv") %>% 
           fmutate(fred = prepcode(fred))
+
+# Helper function to ensure date is first day of quarter
+index_month_to_quarter <- function(x) {
+  ix <- index(x)
+  lubridate::month(ix) <- as.integer(ceiling(month(ix) / 3L)) * 3L - 2L
+  index(x) <- ix
+  return(x)
+}
 
 # Check
 ckmatch(colnames(data_m), groups$fred)
@@ -65,7 +74,7 @@ mod_l <- DFM(data_m_groups$`Labor Market`, 1, 1)
 
 screeplot(ic_groups$`Money and Credit`) # 2 Factors
 VARselect(ic_groups$`Money and Credit`$F_pca[, 1:2]) # 4 lags
-mod_mc <- DFM(data_m_groups$`Money and Credit`, 2, 2)
+mod_mc <- DFM(data_m_groups$`Money and Credit`, 2, 4)
 
 screeplot(ic_groups$`Output and Income`) # 1 Factor
 VARselect(ic_groups$`Output and Income`$F_pca[, 1]) # 2 lags
@@ -99,9 +108,9 @@ factors_agg <- apply.quarterly(factors, mean)
 index(factors_agg) %<>% lubridate::`month<-`(month(.)-2L)
 rgdp_factors_agg <- factors_agg %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
 
-factors_wide <- cbind(factors %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
-                      factors %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
-                      factors %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
+factors_wide <- cbind(factors %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_") %>% index_month_to_quarter(),
+                      factors %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% index_month_to_quarter(),
+                      factors %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% index_month_to_quarter())
 rgdp_factors_wide <- factors_wide %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
 
 # Same for global model
@@ -109,9 +118,9 @@ factors_glob_agg <- apply.quarterly(factors_glob, mean)
 index(factors_glob_agg) %<>% lubridate::`month<-`(month(.)-2L)
 rgdp_factors_glob_agg <- factors_glob_agg %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
 
-factors_glob_wide <- cbind(factors_glob %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_"),
-                           factors_glob %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% unclass(),
-                           factors_glob %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% unclass())
+factors_glob_wide <- cbind(factors_glob %>% ss(month(index(.)) %% 3L == 1L) %>% add_stub("m1_") %>% index_month_to_quarter(),
+                           factors_glob %>% ss(month(index(.)) %% 3L == 2L) %>% add_stub("m2_") %>% index_month_to_quarter(),
+                           factors_glob %>% ss(month(index(.)) %% 3L == 0L) %>% add_stub("m3_") %>% index_month_to_quarter())
 rgdp_factors_glob_wide <- factors_glob_wide %>% merge(data_q[, 1] %>% setColnames("rgdp_growth"))
 
 
