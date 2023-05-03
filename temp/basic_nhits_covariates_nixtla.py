@@ -53,31 +53,8 @@ def separate_covariates(df, point_in_time):
     return past_covariates_df, future_covariates_df
 
 
-def impute_missing_values_ar_multiseries(data, lags=1):
-    imputed_data = data.copy()
-
-    for col in data.columns:
-        while imputed_data[col].isnull().any():
-            not_null_indices = imputed_data[col].notnull()
-            train = imputed_data.loc[not_null_indices, col]
-            null_indices = imputed_data[col].isnull()
-            test_indices = imputed_data.loc[null_indices, col].index
-
-            model = AutoReg(train, lags=lags)
-            result = model.fit()
-
-            for index in test_indices:
-                if index - lags < 0:
-                    available_data = imputed_data.loc[:index - 1, col].values
-                else:
-                    available_data = imputed_data.loc[index -
-                                                      lags:index - 1, col].values
-                if np.isnan(available_data).any():
-                    continue
-                forecast = result.predict(start=len(train), end=len(train))
-                imputed_data.loc[index, col] = forecast.iloc[0]
-
-    return imputed_data
+def impute_missing_values_interpolate(data, method='linear'):
+    return data.interpolate(method=method)
 
 
 def create_neural_forecast_model(horizon, nhits_config):
@@ -92,7 +69,7 @@ def create_neural_forecast_model(horizon, nhits_config):
     return NeuralForecast(models=[model], freq='Q')
 
 
-def forecast_vintages(vintage_files, horizon=1):
+def forecast_vintages(vintage_files, horizon=20):
     results = {}
 
     for file_name in vintage_files:
@@ -108,8 +85,8 @@ def forecast_vintages(vintage_files, horizon=1):
         pcc_list = past_covariates.columns.tolist()
         fcc_list = future_covariates.columns.tolist()
 
-        df_fc = impute_missing_values_ar_multiseries(future_covariates, lags=1)
-        df_pc = impute_missing_values_ar_multiseries(past_covariates, lags=1)
+        df_fc = impute_missing_values_interpolate(future_covariates, lags=1)
+        df_pc = impute_missing_values_interpolate(past_covariates, lags=1)
 
         df = pd.merge(target_df, df_fc,
                       left_index=True, right_index=True)
@@ -123,8 +100,8 @@ def forecast_vintages(vintage_files, horizon=1):
             "hist_exog_list": tune.choice([pcc_list]),
             "futr_exog_list": tune.choice([fcc_list]),
             "learning_rate": tune.choice([1e-3]),
-            "max_steps": tune.choice([1000]),
-            "input_size": tune.choice([5 * horizon]),
+            "max_steps": tune.choice([10]),
+            "input_size": tune.choice([8 * horizon]),
             "batch_size": tune.choice([7]),
             "windows_batch_size": tune.choice([256]),
             "n_pool_kernel_size": tune.choice([[2, 2, 2], [16, 8, 1]]),
@@ -150,7 +127,7 @@ def forecast_vintages(vintage_files, horizon=1):
 
         results[file_name] = forecast_value
 
-        print(nf.models[0].results.get_best_result().config)
+        # print(nf.models[0].results.get_best_result().config)
 
     return results
 
