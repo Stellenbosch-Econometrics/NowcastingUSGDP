@@ -32,7 +32,8 @@ qytodate <- function(x) as.Date(paste(substr(x, 1, 4), substr(as.integer(substr(
 res <- list(global = global_res, blocked = blocked_res) %>% 
        rbindlist(idcol = "model") %>% 
        ftransform(year_quarter = yearqtr(as.Date(paste0(year_month, "-01"))),
-                  latest_gdp = yearqtr(qytodate(latest_gdp)))
+                  latest_gdp = yearqtr(qytodate(latest_gdp)), 
+                  vintage_quarter = yearqtr(as.Date(paste0(sub("_", "-", vintage), "-01"))))
 
 
 
@@ -43,6 +44,7 @@ gdp <- fread("data/FRED/QD/vintage_2023_02.csv", select = 1:2) %>%
 res %<>% merge(gdp, by = "year_quarter")
 
 res[, trel := as.integer((year_quarter - latest_gdp) * 4)]
+res[, trel := as.integer((year_quarter - vintage_quarter) * 4)] # This is better (as discussed)
 descr(res$trel)
 
 
