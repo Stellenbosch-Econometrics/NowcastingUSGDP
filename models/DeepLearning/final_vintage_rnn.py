@@ -68,7 +68,7 @@ vintage_files = [
     )
 ]
 
-vintage_of_interest = vintage_files[-12]
+vintage_of_interest = vintage_files[-12] # four quarter ahead forecast
 latest_vintage = vintage_files[-1]
 
 ### Forecast across last usable vintage ###
@@ -81,7 +81,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
     target_df = df[["unique_id", "ds", "y"]]
 
-    point_in_time = df.index[-2]
+    point_in_time = df.index[-2] # explain later
 
     past_covariates, future_covariates = separate_covariates(
         df, point_in_time)
@@ -110,7 +110,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     model = AutoRNN(h=horizon,
-                    config=config, num_samples=5)
+                    config=config, num_samples=1)
 
     nf = NeuralForecast(models=[model], freq='Q')
     nf.fit(df=df)
