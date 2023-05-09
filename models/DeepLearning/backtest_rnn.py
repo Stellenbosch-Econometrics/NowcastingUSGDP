@@ -109,18 +109,18 @@ fcst_df = fcst_df.iloc[:, :5]
 print(fcst_df)
 
 
-# plt.figure(figsize=(10, 6))
-# plt.plot(fcst_df['ds'], fcst_df['y'], label='y',
-#          marker='o', linestyle='-', markersize=2)
-# plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
-#          label='AutoRNN', marker='o', linestyle='--', markersize=2)
+plt.figure(figsize=(10, 6))
+plt.plot(fcst_df['ds'], fcst_df['y'], label='y',
+         marker='o', linestyle='-', markersize=2)
+plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
+         label='AutoRNN', marker='o', linestyle='--', markersize=2)
 
-# plt.xlabel('Date')
-# plt.ylabel('Values')
-# plt.title('Actual vs. RNN estimate')
-# plt.legend()
+plt.xlabel('Date')
+plt.ylabel('Values')
+plt.title('Actual vs. RNN estimate')
+plt.legend()
 
-# plt.show()
+plt.show()
 
 ### Model performance ###
 
@@ -141,5 +141,37 @@ def evaluate(df):
 fcst_df.groupby('ds').apply(lambda df: evaluate(df))
 
 # This gives me the individual performance metrics for each time period. 
+
+# Calculate MAE and MSE for each date
+eval_df = fcst_df.groupby('ds').apply(lambda df: evaluate(df))
+
+# Extracting data for the plot
+dates = eval_df.index.get_level_values('ds').unique()
+mae_values = eval_df.loc[pd.IndexSlice[:, 'mae'], :].values.ravel()
+mse_values = eval_df.loc[pd.IndexSlice[:, 'mse'], :].values.ravel()
+
+# Plotting MAE over time
+plt.figure(figsize=(10, 6))
+plt.plot(dates, mae_values, label='MAE', marker='o', linestyle='-', markersize=2)
+
+plt.xlabel('Date')
+plt.ylabel('MAE')
+plt.title('Mean Absolute Error over time')
+plt.legend()
+
+plt.show()
+
+# Plotting MSE over time
+plt.figure(figsize=(10, 6))
+plt.plot(dates, mse_values, label='MSE', marker='o', linestyle='-', markersize=2)
+
+plt.xlabel('Date')
+plt.ylabel('MSE')
+plt.title('Mean Squared Error over time')
+plt.legend()
+
+plt.show()
+
+
 
 # TODO: Get the average performance metrics

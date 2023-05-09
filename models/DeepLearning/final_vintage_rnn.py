@@ -30,6 +30,7 @@ def load_data(file_path):
                   ds=lambda df: pd.to_datetime(df['ds'])))
     columns_order = ["unique_id", "ds", "y"] + \
         [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
+    df['ds'] = df['ds'] - pd.Timedelta(days=1)
     return df[columns_order]
 
 
@@ -67,7 +68,7 @@ vintage_files = [
     )
 ]
 
-vintage_of_interest = vintage_files[-5]
+vintage_of_interest = vintage_files[-12] # four quarter ahead forecast
 latest_vintage = vintage_files[-1]
 
 ### Forecast across last usable vintage ###
@@ -77,10 +78,10 @@ def forecast_vintage(vintage_file, horizon=4):
     results = {}
 
     df = load_data(vintage_file)
-    df['ds'] = df['ds'] - pd.Timedelta(days=1)
+
     target_df = df[["unique_id", "ds", "y"]]
 
-    point_in_time = df.index[-2]
+    point_in_time = df.index[-2] # explain later
 
     past_covariates, future_covariates = separate_covariates(
         df, point_in_time)
@@ -109,7 +110,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     model = AutoRNN(h=horizon,
-                    config=config, num_samples=5)
+                    config=config, num_samples=1)
 
     nf = NeuralForecast(models=[model], freq='Q')
     nf.fit(df=df)
@@ -126,6 +127,8 @@ def forecast_vintage(vintage_file, horizon=4):
 # Generate forecasts for the vintage_of_interest
 vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)
 
+vintage_of_interest_df = load_data(vintage_of_interest)
+
 # Load latest_vintage data
 latest_vintage_df = load_data(latest_vintage)
 
@@ -133,7 +136,41 @@ latest_vintage_df = load_data(latest_vintage)
 true_y_values = latest_vintage_df.loc[latest_vintage_df.index.isin(
     latest_vintage_df.index[-4:]), 'y'].tolist()
 
-# Compare the forecast from vintage_of_interest with the true y values from latest_vintage
-print("Vintage of interest forecast:",
-      vintage_of_interest_forecast[vintage_of_interest])
-print("True y values from latest vintage:", true_y_values)
+# Extract the date column (ds) from the latest_vintage_df
+date_column = latest_vintage_df.loc[latest_vintage_df.index.isin(
+    latest_vintage_df.index[-4:]), 'ds'].tolist()
+
+# Create a DataFrame with the date column, true y values, and forecasted values
+comparison_df = pd.DataFrame({
+    'ds': date_column,
+    'true_y': true_y_values,
+    'forecasted_y': vintage_of_interest_forecast[vintage_of_interest]
+})
+
+# Shift the forecasted_y column back by one time period
+comparison_df['forecasted_y_shifted'] = comparison_df['forecasted_y'].shift(-1)
+
+# Drop the original forecasted_y column
+comparison_df.drop(columns='forecasted_y', inplace=True)
+
+print(comparison_df)
+
+
+## simple plot
+
+# Extracting data for the plot
+dates = comparison_df['ds']
+y_true = comparison_df['true_y']
+y_forecasted = comparison_df['forecasted_y_shifted']
+
+# Plotting the data
+plt.figure(figsize=(10, 6))
+plt.plot(dates, y_true, label='True y', marker='o', linestyle='-', markersize=2)
+plt.plot(dates, y_forecasted, label='Forecasted y', marker='o', linestyle='--', markersize=2)
+
+plt.xlabel('Date')
+plt.ylabel('Values')
+plt.title('True y vs. Forecasted y')
+plt.legend()
+
+plt.show()
