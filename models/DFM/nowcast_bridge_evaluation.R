@@ -53,7 +53,7 @@ for (i in vintages_m) {
   dfm_glob <- new.env()
   dfm_glob$data <- dfm$data
   
-  dfm_glob$mod <- DFM(data, 9, 4)
+  dfm_glob$mod <- DFM(data, 9, 4, idio.ar1 = TRUE)
   dfm_glob$factors <- dfm_glob$mod$F_qml %>% copy() %>% copyMostAttrib(data)
   
   # By Broad Sectors
@@ -61,31 +61,31 @@ for (i in vintages_m) {
                      lapply(function(x) data[, x])
   
   # Global Factors
-  dfm$mod_gl <- DFM(data, 2, 4, max.missing = 1)
+  dfm$mod_gl <- DFM(data, 2, 4, max.missing = 1, idio.ar1 = TRUE)
   
   # Consumption, Orders, and Inventories Factors
-  dfm$mod_coi <- DFM(dfm$data_groups$`Consumption, Orders, and Inventories`, 2, 4, max.missing = 1)
+  dfm$mod_coi <- DFM(dfm$data_groups$`Consumption, Orders, and Inventories`, 2, 4, max.missing = 1, idio.ar1 = TRUE)
   
   # Housing Factors
-  dfm$mod_h <- DFM(dfm$data_groups$Housing, 1, 2, max.missing = 1)
+  dfm$mod_h <- DFM(dfm$data_groups$Housing, 1, 2, max.missing = 1, idio.ar1 = TRUE)
   
   # Interest and Exchange Rates Factors
-  dfm$mod_ie <- DFM(dfm$data_groups$`Interest and Exchange Rates`, 2, 3, max.missing = 1)
+  dfm$mod_ie <- DFM(dfm$data_groups$`Interest and Exchange Rates`, 2, 3, max.missing = 1, idio.ar1 = TRUE)
   
   # Labor Market Factors
-  dfm$mod_l <- DFM(dfm$data_groups$`Labor Market`, 1, 1, max.missing = 1)
+  dfm$mod_l <- DFM(dfm$data_groups$`Labor Market`, 1, 1, max.missing = 1, idio.ar1 = TRUE)
   
   # Money and Credit Factors
-  dfm$mod_mc <- DFM(dfm$data_groups$`Money and Credit`, 2, 4, max.missing = 1)
+  dfm$mod_mc <- DFM(dfm$data_groups$`Money and Credit`, 2, 4, max.missing = 1, idio.ar1 = TRUE)
   
   # Output and Income Factors
-  dfm$mod_oi <- DFM(dfm$data_groups$`Output and Income`, 1, 2, max.missing = 1)
+  dfm$mod_oi <- DFM(dfm$data_groups$`Output and Income`, 1, 2, max.missing = 1, idio.ar1 = TRUE)
   
   # Prices Factors
-  dfm$mod_p <- DFM(dfm$data_groups$Prices, 1, 1, max.missing = 1)
+  dfm$mod_p <- DFM(dfm$data_groups$Prices, 1, 1, max.missing = 1, idio.ar1 = TRUE)
   
   # Stock Market Factors
-  dfm$mod_sm <- DFM(dfm$data_groups$`Stock Market`, 1, 1, max.missing = 1)
+  dfm$mod_sm <- DFM(dfm$data_groups$`Stock Market`, 1, 1, max.missing = 1, idio.ar1 = TRUE)
 
   # Combining factors
   dfm$factors <- cbind(dfm$mod$F_qml %>% add_stub("gl_"), 
