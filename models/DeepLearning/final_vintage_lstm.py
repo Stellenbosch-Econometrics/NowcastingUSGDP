@@ -1,5 +1,5 @@
 
-### GRU RNN model (final vintage)
+### LSTM RNN model (final vintage)
 
 ### Package imports ###
 
@@ -11,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
-from neuralforecast.auto import AutoGRU, AutoRNN
+from neuralforecast.auto import AutoLSTM, AutoRNN
 
 ### Ignore warnings ###
 
@@ -108,16 +108,14 @@ def forecast_vintage(vintage_file, horizon=4):
         "scaler_type": tune.choice(["robust"])
     }
 
-    # Some other parts of configuration to consider
-    # 
 
-    model = AutoGRU(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+    model = AutoLSTM(h=horizon,
+                    config=config, num_samples=20, verbose=False)
     
     model_2 = AutoRNN(h=horizon,
                     config=config, num_samples=1, verbose=False)
 
-    nf = NeuralForecast(models=[model, model_2], freq='Q')
+    nf = NeuralForecast(models=[model], freq='Q')
     nf.fit(df=df)
 
     Y_hat_df = nf.predict(futr_df=futr_df)

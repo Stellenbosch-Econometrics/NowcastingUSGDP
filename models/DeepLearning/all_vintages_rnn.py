@@ -57,7 +57,7 @@ def impute_missing_values_interpolate(data, method='linear'):
 
 ### Forecast across vintages ###
 
-def forecast_vintages(vintage_files, horizon=1):
+def forecast_vintages(vintage_files, horizon=4):
     results = {}
 
     for file_path in vintage_files:
@@ -142,9 +142,9 @@ vintage_files = [
 
 ### Capture all the results and print ###
 
-forecast_results = forecast_vintages(
-    vintage_files[0])  # Just the first vintage
-# forecast_results = forecast_vintages(vintage_files) # All vintages
+# forecast_results = forecast_vintages(
+#     vintage_files[0])  # Just the first vintage
+forecast_results = forecast_vintages(vintage_files) # All vintages
 
 # Step 1: Create an empty DataFrame with desired column names
 columns = [

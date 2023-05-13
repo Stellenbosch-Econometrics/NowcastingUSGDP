@@ -100,7 +100,7 @@ config = {
     "scaler_type": tune.choice(["robust"])
 }
 
-model = AutoRNN(h=1, config=config, num_samples=5)
+model = AutoRNN(h=1, config=config, num_samples=1)
 
 nf = NeuralForecast(models=[model], freq='Q')
 # nf.fit(df=df)
