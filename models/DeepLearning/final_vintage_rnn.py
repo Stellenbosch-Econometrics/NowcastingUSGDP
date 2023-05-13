@@ -4,6 +4,7 @@
 
 # Only calculate for the final usable vintage
 # TODO: Nowcast and 1,2,3 period ahead forecast + performance metric
+# TODO: Check long vs wide format -- does this make a difference?
 
 ### Package imports ###
 
@@ -70,6 +71,8 @@ vintage_files = [
         (year == 2023 and month > 2)
     )
 ]
+
+# Thinking about this, one could have the traing test split here instead of these awkward names.
 
 vintage_of_interest = vintage_files[-12] # four quarter ahead forecast
 latest_vintage = vintage_files[-1]

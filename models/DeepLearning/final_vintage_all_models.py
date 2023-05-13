@@ -129,44 +129,33 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
 
-    # Collection of all the models. Run to test if each works. 
+    # Define models and their configurations
+    models = {  
+    "AutoRNN": {"config": rnn_config},
+    "AutoLSTM": {"config": rnn_config},
+    "AutoGRU": {"config": rnn_config},
+    "AutoTCN": {"config": rnn_config},
+    "AutoDilatedRNN": {"config": rnn_config},
+    # "AutoMLP": {"config": mlp_config},
+    # "AutoNBEATS": {"config": mlp_config},
+    # "AutoNBEATSx": {"config": mlp_config},
+    # "AutoNHITS": {"config": mlp_config},
+    # "AutoTFT": {"config": tf_config},
+    # "AutoVanillaTransformer": {"config": tf_config},
+    # "AutoInformer": {"config": tf_config},
+    # "AutoAutoformer": {"config": tf_config},
+    # "AutoPatchTST": {"config": config},
+    }
 
-    model_1 = AutoRNN(h=horizon,
-                    config=rnn_config, num_samples=1, verbose=False)
-    model_2 = AutoLSTM(h=horizon,
-                    config=rnn_config, num_samples=1, verbose=False)
-    model_3 = AutoGRU(h=horizon,
-                    config=rnn_config, num_samples=1, verbose=False)
-    model_4 = AutoTCN(h=horizon,
-                    config=rnn_config, num_samples=1, verbose=False)
-    model_5 = AutoDilatedRNN(h=horizon,
-                    config=rnn_config, num_samples=1, verbose=False)
-    model_6 = AutoMLP(h=horizon,
-                     config=mlp_config, num_samples=1, verbose=False)
-    model_7 = AutoNBEATS(h=horizon,
-                    config=mlp_config, num_samples=1, verbose=False)
-    model_8 = AutoNBEATSx(h=horizon,
-                    config=mlp_config, num_samples=1, verbose=False)
-    model_9 = AutoNHITS(h=horizon,
-                    config=mlp_config, num_samples=1, verbose=False)
-    model_10 = AutoTFT(h=horizon,
-                    config=tf_config, num_samples=1, verbose=False)
-    model_11 = AutoVanillaTransformer(h=horizon,
-                    config=tf_config, num_samples=1, verbose=False)
-    model_12 = AutoInformer(h=horizon,
-                    config=tf_config, num_samples=1, verbose=False)
-    model_13 = AutoAutoformer(h=horizon,
-                    config=tf_config, num_samples=1, verbose=False)
-  #   model_14 = AutoPatchTST(h=horizon,
-  #                  config=config, num_samples=1, verbose=False)
+    # Initialize and fit all models
+    model_instances = []
+    for model_name, kwargs in models.items():
+        model_class = globals()[model_name]  # Get the model class
+        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs)  # Initialize the model
+        model_instances.append(instance)
 
-
-    nf = NeuralForecast(models=[model_1, model_2], freq='Q')
+    nf = NeuralForecast(models=model_instances, freq='Q')
     nf.fit(df=df)
-
-
-    # nf = NeuralForecast(models=[model_1, model_2, model_3, model_4, model_5, model_6, model_7, model_8, model_9, model_10, model_11, model_12, model_13], freq='Q')
-    # nf.fit(df=df)
 
     Y_hat_df = nf.predict(futr_df=futr_df)
 
