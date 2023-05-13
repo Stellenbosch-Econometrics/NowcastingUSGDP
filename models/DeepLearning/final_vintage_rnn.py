@@ -110,7 +110,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     model = AutoRNN(h=horizon,
-                    config=config, num_samples=1)
+                    config=config, num_samples=30)
 
     nf = NeuralForecast(models=[model], freq='Q')
     nf.fit(df=df)

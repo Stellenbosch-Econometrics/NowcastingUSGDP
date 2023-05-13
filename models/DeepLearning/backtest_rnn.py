@@ -86,6 +86,8 @@ df = (target_df
       .merge(df_pc, left_index=True, right_index=True)
       .iloc[:-1])
 
+# Think about training-test sample // what is the testing method
+
 config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
