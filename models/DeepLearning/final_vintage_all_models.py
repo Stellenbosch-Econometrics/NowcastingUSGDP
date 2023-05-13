@@ -103,103 +103,132 @@ def forecast_vintage(vintage_file, horizon=4):
                .drop(columns="y")
                .iloc[-1:])
 
-    config = {
+    rnn_config = {
+        "input_size": tune.choice([-1]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),
         "scaler_type": tune.choice(["robust"])
     }
 
+    mlp_config = {
+        "input_size": tune.choice([24]), # think about this tuning choice
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
+
+    tf_config = {
+        "input_size": tune.choice([24]),
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
+
     # Collection of all the models. Run to test if each works. 
 
     model_1 = AutoRNN(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=rnn_config, num_samples=1, verbose=False)
     model_2 = AutoLSTM(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=rnn_config, num_samples=1, verbose=False)
     model_3 = AutoGRU(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=rnn_config, num_samples=1, verbose=False)
     model_4 = AutoTCN(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=rnn_config, num_samples=1, verbose=False)
     model_5 = AutoDilatedRNN(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=rnn_config, num_samples=1, verbose=False)
     model_6 = AutoMLP(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                     config=mlp_config, num_samples=1, verbose=False)
     model_7 = AutoNBEATS(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=mlp_config, num_samples=1, verbose=False)
     model_8 = AutoNBEATSx(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=mlp_config, num_samples=1, verbose=False)
     model_9 = AutoNHITS(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=mlp_config, num_samples=1, verbose=False)
     model_10 = AutoTFT(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=tf_config, num_samples=1, verbose=False)
     model_11 = AutoVanillaTransformer(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=tf_config, num_samples=1, verbose=False)
     model_12 = AutoInformer(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=tf_config, num_samples=1, verbose=False)
     model_13 = AutoAutoformer(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+                    config=tf_config, num_samples=1, verbose=False)
   #   model_14 = AutoPatchTST(h=horizon,
   #                  config=config, num_samples=1, verbose=False)
 
-    nf = NeuralForecast(models=[model_1, model_2, model_3, model_4, model_5, model_6, model_7, model_8, model_9, model_10, model_11, model_12, model_13], freq='Q')
+
+    nf = NeuralForecast(models=[model_1, model_2], freq='Q')
     nf.fit(df=df)
 
+
+    # nf = NeuralForecast(models=[model_1, model_2, model_3, model_4, model_5, model_6, model_7, model_8, model_9, model_10, model_11, model_12, model_13], freq='Q')
+    # nf.fit(df=df)
+
     Y_hat_df = nf.predict(futr_df=futr_df)
+
+    Y_hat_df = Y_hat_df.reset_index() 
 
     forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
 
     results[vintage_file] = forecast_value
 
-    return results
+    return Y_hat_df # results, 
 
 
-# Generate forecasts for the vintage_of_interest
-vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)
+comparison = forecast_vintage(vintage_of_interest)
+comparison.head()
 
-vintage_of_interest_df = load_data(vintage_of_interest)
+# # Generate forecasts for the vintage_of_interest
+# vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)
 
-# Load latest_vintage data
-latest_vintage_df = load_data(latest_vintage)
+# vintage_of_interest_df = load_data(vintage_of_interest)
 
-# Extract the true y values from the latest_vintage_df
-true_y_values = latest_vintage_df.loc[latest_vintage_df.index.isin(
-    latest_vintage_df.index[-4:]), 'y'].tolist()
+# # Load latest_vintage data
+# latest_vintage_df = load_data(latest_vintage)
 
-# Extract the date column (ds) from the latest_vintage_df
-date_column = latest_vintage_df.loc[latest_vintage_df.index.isin(
-    latest_vintage_df.index[-4:]), 'ds'].tolist()
+# # Extract the true y values from the latest_vintage_df
+# true_y_values = latest_vintage_df.loc[latest_vintage_df.index.isin(
+#     latest_vintage_df.index[-4:]), 'y'].tolist()
 
-# Create a DataFrame with the date column, true y values, and forecasted values
-comparison_df = pd.DataFrame({
-    'ds': date_column,
-    'true_y': true_y_values,
-    'forecasted_y': vintage_of_interest_forecast[vintage_of_interest]
-})
+# # Extract the date column (ds) from the latest_vintage_df
+# date_column = latest_vintage_df.loc[latest_vintage_df.index.isin(
+#     latest_vintage_df.index[-4:]), 'ds'].tolist()
 
-# Shift the forecasted_y column back by one time period
-comparison_df['forecasted_y_shifted'] = comparison_df['forecasted_y'].shift(-1)
+# # Create a DataFrame with the date column, true y values, and forecasted values
+# comparison_df = pd.DataFrame({
+#     'ds': date_column,
+#     'true_y': true_y_values,
+#     'forecasted_y': vintage_of_interest_forecast[vintage_of_interest]
+# })
 
-# Drop the original forecasted_y column
-comparison_df.drop(columns='forecasted_y', inplace=True)
+# # Shift the forecasted_y column back by one time period
+# comparison_df['forecasted_y_shifted'] = comparison_df['forecasted_y'].shift(-1)
 
-print(comparison_df)
+# # Drop the original forecasted_y column
+# comparison_df.drop(columns='forecasted_y', inplace=True)
+
+# print(comparison_df)
 
 
 ## simple plot
 
-# Extracting data for the plot
-dates = comparison_df['ds']
-y_true = comparison_df['true_y']
-y_forecasted = comparison_df['forecasted_y_shifted']
+# # Extracting data for the plot
+# dates = comparison_df['ds']
+# y_true = comparison_df['true_y']
+# y_forecasted = comparison_df['forecasted_y_shifted']
 
-# Plotting the data
-plt.figure(figsize=(10, 6))
-plt.plot(dates, y_true, label='True y', marker='o', linestyle='-', markersize=2)
-plt.plot(dates, y_forecasted, label='Forecasted y', marker='o', linestyle='--', markersize=2)
+# # Plotting the data
+# plt.figure(figsize=(10, 6))
+# plt.plot(dates, y_true, label='True y', marker='o', linestyle='-', markersize=2)
+# plt.plot(dates, y_forecasted, label='Forecasted y', marker='o', linestyle='--', markersize=2)
 
-plt.xlabel('Date')
-plt.ylabel('Values')
-plt.title('True y vs. Forecasted y')
-plt.legend()
+# plt.xlabel('Date')
+# plt.ylabel('Values')
+# plt.title('True y vs. Forecasted y')
+# plt.legend()
 
-plt.show()
+# plt.show()
