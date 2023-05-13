@@ -109,8 +109,11 @@ def forecast_vintage(vintage_file, horizon=4):
         "scaler_type": tune.choice(["robust"])
     }
 
+    # Some other parts of configuration to consider
+    # 
+
     model = AutoRNN(h=horizon,
-                    config=config, num_samples=30)
+                    config=config, num_samples=1, verbose=False)
 
     nf = NeuralForecast(models=[model], freq='Q')
     nf.fit(df=df)
