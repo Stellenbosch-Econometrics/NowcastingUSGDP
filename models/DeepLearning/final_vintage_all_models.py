@@ -136,14 +136,14 @@ def forecast_vintage(vintage_file, horizon=4):
     "AutoGRU": {"config": rnn_config},
     "AutoTCN": {"config": rnn_config},
     "AutoDilatedRNN": {"config": rnn_config},
-    # "AutoMLP": {"config": mlp_config},
-    # "AutoNBEATS": {"config": mlp_config},
-    # "AutoNBEATSx": {"config": mlp_config},
-    # "AutoNHITS": {"config": mlp_config},
-    # "AutoTFT": {"config": tf_config},
-    # "AutoVanillaTransformer": {"config": tf_config},
-    # "AutoInformer": {"config": tf_config},
-    # "AutoAutoformer": {"config": tf_config},
+    "AutoMLP": {"config": mlp_config},
+    "AutoNBEATS": {"config": mlp_config},
+    "AutoNBEATSx": {"config": mlp_config},
+    "AutoNHITS": {"config": mlp_config},
+    "AutoTFT": {"config": tf_config},
+    "AutoVanillaTransformer": {"config": tf_config},
+    "AutoInformer": {"config": tf_config},
+    "AutoAutoformer": {"config": tf_config},
     # "AutoPatchTST": {"config": config},
     }
 
@@ -151,7 +151,7 @@ def forecast_vintage(vintage_file, horizon=4):
     model_instances = []
     for model_name, kwargs in models.items():
         model_class = globals()[model_name]  # Get the model class
-        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs)  # Initialize the model
+        instance = model_class(h=horizon, num_samples=10, verbose=False, **kwargs)  # Initialize the model
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -170,6 +170,8 @@ def forecast_vintage(vintage_file, horizon=4):
 
 comparison = forecast_vintage(vintage_of_interest)
 comparison.head()
+
+comparison.to_csv('../DeepLearning/results/all_models_comparison.csv', index=True)
 
 # # Generate forecasts for the vintage_of_interest
 # vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)
