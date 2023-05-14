@@ -122,7 +122,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
     tf_config = {
         "input_size": tune.choice([24]),
-        "hist_exog_list": tune.choice([pcc_list]),
+        # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),
         "scaler_type": tune.choice(["robust"])
@@ -140,18 +140,19 @@ def forecast_vintage(vintage_file, horizon=4):
     "AutoNBEATS": {"config": mlp_config},
     "AutoNBEATSx": {"config": mlp_config},
     "AutoNHITS": {"config": mlp_config},
-    "AutoTFT": {"config": tf_config},
-    "AutoVanillaTransformer": {"config": tf_config},
-    "AutoInformer": {"config": tf_config},
-    "AutoAutoformer": {"config": tf_config},
+    # "AutoTFT": {"config": tf_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
+    "AutoVanillaTransformer": {"config": tf_config}, # Does not support historic values
+    "AutoInformer": {"config": tf_config}, # Does not support historic values
+    "AutoAutoformer": {"config": tf_config}, # Does not support historic values
     # "AutoPatchTST": {"config": config},
     }
 
     # Initialize and fit all models
     model_instances = []
     for model_name, kwargs in models.items():
-        model_class = globals()[model_name]  # Get the model class
-        instance = model_class(h=horizon, num_samples=10, verbose=False, **kwargs)  # Initialize the model
+        print(f"Running model: {model_name}")
+        model_class = globals()[model_name]
+        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -159,16 +160,16 @@ def forecast_vintage(vintage_file, horizon=4):
 
     Y_hat_df = nf.predict(futr_df=futr_df)
 
-    Y_hat_df = Y_hat_df.reset_index() 
-
     forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
 
     results[vintage_file] = forecast_value
 
-    return Y_hat_df # results, 
+    Y_hat_df = Y_hat_df.reset_index() 
+
+    return Y_hat_df, results 
 
 
-comparison = forecast_vintage(vintage_of_interest)
+comparison, results = forecast_vintage(vintage_of_interest)
 comparison.head()
 
 comparison.to_csv('../DeepLearning/results/all_models_comparison.csv', index=True)

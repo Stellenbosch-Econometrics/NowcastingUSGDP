@@ -9,7 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
-from neuralforecast.auto import AutoRNN
+from neuralforecast.auto import AutoRNN, AutoTFT, AutoVanillaTransformer, AutoInformer, AutoAutoformer
 from neuralforecast.losses.numpy import mse, mae
 
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
@@ -92,15 +92,22 @@ config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
     # "learning_rate": tune.choice([1e-3]),
-    "max_steps": tune.choice([500]),
-    # "input_size": tune.choice([150]),
+    "max_steps": tune.choice([10]),
+    "input_size": tune.choice([2]),
     # "encoder_hidden_size": tune.choice([256]),
     # "val_check_steps": tune.choice([1]),
     # "random_seed": tune.randint(1, 10),
     "scaler_type": tune.choice(["robust"])
 }
 
-model = AutoRNN(h=1, config=config, num_samples=1)
+
+model = AutoRNN(h=1, config=config, num_samples=20)
+
+# model = AutoTFT(h=1, config=config, num_samples=1)
+# model = AutoInformer(h=1, config=config, num_samples=1)
+# model = AutoVanillaTransformer(h=1, config=config, num_samples=1)
+# model = AutoAutoformer(h=1, config=config, num_samples=1)
+
 
 nf = NeuralForecast(models=[model], freq='Q')
 # nf.fit(df=df)
@@ -114,7 +121,7 @@ print(fcst_df)
 plt.figure(figsize=(10, 6))
 plt.plot(fcst_df['ds'], fcst_df['y'], label='y',
          marker='o', linestyle='-', markersize=2)
-plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
+plt.plot(fcst_df['ds'], fcst_df['AutoInformer'],
          label='AutoRNN', marker='o', linestyle='--', markersize=2)
 
 plt.xlabel('Date')
