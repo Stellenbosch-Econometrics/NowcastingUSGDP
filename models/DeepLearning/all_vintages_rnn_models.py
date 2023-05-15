@@ -11,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
-from neuralforecast.auto import AutoRNN, AutoLSTM, AutoGRU, AutoTCN, AutoDilatedRNN, AutoMLP, AutoNBEATS, AutoNBEATSx, AutoNHITS, AutoTFT, AutoVanillaTransformer, AutoInformer, AutoAutoformer
+from neuralforecast.auto import AutoRNN, AutoLSTM, AutoGRU, AutoTCN, AutoDilatedRNN
 
 #AutoPatchTST
 
@@ -59,23 +59,6 @@ def impute_missing_values_interpolate(data, method='linear'):
 ### Different vintages ###
 
 
-vintage_files = [
-    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
-    for month in range(1, 13)
-    if not (
-        (year == 2018 and month < 5) or
-        (year == 2023 and month > 2)
-    )
-]
-
-
-vintage_of_interest = vintage_files[-12] # four quarter ahead forecast
-latest_vintage = vintage_files[-1]
-
-### Forecast across last usable vintage ###
-
-
 def forecast_vintage(vintage_file, horizon=4):
     results = {}
 
@@ -108,23 +91,6 @@ def forecast_vintage(vintage_file, horizon=4):
         "input_size": tune.choice([20]), # general rule of thumb -- input size = horizon * 5
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([20]),
-        "scaler_type": tune.choice(["robust"])
-    }
-
-    mlp_config = {
-        "input_size": tune.choice([20]), # think about this tuning choice
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
-    }
-
-
-    tf_config = {
-        "input_size": tune.choice([20]),
-        # "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),
         "scaler_type": tune.choice(["robust"])
     }
@@ -133,18 +99,10 @@ def forecast_vintage(vintage_file, horizon=4):
     # Define models and their configurations
     models = {  
     "AutoRNN": {"config": rnn_config},
-    # "AutoLSTM": {"config": rnn_config},
-    # "AutoGRU": {"config": rnn_config},
-    # "AutoTCN": {"config": rnn_config},
-    # "AutoDilatedRNN": {"config": rnn_config},
-    # "AutoMLP": {"config": mlp_config},
-    # "AutoNBEATS": {"config": mlp_config},
-    # "AutoNBEATSx": {"config": mlp_config},
-    # "AutoNHITS": {"config": mlp_config},
-    # "AutoTFT": {"config": tf_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
-    # "AutoVanillaTransformer": {"config": tf_config}, # Does not support historic values
-    # "AutoInformer": {"config": tf_config}, # Does not support historic values
-    # "AutoAutoformer": {"config": tf_config}, # Does not support historic values
+    "AutoLSTM": {"config": rnn_config},
+    "AutoGRU": {"config": rnn_config},
+    "AutoTCN": {"config": rnn_config},
+    "AutoDilatedRNN": {"config": rnn_config}
     }
 
     # Initialize and fit all models
@@ -171,6 +129,16 @@ def forecast_vintage(vintage_file, horizon=4):
 
 comparison = pd.DataFrame()
 results = {}
+
+vintage_files = [
+    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
+    for year in range(2018, 2024)
+    for month in range(1, 13)
+    if not (
+        (year == 2018 and month < 5) or
+        (year == 2023 and month > 2)
+    )
+]
 
 total_vintages = len(vintage_files)
 

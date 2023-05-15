@@ -1,5 +1,4 @@
 
-### GRU RNN model (final vintage)
 
 ### Package imports ###
 
@@ -12,7 +11,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
-from neuralforecast.auto import AutoRNN, AutoLSTM, AutoGRU, AutoTCN, AutoDilatedRNN, AutoMLP, AutoNBEATS, AutoNBEATSx, AutoNHITS, AutoTFT, AutoVanillaTransformer, AutoInformer, AutoAutoformer
+from neuralforecast.auto import AutoTFT, AutoVanillaTransformer, AutoInformer, AutoAutoformer
 
 #AutoPatchTST
 
@@ -60,22 +59,6 @@ def impute_missing_values_interpolate(data, method='linear'):
 ### Different vintages ###
 
 
-vintage_files = [
-    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
-    for month in range(1, 13)
-    if not (
-        (year == 2018 and month < 5) or
-        (year == 2023 and month > 2)
-    )
-]
-
-vintage_of_interest = vintage_files[-12] # four quarter ahead forecast
-latest_vintage = vintage_files[-1]
-
-### Forecast across last usable vintage ###
-
-
 def forecast_vintage(vintage_file, horizon=4):
     results = {}
 
@@ -104,22 +87,6 @@ def forecast_vintage(vintage_file, horizon=4):
                .drop(columns="y")
                .iloc[-1:])
 
-    rnn_config = {
-        "input_size": tune.choice([20]), # general rule of thumb -- input size = horizon * 5
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500]),
-        "scaler_type": tune.choice(["robust"])
-    }
-
-    mlp_config = {
-        "input_size": tune.choice([20]), # think about this tuning choice
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
-    }
-
 
     tf_config = {
         "input_size": tune.choice([20]),
@@ -132,30 +99,19 @@ def forecast_vintage(vintage_file, horizon=4):
 
     # Define models and their configurations
     models = {  
-    # "AutoRNN": {"config": rnn_config},
-    # "AutoLSTM": {"config": rnn_config},
-    # "AutoGRU": {"config": rnn_config},
-    # "AutoTCN": {"config": rnn_config},
-    # "AutoDilatedRNN": {"config": rnn_config},
-    # "AutoMLP": {"config": mlp_config},
-    # "AutoNBEATS": {"config": mlp_config},
-    # "AutoNBEATSx": {"config": mlp_config},
-    # "AutoNHITS": {"config": mlp_config},
     # "AutoTFT": {"config": tf_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
-    # "AutoVanillaTransformer": {"config": tf_config}, # Does not support historic values
-    # "AutoInformer": {"config": tf_config}, # Does not support historic values
-    # "AutoAutoformer": {"config": tf_config}, # Does not support historic values
+    "AutoVanillaTransformer": {"config": tf_config}, # Does not support historic values
+    "AutoInformer": {"config": tf_config}, # Does not support historic values
+    "AutoAutoformer": {"config": tf_config}, # Does not support historic values
     }
 
     # Initialize and fit all models
     model_instances = []
 
-    
-
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=10, verbose=False, **kwargs) 
+        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -171,72 +127,35 @@ def forecast_vintage(vintage_file, horizon=4):
 
     return Y_hat_df, results 
 
-start_time = time.time()
-comparison, results = forecast_vintage(vintage_of_interest)
+comparison = pd.DataFrame()
+results = {}
 
-# comparison['ds'] = comparison['ds'] + pd.DateOffset(months=3)
-latest_vintage_df = load_data(latest_vintage)
-comparison = comparison.merge(latest_vintage_df[['ds', 'y']], how='left', on='ds', suffixes=('', '_true'))
+vintage_files = [
+    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
+    for year in range(2018, 2024)
+    for month in range(1, 13)
+    if not (
+        (year == 2018 and month < 5) or
+        (year == 2023 and month > 2)
+    )
+]
 
-vintage_file_name = os.path.basename(vintage_of_interest)  
-vintage_file_name = os.path.splitext(vintage_file_name)[0] 
-comparison = comparison.assign(vintage_file = vintage_file_name)
+total_vintages = len(vintage_files)
 
-# comparison
+for i, vintage_file in enumerate(vintage_files):
+    print(f"Processing {vintage_file} ({i+1}/{total_vintages})")
+    start_time = time.time()
+    vintage_comparison, vintage_results = forecast_vintage(vintage_file)
+    
+    vintage_file_name = os.path.basename(vintage_file)  
+    vintage_file_name = os.path.splitext(vintage_file_name)[0] 
+    vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
+    
+    comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
+    
+    results.update(vintage_results)
+    
+    end_time = time.time()
+    print(f"Time taken to run the code for {vintage_file}: {end_time - start_time} seconds")
 
-end_time = time.time()
-
-print(f"Time taken to run the code: {end_time - start_time} seconds")
-
-comparison.to_csv('../DeepLearning/results/mlp_models_comparison.csv', index=True)
-
-# # Generate forecasts for the vintage_of_interest
-# vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)
-
-# vintage_of_interest_df = load_data(vintage_of_interest)
-
-# # Load latest_vintage data
-# latest_vintage_df = load_data(latest_vintage)
-
-# # Extract the true y values from the latest_vintage_df
-# true_y_values = latest_vintage_df.loc[latest_vintage_df.index.isin(
-#     latest_vintage_df.index[-4:]), 'y'].tolist()
-
-# # Extract the date column (ds) from the latest_vintage_df
-# date_column = latest_vintage_df.loc[latest_vintage_df.index.isin(
-#     latest_vintage_df.index[-4:]), 'ds'].tolist()
-
-# # Create a DataFrame with the date column, true y values, and forecasted values
-# comparison_df = pd.DataFrame({
-#     'ds': date_column,
-#     'true_y': true_y_values,
-#     'forecasted_y': vintage_of_interest_forecast[vintage_of_interest]
-# })
-
-# # Shift the forecasted_y column back by one time period
-# comparison_df['forecasted_y_shifted'] = comparison_df['forecasted_y'].shift(-1)
-
-# # Drop the original forecasted_y column
-# comparison_df.drop(columns='forecasted_y', inplace=True)
-
-# print(comparison_df)
-
-
-## simple plot
-
-# # Extracting data for the plot
-# dates = comparison_df['ds']
-# y_true = comparison_df['true_y']
-# y_forecasted = comparison_df['forecasted_y_shifted']
-
-# # Plotting the data
-# plt.figure(figsize=(10, 6))
-# plt.plot(dates, y_true, label='True y', marker='o', linestyle='-', markersize=2)
-# plt.plot(dates, y_forecasted, label='Forecasted y', marker='o', linestyle='--', markersize=2)
-
-# plt.xlabel('Date')
-# plt.ylabel('Values')
-# plt.title('True y vs. Forecasted y')
-# plt.legend()
-
-# plt.show()
+comparison.to_csv('../DeepLearning/results/all_vintages_tf_models.csv', index=True)
