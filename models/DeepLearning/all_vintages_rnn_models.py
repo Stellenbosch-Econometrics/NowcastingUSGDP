@@ -1,7 +1,5 @@
 
 
-### Package imports ###
-
 from ray import tune
 import time
 import logging
@@ -13,16 +11,9 @@ import matplotlib.pyplot as plt
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN, AutoLSTM, AutoGRU, AutoTCN, AutoDilatedRNN
 
-#AutoPatchTST
-
-### Ignore warnings ###
-
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
-
-### Data preprocessing ###
-
 
 def load_data(file_path):
     df = (pd.read_csv(file_path)
@@ -56,9 +47,6 @@ def impute_missing_values_interpolate(data, method='linear'):
     return imputed_data.interpolate(method=method)
 
 
-### Different vintages ###
-
-
 def forecast_vintage(vintage_file, horizon=4):
     results = {}
 
@@ -66,7 +54,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
     target_df = df[["unique_id", "ds", "y"]]
 
-    point_in_time = df.index[-2] # explain later
+    point_in_time = df.index[-2]
 
     past_covariates, future_covariates = separate_covariates(
         df, point_in_time)
@@ -87,6 +75,7 @@ def forecast_vintage(vintage_file, horizon=4):
                .drop(columns="y")
                .iloc[-1:])
 
+    # Same for all the models at the moment, will likely change
     rnn_config = {
         "input_size": tune.choice([20]), # general rule of thumb -- input size = horizon * 5
         "hist_exog_list": tune.choice([pcc_list]),
@@ -95,8 +84,6 @@ def forecast_vintage(vintage_file, horizon=4):
         "scaler_type": tune.choice(["robust"])
     }
 
-
-    # Define models and their configurations
     models = {  
     "AutoRNN": {"config": rnn_config},
     "AutoLSTM": {"config": rnn_config},
@@ -105,7 +92,6 @@ def forecast_vintage(vintage_file, horizon=4):
     "AutoDilatedRNN": {"config": rnn_config}
     }
 
-    # Initialize and fit all models
     model_instances = []
 
     for model_name, kwargs in models.items():
@@ -142,9 +128,11 @@ vintage_files = [
 
 total_vintages = len(vintage_files)
 
+start_time_whole = time.time()
+
 for i, vintage_file in enumerate(vintage_files):
     print(f"Processing {vintage_file} ({i+1}/{total_vintages})")
-    start_time = time.time()
+    # start_time = time.time()
     vintage_comparison, vintage_results = forecast_vintage(vintage_file)
     
     vintage_file_name = os.path.basename(vintage_file)  
@@ -155,7 +143,11 @@ for i, vintage_file in enumerate(vintage_files):
     
     results.update(vintage_results)
     
-    end_time = time.time()
-    print(f"Time taken to run the code for {vintage_file}: {end_time - start_time} seconds")
+    # end_time = time.time()
+    # print(f"Time taken to run the code for {vintage_file}: {end_time - start_time} seconds")
+
+end_time_whole = time.time()
+
+print(f"Time taken to run all the code: {end_time_whole - start_time_whole} seconds")
 
 comparison.to_csv('../DeepLearning/results/all_vintages_rnn_models.csv', index=True)
