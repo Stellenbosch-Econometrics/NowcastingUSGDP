@@ -92,8 +92,8 @@ config = {
     "hist_exog_list": tune.choice([pcc_list]),
     "futr_exog_list": tune.choice([fcc_list]),
     # "learning_rate": tune.choice([1e-3]),
-    "max_steps": tune.choice([10]),
-    "input_size": tune.choice([2]),
+    "max_steps": tune.choice([100]),
+    "input_size": tune.choice([-1]),
     # "encoder_hidden_size": tune.choice([256]),
     # "val_check_steps": tune.choice([1]),
     # "random_seed": tune.randint(1, 10),
@@ -101,7 +101,7 @@ config = {
 }
 
 
-model = AutoRNN(h=1, config=config, num_samples=20)
+model = AutoRNN(h=1, config=config, num_samples=1)
 
 # model = AutoTFT(h=1, config=config, num_samples=1)
 # model = AutoInformer(h=1, config=config, num_samples=1)
@@ -121,7 +121,7 @@ print(fcst_df)
 plt.figure(figsize=(10, 6))
 plt.plot(fcst_df['ds'], fcst_df['y'], label='y',
          marker='o', linestyle='-', markersize=2)
-plt.plot(fcst_df['ds'], fcst_df['AutoInformer'],
+plt.plot(fcst_df['ds'], fcst_df['AutoRNN'],
          label='AutoRNN', marker='o', linestyle='--', markersize=2)
 
 plt.xlabel('Date')

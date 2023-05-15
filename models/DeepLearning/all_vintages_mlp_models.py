@@ -105,7 +105,7 @@ def forecast_vintage(vintage_file, horizon=4):
                .iloc[-1:])
 
     rnn_config = {
-        "input_size": tune.choice([-1]),
+        "input_size": tune.choice([20]), # general rule of thumb -- input size = horizon * 5
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([500]),
@@ -113,7 +113,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     mlp_config = {
-        "input_size": tune.choice([24]), # think about this tuning choice
+        "input_size": tune.choice([20]), # think about this tuning choice
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),
@@ -122,7 +122,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
 
     tf_config = {
-        "input_size": tune.choice([24]),
+        "input_size": tune.choice([20]),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),
@@ -132,11 +132,11 @@ def forecast_vintage(vintage_file, horizon=4):
 
     # Define models and their configurations
     models = {  
-    "AutoRNN": {"config": rnn_config},
-    "AutoLSTM": {"config": rnn_config},
-    "AutoGRU": {"config": rnn_config},
-    "AutoTCN": {"config": rnn_config},
-    "AutoDilatedRNN": {"config": rnn_config},
+    # "AutoRNN": {"config": rnn_config},
+    # "AutoLSTM": {"config": rnn_config},
+    # "AutoGRU": {"config": rnn_config},
+    # "AutoTCN": {"config": rnn_config},
+    # "AutoDilatedRNN": {"config": rnn_config},
     # "AutoMLP": {"config": mlp_config},
     # "AutoNBEATS": {"config": mlp_config},
     # "AutoNBEATSx": {"config": mlp_config},
@@ -145,7 +145,6 @@ def forecast_vintage(vintage_file, horizon=4):
     # "AutoVanillaTransformer": {"config": tf_config}, # Does not support historic values
     # "AutoInformer": {"config": tf_config}, # Does not support historic values
     # "AutoAutoformer": {"config": tf_config}, # Does not support historic values
-    # "AutoPatchTST": {"config": config},
     }
 
     # Initialize and fit all models
@@ -156,7 +155,7 @@ def forecast_vintage(vintage_file, horizon=4):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=20, verbose=False, **kwargs) 
+        instance = model_class(h=horizon, num_samples=10, verbose=False, **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -175,8 +174,6 @@ def forecast_vintage(vintage_file, horizon=4):
 start_time = time.time()
 comparison, results = forecast_vintage(vintage_of_interest)
 
-
-
 # comparison['ds'] = comparison['ds'] + pd.DateOffset(months=3)
 latest_vintage_df = load_data(latest_vintage)
 comparison = comparison.merge(latest_vintage_df[['ds', 'y']], how='left', on='ds', suffixes=('', '_true'))
@@ -185,13 +182,13 @@ vintage_file_name = os.path.basename(vintage_of_interest)
 vintage_file_name = os.path.splitext(vintage_file_name)[0] 
 comparison = comparison.assign(vintage_file = vintage_file_name)
 
-comparison
+# comparison
 
 end_time = time.time()
 
 print(f"Time taken to run the code: {end_time - start_time} seconds")
 
-comparison.to_csv('../DeepLearning/results/rnn_models_comparison.csv', index=True)
+comparison.to_csv('../DeepLearning/results/mlp_models_comparison.csv', index=True)
 
 # # Generate forecasts for the vintage_of_interest
 # vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)

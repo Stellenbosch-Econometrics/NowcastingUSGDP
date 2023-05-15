@@ -1,0 +1,242 @@
+
+### GRU RNN model (final vintage)
+
+### Package imports ###
+
+from ray import tune
+import time
+import logging
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from neuralforecast import NeuralForecast
+from neuralforecast.auto import AutoRNN, AutoLSTM, AutoGRU, AutoTCN, AutoDilatedRNN, AutoMLP, AutoNBEATS, AutoNBEATSx, AutoNHITS, AutoTFT, AutoVanillaTransformer, AutoInformer, AutoAutoformer
+
+#AutoPatchTST
+
+### Ignore warnings ###
+
+logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
+
+### Data preprocessing ###
+
+
+def load_data(file_path):
+    df = (pd.read_csv(file_path)
+          .rename(columns={"year_quarter": "ds", "GDPC1": "y"})
+          .assign(unique_id=np.ones(len(pd.read_csv(file_path))),
+                  ds=lambda df: pd.to_datetime(df['ds'])))
+    columns_order = ["unique_id", "ds", "y"] + \
+        [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
+    df['ds'] = df['ds'] - pd.Timedelta(days=1)
+    return df[columns_order]
+
+
+def separate_covariates(df, point_in_time):
+    covariates = df.drop(columns=["unique_id", "ds", "y"])
+
+    if not point_in_time:
+        return df[covariates.columns], df[[]]
+
+    mask = covariates.apply(
+        lambda col: col.loc[col.index >= point_in_time - 1].isnull().any())
+
+    past_covariates = df[mask.index[mask]]
+    future_covariates = df[mask.index[~mask]]
+
+    return past_covariates, future_covariates
+
+
+def impute_missing_values_interpolate(data, method='linear'):
+    imputed_data = data.copy()
+    imputed_data.fillna(method='bfill', inplace=True)
+    return imputed_data.interpolate(method=method)
+
+
+### Different vintages ###
+
+
+vintage_files = [
+    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
+    for year in range(2018, 2024)
+    for month in range(1, 13)
+    if not (
+        (year == 2018 and month < 5) or
+        (year == 2023 and month > 2)
+    )
+]
+
+vintage_of_interest = vintage_files[-12] # four quarter ahead forecast
+latest_vintage = vintage_files[-1]
+
+### Forecast across last usable vintage ###
+
+
+def forecast_vintage(vintage_file, horizon=4):
+    results = {}
+
+    df = load_data(vintage_file)
+
+    target_df = df[["unique_id", "ds", "y"]]
+
+    point_in_time = df.index[-2] # explain later
+
+    past_covariates, future_covariates = separate_covariates(
+        df, point_in_time)
+
+    df_pc = impute_missing_values_interpolate(past_covariates)
+    df_fc = impute_missing_values_interpolate(future_covariates)
+
+    pcc_list = past_covariates.columns.tolist()
+    fcc_list = future_covariates.columns.tolist()
+
+    df = (target_df
+          .merge(df_fc, left_index=True, right_index=True)
+          .merge(df_pc, left_index=True, right_index=True)
+          .iloc[:-1])
+
+    futr_df = (target_df
+               .merge(future_covariates, left_index=True, right_index=True)
+               .drop(columns="y")
+               .iloc[-1:])
+
+    rnn_config = {
+        "input_size": tune.choice([20]), # general rule of thumb -- input size = horizon * 5
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
+    mlp_config = {
+        "input_size": tune.choice([20]), # think about this tuning choice
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
+
+    tf_config = {
+        "input_size": tune.choice([20]),
+        # "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
+
+    # Define models and their configurations
+    models = {  
+    # "AutoRNN": {"config": rnn_config},
+    # "AutoLSTM": {"config": rnn_config},
+    # "AutoGRU": {"config": rnn_config},
+    # "AutoTCN": {"config": rnn_config},
+    # "AutoDilatedRNN": {"config": rnn_config},
+    # "AutoMLP": {"config": mlp_config},
+    # "AutoNBEATS": {"config": mlp_config},
+    # "AutoNBEATSx": {"config": mlp_config},
+    # "AutoNHITS": {"config": mlp_config},
+    # "AutoTFT": {"config": tf_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
+    # "AutoVanillaTransformer": {"config": tf_config}, # Does not support historic values
+    # "AutoInformer": {"config": tf_config}, # Does not support historic values
+    # "AutoAutoformer": {"config": tf_config}, # Does not support historic values
+    }
+
+    # Initialize and fit all models
+    model_instances = []
+
+    
+
+    for model_name, kwargs in models.items():
+        print(f"Running model: {model_name}")
+        model_class = globals()[model_name]
+        instance = model_class(h=horizon, num_samples=10, verbose=False, **kwargs) 
+        model_instances.append(instance)
+
+    nf = NeuralForecast(models=model_instances, freq='Q')
+    nf.fit(df=df)
+
+    Y_hat_df = nf.predict(futr_df=futr_df)
+
+    forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
+
+    results[vintage_file] = forecast_value
+
+    Y_hat_df = Y_hat_df.reset_index() 
+
+    return Y_hat_df, results 
+
+start_time = time.time()
+comparison, results = forecast_vintage(vintage_of_interest)
+
+# comparison['ds'] = comparison['ds'] + pd.DateOffset(months=3)
+latest_vintage_df = load_data(latest_vintage)
+comparison = comparison.merge(latest_vintage_df[['ds', 'y']], how='left', on='ds', suffixes=('', '_true'))
+
+vintage_file_name = os.path.basename(vintage_of_interest)  
+vintage_file_name = os.path.splitext(vintage_file_name)[0] 
+comparison = comparison.assign(vintage_file = vintage_file_name)
+
+# comparison
+
+end_time = time.time()
+
+print(f"Time taken to run the code: {end_time - start_time} seconds")
+
+comparison.to_csv('../DeepLearning/results/mlp_models_comparison.csv', index=True)
+
+# # Generate forecasts for the vintage_of_interest
+# vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)
+
+# vintage_of_interest_df = load_data(vintage_of_interest)
+
+# # Load latest_vintage data
+# latest_vintage_df = load_data(latest_vintage)
+
+# # Extract the true y values from the latest_vintage_df
+# true_y_values = latest_vintage_df.loc[latest_vintage_df.index.isin(
+#     latest_vintage_df.index[-4:]), 'y'].tolist()
+
+# # Extract the date column (ds) from the latest_vintage_df
+# date_column = latest_vintage_df.loc[latest_vintage_df.index.isin(
+#     latest_vintage_df.index[-4:]), 'ds'].tolist()
+
+# # Create a DataFrame with the date column, true y values, and forecasted values
+# comparison_df = pd.DataFrame({
+#     'ds': date_column,
+#     'true_y': true_y_values,
+#     'forecasted_y': vintage_of_interest_forecast[vintage_of_interest]
+# })
+
+# # Shift the forecasted_y column back by one time period
+# comparison_df['forecasted_y_shifted'] = comparison_df['forecasted_y'].shift(-1)
+
+# # Drop the original forecasted_y column
+# comparison_df.drop(columns='forecasted_y', inplace=True)
+
+# print(comparison_df)
+
+
+## simple plot
+
+# # Extracting data for the plot
+# dates = comparison_df['ds']
+# y_true = comparison_df['true_y']
+# y_forecasted = comparison_df['forecasted_y_shifted']
+
+# # Plotting the data
+# plt.figure(figsize=(10, 6))
+# plt.plot(dates, y_true, label='True y', marker='o', linestyle='-', markersize=2)
+# plt.plot(dates, y_forecasted, label='Forecasted y', marker='o', linestyle='--', markersize=2)
+
+# plt.xlabel('Date')
+# plt.ylabel('Values')
+# plt.title('True y vs. Forecasted y')
+# plt.legend()
+
+# plt.show()
