@@ -171,7 +171,7 @@ def forecast_vintage(vintage_file, horizon=4):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs) 
+        instance = model_class(h=horizon, num_samples=20, verbose=False, **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -196,7 +196,7 @@ vintage_files = [
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
-        (year == 2023 and month > 2)
+        (year == 2023 and month > 1)
     )
 ]
 
