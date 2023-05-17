@@ -75,22 +75,6 @@ def forecast_vintage(vintage_file, horizon=4):
                .drop(columns="y")
                .iloc[-1:])
 
-    # check what the defualt configuration is for RNN
-
-    default_config_rnn = {
-        "input_size_multiplier": [-1, 4, 16, 64],
-        "inference_input_size_multiplier": [-1],
-        "h": None,
-        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 4),
-        "context_size": tune.choice([5, 10, 50]),
-        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "max_steps": tune.choice([500, 1000]),
-        "batch_size": tune.choice([16, 32]),
-        "loss": None,
-        "random_seed": tune.randint(1, 20),
-    }
 
     # Same for all the models at the moment, will likely change
     rnn_config = {
@@ -222,7 +206,6 @@ start_time_whole = time.time()
 
 for i, vintage_file in enumerate(vintage_files):
     print(f"Processing {vintage_file} ({i+1}/{total_vintages})")
-    # start_time = time.time()
     vintage_comparison, vintage_results = forecast_vintage(vintage_file)
     
     vintage_file_name = os.path.basename(vintage_file)  
@@ -232,9 +215,7 @@ for i, vintage_file in enumerate(vintage_files):
     comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
     
     results.update(vintage_results)
-    
-    # end_time = time.time()
-    # print(f"Time taken to run the code for {vintage_file}: {end_time - start_time} seconds")
+
 
 end_time_whole = time.time()
 
