@@ -75,13 +75,46 @@ def forecast_vintage(vintage_file, horizon=4):
                .drop(columns="y")
                .iloc[-1:])
 
+    # check what the defualt configuration is for RNN
+
+    default_config_rnn = {
+        "input_size_multiplier": [-1, 4, 16, 64],
+        "inference_input_size_multiplier": [-1],
+        "h": None,
+        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+        "encoder_n_layers": tune.randint(1, 4),
+        "context_size": tune.choice([5, 10, 50]),
+        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "max_steps": tune.choice([500, 1000]),
+        "batch_size": tune.choice([16, 32]),
+        "loss": None,
+        "random_seed": tune.randint(1, 20),
+    }
+
+    default_config_lstm = {
+        "input_size_multiplier": [-1, 4, 16, 64],
+        "inference_input_size_multiplier": [-1],
+        "h": None,
+        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+        "encoder_n_layers": tune.randint(1, 4),
+        "context_size": tune.choice([5, 10, 50]),
+        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "max_steps": tune.choice([500, 1000]),
+        "batch_size": tune.choice([16, 32]),
+        "loss": None,
+        "random_seed": tune.randint(1, 20),
+    }
+
     # Same for all the models at the moment, will likely change
     rnn_config = {
-        "input_size": tune.choice([20]), # general rule of thumb -- input size = horizon * 5
+        "input_size": tune.choice([-1, 10, 20]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
+        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "scaler_type": tune.choice(["robust"]) # this should be robust because of the exogenous variables being included. 
     }
 
     models = {  
