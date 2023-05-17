@@ -92,37 +92,93 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20),
     }
 
-    default_config_lstm = {
-        "input_size_multiplier": [-1, 4, 16, 64],
-        "inference_input_size_multiplier": [-1],
-        "h": None,
+    # Same for all the models at the moment, will likely change
+    rnn_config = {
+        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 4),
+        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "max_steps": tune.choice([500, 1000]),
         "batch_size": tune.choice([16, 32]),
-        "loss": None,
-        "random_seed": tune.randint(1, 20),
-    }
-
-    # Same for all the models at the moment, will likely change
-    rnn_config = {
-        "input_size": tune.choice([-1, 10, 20]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
-        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([500]), # 500 seems to be a good default
-        "scaler_type": tune.choice(["robust"]) # this should be robust because of the exogenous variables being included. 
+        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+        "random_seed": tune.randint(1, 20), 
     }
+
+    # Same for all the models at the moment, will likely change
+    lstm_config = {
+        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
+        "context_size": tune.choice([5, 10, 50]),
+        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([16, 32]),
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+        "random_seed": tune.randint(1, 20), 
+    }
+
+    gru_config = {
+        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
+        "context_size": tune.choice([5, 10, 50]),
+        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([16, 32]),
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+        "random_seed": tune.randint(1, 20), 
+    }
+
+    tcn_config = {
+        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "context_size": tune.choice([5, 10, 50]),
+        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([16, 32]),
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+        "random_seed": tune.randint(1, 20)
+    }
+
+    dilated_rnn_config = {
+        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "context_size": tune.choice([5, 10, 50]),
+        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([16, 32]),
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+        "random_seed": tune.randint(1, 20)
+    }
+    
 
     models = {  
     "AutoRNN": {"config": rnn_config},
-    "AutoLSTM": {"config": rnn_config},
-    "AutoGRU": {"config": rnn_config},
-    "AutoTCN": {"config": rnn_config},
-    "AutoDilatedRNN": {"config": rnn_config}
+    "AutoLSTM": {"config": lstm_config},
+    "AutoGRU": {"config": gru_config},
+    # "AutoTCN": {"config": tcn_config},
+    # "AutoDilatedRNN": {"config": dilated_rnn_config}
     }
 
     model_instances = []
@@ -151,7 +207,7 @@ results = {}
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
+    for year in range(2023, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
@@ -183,4 +239,4 @@ end_time_whole = time.time()
 
 print(f"Time taken to run all the code: {end_time_whole - start_time_whole} seconds")
 
-comparison.to_csv('../DeepLearning/results/all_vintages_rnn_models.csv', index=True)
+comparison.to_csv('../DeepLearning/results/test_all_models_rnn.csv', index=True)
