@@ -145,7 +145,6 @@ def forecast_vintage(vintage_file, horizon=4):
     tcn_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -157,10 +156,12 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20)
     }
 
+
     dilated_rnn_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "cell_type": tune.choice(["LSTM", "GRU"]),
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "dilations": tune.choice([[[1, 2], [4, 8]], [[1, 2, 4, 8]]]),
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -177,8 +178,8 @@ def forecast_vintage(vintage_file, horizon=4):
     "AutoRNN": {"config": rnn_config},
     "AutoLSTM": {"config": lstm_config},
     "AutoGRU": {"config": gru_config},
-    # "AutoTCN": {"config": tcn_config},
-    # "AutoDilatedRNN": {"config": dilated_rnn_config}
+    "AutoTCN": {"config": tcn_config},
+    "AutoDilatedRNN": {"config": dilated_rnn_config}
     }
 
     model_instances = []
