@@ -1,5 +1,11 @@
 
 
+# Preamble for Grid AI
+# !git clone https://github.com/Nixtla/neuralforecast.git && cd neuralforecast && conda env create -f environment.yml
+
+# !pip install neuralforecast
+
+
 from ray import tune
 import time
 import logging
@@ -8,6 +14,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from ray.tune.search.hyperopt import HyperOptSearch
+from neuralforecast.losses.pytorch import MAE
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoRNN, AutoLSTM, AutoGRU, AutoTCN, AutoDilatedRNN
 
@@ -80,7 +88,7 @@ def forecast_vintage(vintage_file, horizon=4):
     rnn_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
@@ -161,9 +169,9 @@ def forecast_vintage(vintage_file, horizon=4):
     models = {  
     "AutoRNN": {"config": rnn_config},
     "AutoLSTM": {"config": lstm_config},
-    "AutoGRU": {"config": gru_config},
-    "AutoTCN": {"config": tcn_config},
-    "AutoDilatedRNN": {"config": dilated_rnn_config}
+    # "AutoGRU": {"config": gru_config},
+    # "AutoTCN": {"config": tcn_config},
+    # "AutoDilatedRNN": {"config": dilated_rnn_config}
     }
 
     model_instances = []
@@ -171,24 +179,25 @@ def forecast_vintage(vintage_file, horizon=4):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=20, verbose=False, **kwargs) 
+        # instance = model_class(h=horizon, num_samples=1, search_alg=HyperOptSearch(), loss=MAE(), **kwargs) 
+        instance = model_class(h=horizon, num_samples=1, loss=MAE(), **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
     nf.fit(df=df)
 
     Y_hat_df = nf.predict(futr_df=futr_df)
-
     forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
 
     results[vintage_file] = forecast_value
 
-    Y_hat_df = Y_hat_df.reset_index() 
+    Y_hat_df = Y_hat_df.reset_index()
 
-    return Y_hat_df, results 
+    return Y_hat_df, results
 
 comparison = pd.DataFrame()
 results = {}
+hyperparameters_df = pd.DataFrame()
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
@@ -207,7 +216,7 @@ start_time_whole = time.time()
 for i, vintage_file in enumerate(vintage_files):
     print(f"Processing {vintage_file} ({i+1}/{total_vintages})")
     vintage_comparison, vintage_results = forecast_vintage(vintage_file)
-    
+
     vintage_file_name = os.path.basename(vintage_file)  
     vintage_file_name = os.path.splitext(vintage_file_name)[0] 
     vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
@@ -219,6 +228,11 @@ for i, vintage_file in enumerate(vintage_files):
 
 end_time_whole = time.time()
 
-print(f"Time taken to run all the code: {end_time_whole - start_time_whole} seconds")
+time_diff = end_time_whole - start_time_whole
+hours, remainder = divmod(time_diff, 3600)
+minutes, seconds = divmod(remainder, 60)
 
-comparison.to_csv('../DeepLearning/results/test_all_models_rnn.csv', index=True)
+print(f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")
+
+# comparison.to_csv('../DeepLearning/results/all_rnn_models_single_vintage.csv', index=True)
+# comparison.to_csv('../DeepLearning/results/all_rnn_models_all_vintages.csv', index=True)
