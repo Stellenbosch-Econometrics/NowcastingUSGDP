@@ -201,11 +201,11 @@ results = {}
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
+    for year in range(2023, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
-        (year == 2023 and month > 2)
+        (year == 2023 and month > 1)
     )
 ]
 
@@ -235,4 +235,5 @@ minutes, seconds = divmod(remainder, 60)
 print(f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")
 
 # comparison.to_csv('../DeepLearning/results/all_rnn_models_single_vintage.csv', index=True)
-comparison.to_csv('../DeepLearning/results/all_rnn_models_all_vintages.csv', index=True)
+# comparison.to_csv('../DeepLearning/results/all_rnn_models_all_vintages.csv', index=True)
+comparison.to_csv('results/all_rnn_models_all_vintages.csv', index=True)

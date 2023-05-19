@@ -95,6 +95,30 @@ def forecast_vintage(vintage_file, horizon=4):
         "scaler_type": tune.choice(["robust"])
     }
 
+    nbeats_config = {
+        "input_size": tune.choice([20]), # think about this tuning choice
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
+    nbeatsx_config = {
+        "input_size": tune.choice([20]), # think about this tuning choice
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
+    nhits_config = {
+        "input_size": tune.choice([20]), # think about this tuning choice
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"])
+    }
+
     # Define models and their configurations
     models = {  
     "AutoMLP": {"config": mlp_config},
