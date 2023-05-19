@@ -2,7 +2,6 @@
 
 # Preamble for Grid AI
 # !git clone https://github.com/Nixtla/neuralforecast.git && cd neuralforecast && conda env create -f environment.yml
-
 # !pip install neuralforecast
 
 
@@ -84,7 +83,7 @@ def forecast_vintage(vintage_file, horizon=4):
                .iloc[-1:])
 
 
-    # Same for all the models at the moment, will likely change
+    # Checked
     rnn_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
@@ -101,11 +100,11 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20), 
     }
 
-    # Same for all the models at the moment, will likely change
+    # Checked
     lstm_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
@@ -118,10 +117,11 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20), 
     }
 
+    # Checked
     gru_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 3), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+        "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
@@ -134,6 +134,7 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20), 
     }
 
+    # Checked   
     tcn_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
@@ -148,7 +149,7 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20)
     }
 
-
+    # Checked
     dilated_rnn_config = {
         "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "cell_type": tune.choice(["LSTM", "GRU"]),
@@ -169,9 +170,9 @@ def forecast_vintage(vintage_file, horizon=4):
     models = {  
     "AutoRNN": {"config": rnn_config},
     "AutoLSTM": {"config": lstm_config},
-    # "AutoGRU": {"config": gru_config},
-    # "AutoTCN": {"config": tcn_config},
-    # "AutoDilatedRNN": {"config": dilated_rnn_config}
+    "AutoGRU": {"config": gru_config},
+    "AutoTCN": {"config": tcn_config},
+    "AutoDilatedRNN": {"config": dilated_rnn_config}
     }
 
     model_instances = []
@@ -180,7 +181,7 @@ def forecast_vintage(vintage_file, horizon=4):
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
         # instance = model_class(h=horizon, num_samples=1, search_alg=HyperOptSearch(), loss=MAE(), **kwargs) 
-        instance = model_class(h=horizon, num_samples=1, loss=MAE(), **kwargs) 
+        instance = model_class(h=horizon, num_samples=30, loss=MAE(), **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -197,15 +198,14 @@ def forecast_vintage(vintage_file, horizon=4):
 
 comparison = pd.DataFrame()
 results = {}
-hyperparameters_df = pd.DataFrame()
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2023, 2024)
+    for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
-        (year == 2023 and month > 1)
+        (year == 2023 and month > 2)
     )
 ]
 
@@ -235,4 +235,4 @@ minutes, seconds = divmod(remainder, 60)
 print(f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")
 
 # comparison.to_csv('../DeepLearning/results/all_rnn_models_single_vintage.csv', index=True)
-# comparison.to_csv('../DeepLearning/results/all_rnn_models_all_vintages.csv', index=True)
+comparison.to_csv('../DeepLearning/results/all_rnn_models_all_vintages.csv', index=True)
