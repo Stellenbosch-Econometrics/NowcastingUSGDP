@@ -1,10 +1,5 @@
 
 
-# Preamble for Grid AI
-# !git clone https://github.com/Nixtla/neuralforecast.git && cd neuralforecast && conda env create -f environment.yml
-# !pip install neuralforecast
-
-
 from ray import tune
 import time
 import logging

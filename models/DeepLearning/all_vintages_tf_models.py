@@ -89,45 +89,63 @@ def forecast_vintage(vintage_file, horizon=4):
 
 
     tft_config = {
-        "input_size": tune.choice([2]),
+        "input_size": tune.choice([2, 4]),
         # "hist_exog_list": tune.choice([pcc_list]),
         # "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
+        "max_steps": tune.choice([500, 1000]),
         "scaler_type": tune.choice(["robust"])
     }
 
     vanilla_config = {
-        "input_size": tune.choice([20]),
+        "input_size": tune.choice([2, 4, 12]),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
+        "max_steps": tune.choice([500, 1000]),
+        "scaler_type": tune.choice(["robust"]),
+        "hidden_size": tune.choice([64, 128, 256]),
+        "n_head": tune.choice([4, 8]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        "random_seed": tune.randint(1, 20),
     }
 
     informer_config = {
-        "input_size": tune.choice([20]),
+        "input_size": tune.choice([2, 4, 12]),
+        "hidden_size": tune.choice([64, 128, 256]),
+        "n_head": tune.choice([4, 8]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        "random_seed": tune.randint(1, 20),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
+        "max_steps": tune.choice([500, 1000]),
     }
 
     autoformer_config = {
-        "input_size": tune.choice([20]),
+        "input_size": tune.choice([2, 4, 12]),
+        "hidden_size": tune.choice([64, 128, 256]),
+        "n_head": tune.choice([4, 8]),
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        "random_seed": tune.randint(1, 20),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
+        "max_steps": tune.choice([500, 1000]),
     }
-
 
     # Define models and their configurations
     models = {  
     "AutoTFT": {"config": tft_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
-    # "AutoVanillaTransformer": {"config": tf_config}, # Does not support historic values
-    # "AutoInformer": {"config": tf_config}, # Does not support historic values
-    # "AutoAutoformer": {"config": tf_config}, # Does not support historic values
+    # "AutoVanillaTransformer": {"config": vanilla_config}, # Does not support historic values
+    # "AutoInformer": {"config": informer_config}, # Does not support historic values
+    # "AutoAutoformer": {"config": autoformer_config}, # Does not support historic values
     }
+    
 
     # Initialize and fit all models
     model_instances = []
@@ -156,7 +174,7 @@ results = {}
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2023, 2024)
+    for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
@@ -182,4 +200,4 @@ for i, vintage_file in enumerate(vintage_files):
     end_time = time.time()
     print(f"Time taken to run the code for {vintage_file}: {end_time - start_time} seconds")
 
-comparison.to_csv('../DeepLearning/results/test_all_tf_models.csv', index=True)
+# comparison.to_csv('../DeepLearning/results/test_all_tf_models.csv', index=True)

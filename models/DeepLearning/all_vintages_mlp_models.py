@@ -88,7 +88,7 @@ def forecast_vintage(vintage_file, horizon=4):
                .iloc[-1:])
 
     mlp_config = {
-        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
+        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
         "hidden_size": tune.choice([256, 512, 1024]),
         "num_layers": tune.randint(2, 6),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -97,41 +97,74 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice([None, "robust", "standard"]),
+        "max_steps": tune.choice([500, 1000]),
+        "scaler_type": tune.choice(["robust"]),
     }
 
     nbeats_config = {
-        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
+        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
+        #"hist_exog_list": tune.choice([pcc_list]),
+        #"futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500, 1000]),
+        "random_seed": tune.randint(1, 20)
     }
 
     nbeatsx_config = {
-        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
+        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
+        "max_steps": tune.choice([500, 1000]),
+        "random_seed": tune.randint(1, 20)
+    }
     }
 
     nhits_config = {
-        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
+        "n_pool_kernel_size": tune.choice(
+            [[2, 2, 1], 3 * [1], 3 * [2], 3 * [4], [8, 4, 1], [16, 8, 1]]
+        ),
+        "n_freq_downsample": tune.choice(
+            [
+                [168, 24, 1],
+                [24, 12, 1],
+                [180, 60, 1],
+                [60, 8, 1],
+                [40, 20, 1],
+                [1, 1, 1],
+            ]
+        ),
+        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        #"early_stop_patience_steps": tune.choice([-1, 2, 5]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"])
+        "max_steps": tune.choice([500, 1000]),
+        "random_seed": tune.randint(lower=1, upper=20),
     }
 
     # Define models and their configurations
     models = {  
     "AutoMLP": {"config": mlp_config},
-    "AutoNBEATS": {"config": mlp_config},
-    "AutoNBEATSx": {"config": mlp_config},
-    "AutoNHITS": {"config": mlp_config},
+    "AutoNBEATS": {"config": nbeats_config},
+    "AutoNBEATSx": {"config": nbeatsx_config},
+    "AutoNHITS": {"config": nhits_config},
     }
+
 
     # Initialize and fit all models
     model_instances = []
@@ -186,4 +219,4 @@ for i, vintage_file in enumerate(vintage_files):
     end_time = time.time()
     print(f"Time taken to run the code for {vintage_file}: {end_time - start_time} seconds")
 
-comparison.to_csv('../DeepLearning/results/all_vintages_mlp_models.csv', index=True)
+# comparison.to_csv('../DeepLearning/results/all_vintages_mlp_models.csv', index=True)
