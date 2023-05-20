@@ -140,10 +140,10 @@ def forecast_vintage(vintage_file, horizon=4):
 
     # Define models and their configurations
     models = {  
-    # "AutoTFT": {"config": tft_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
+    "AutoTFT": {"config": tft_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
     # "AutoVanillaTransformer": {"config": vanilla_config}, # Does not support historic values
     # "AutoInformer": {"config": informer_config}, # Does not support historic values
-    "AutoAutoformer": {"config": autoformer_config}, # Does not support historic values
+    # "AutoAutoformer": {"config": autoformer_config}, # Does not support historic values
     }
     
 
@@ -187,7 +187,7 @@ total_vintages = len(vintage_files)
 start_time_whole = time.time()
 
 def write_to_csv(df, block_number):
-    df.to_csv(f'results/tf_results_{block_number}.csv', index=False)
+    df.to_csv(f'results/tft_results_{block_number}.csv', index=False)
 
 block_size = 2
 for i in range(0, len(vintage_files), block_size):
