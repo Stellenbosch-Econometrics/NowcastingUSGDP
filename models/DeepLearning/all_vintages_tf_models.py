@@ -92,15 +92,15 @@ def forecast_vintage(vintage_file, horizon=4):
         "input_size": tune.choice([2, 4]),
         # "hist_exog_list": tune.choice([pcc_list]),
         # "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([750]),
         "scaler_type": tune.choice(["robust"])
     }
 
     vanilla_config = {
-        "input_size": tune.choice([2, 4, 12]),
+        "input_size": tune.choice([2, 4, 8]),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([750]),
         "scaler_type": tune.choice(["robust"]),
         "hidden_size": tune.choice([64, 128, 256]),
         "n_head": tune.choice([4, 8]),
@@ -111,7 +111,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     informer_config = {
-        "input_size": tune.choice([2, 4, 12]),
+        "input_size": tune.choice([2, 4, 8]),
         "hidden_size": tune.choice([64, 128, 256]),
         "n_head": tune.choice([4, 8]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -121,11 +121,11 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([750]),
     }
 
     autoformer_config = {
-        "input_size": tune.choice([2, 4, 12]),
+        "input_size": tune.choice([2, 4, 8]),
         "hidden_size": tune.choice([64, 128, 256]),
         "n_head": tune.choice([4, 8]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -135,15 +135,15 @@ def forecast_vintage(vintage_file, horizon=4):
         "random_seed": tune.randint(1, 20),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([750]),
     }
 
     # Define models and their configurations
     models = {  
-    "AutoTFT": {"config": tft_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
+    # "AutoTFT": {"config": tft_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
     # "AutoVanillaTransformer": {"config": vanilla_config}, # Does not support historic values
     # "AutoInformer": {"config": informer_config}, # Does not support historic values
-    # "AutoAutoformer": {"config": autoformer_config}, # Does not support historic values
+    "AutoAutoformer": {"config": autoformer_config}, # Does not support historic values
     }
     
 
@@ -153,7 +153,7 @@ def forecast_vintage(vintage_file, horizon=4):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs) 
+        instance = model_class(h=horizon, num_samples=15, verbose=False, **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -178,26 +178,40 @@ vintage_files = [
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
-        (year == 2023 and month > 2)
+        (year == 2023 and month > 1)
     )
 ]
 
 total_vintages = len(vintage_files)
 
-for i, vintage_file in enumerate(vintage_files):
-    print(f"Processing {vintage_file} ({i+1}/{total_vintages})")
-    start_time = time.time()
-    vintage_comparison, vintage_results = forecast_vintage(vintage_file)
-    
-    vintage_file_name = os.path.basename(vintage_file)  
-    vintage_file_name = os.path.splitext(vintage_file_name)[0] 
-    vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
-    
-    comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
-    
-    results.update(vintage_results)
-    
-    end_time = time.time()
-    print(f"Time taken to run the code for {vintage_file}: {end_time - start_time} seconds")
+start_time_whole = time.time()
 
-# comparison.to_csv('../DeepLearning/results/test_all_tf_models.csv', index=True)
+def write_to_csv(df, block_number):
+    df.to_csv(f'results/tf_results_{block_number}.csv', index=False)
+
+block_size = 2
+for i in range(0, len(vintage_files), block_size):
+    block = vintage_files[i:i+block_size]
+    for j, vintage_file in enumerate(block):
+        print(f"Processing {vintage_file} ({j+1}/{block_size}) in block {i//block_size + 1}")
+        vintage_comparison, vintage_results = forecast_vintage(vintage_file)
+
+        vintage_file_name = os.path.basename(vintage_file)  
+        vintage_file_name = os.path.splitext(vintage_file_name)[0] 
+        vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
+
+        comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
+        
+        results.update(vintage_results)
+    
+    write_to_csv(comparison, i//block_size + 1)
+
+
+
+end_time_whole = time.time()
+
+time_diff = end_time_whole - start_time_whole
+hours, remainder = divmod(time_diff, 3600)
+minutes, seconds = divmod(remainder, 60)
+
+print(f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")
