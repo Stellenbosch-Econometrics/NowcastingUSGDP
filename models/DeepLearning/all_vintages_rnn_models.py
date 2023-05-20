@@ -90,83 +90,83 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
+        "max_steps": tune.choice([100]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20), 
     }
 
-    # Checked
-    lstm_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
-        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
-        "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
-        "context_size": tune.choice([5, 10, 50]),
-        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([16, 32]),
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000), # 500 seems to be a good default
-        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
-        "random_seed": tune.randint(1, 20), 
-    }
+    # # Checked
+    # lstm_config = {
+    #     "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+    #     "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+    #     "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+    #     "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
+    #     "context_size": tune.choice([5, 10, 50]),
+    #     "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+    #     "batch_size": tune.choice([16, 32]),
+    #     "hist_exog_list": tune.choice([pcc_list]),
+    #     "futr_exog_list": tune.choice([fcc_list]),
+    #     "max_steps": tune.choice([500, 1000), # 500 seems to be a good default
+    #     "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+    #     "random_seed": tune.randint(1, 20), 
+    # }
 
-    # Checked
-    gru_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
-        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
-        "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
-        "context_size": tune.choice([5, 10, 50]),
-        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([16, 32]),
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
-        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
-        "random_seed": tune.randint(1, 20), 
-    }
-    # Checked   
-    tcn_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
-        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "context_size": tune.choice([5, 10, 50]),
-        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([16, 32]),
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
-        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
-        "random_seed": tune.randint(1, 20)
-    }
+    # # Checked
+    # gru_config = {
+    #     "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+    #     "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+    #     "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
+    #     "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
+    #     "context_size": tune.choice([5, 10, 50]),
+    #     "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+    #     "batch_size": tune.choice([16, 32]),
+    #     "hist_exog_list": tune.choice([pcc_list]),
+    #     "futr_exog_list": tune.choice([fcc_list]),
+    #     "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
+    #     "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+    #     "random_seed": tune.randint(1, 20), 
+    # }
+    # # Checked   
+    # tcn_config = {
+    #     "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+    #     "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+    #     "context_size": tune.choice([5, 10, 50]),
+    #     "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+    #     "batch_size": tune.choice([16, 32]),
+    #     "hist_exog_list": tune.choice([pcc_list]),
+    #     "futr_exog_list": tune.choice([fcc_list]),
+    #     "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
+    #     "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+    #     "random_seed": tune.randint(1, 20)
+    # }
 
-    # Checked
-    dilated_rnn_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
-        "cell_type": tune.choice(["LSTM", "GRU"]),
-        "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
-        "dilations": tune.choice([[[1, 2], [4, 8]], [[1, 2, 4, 8]]]),
-        "context_size": tune.choice([5, 10, 50]),
-        "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([16, 32]),
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
-        "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
-        "random_seed": tune.randint(1, 20)
-    }
+    # # Checked
+    # dilated_rnn_config = {
+    #     "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+    #     "cell_type": tune.choice(["LSTM", "GRU"]),
+    #     "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
+    #     "dilations": tune.choice([[[1, 2], [4, 8]], [[1, 2, 4, 8]]]),
+    #     "context_size": tune.choice([5, 10, 50]),
+    #     "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
+    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+    #     "batch_size": tune.choice([16, 32]),
+    #     "hist_exog_list": tune.choice([pcc_list]),
+    #     "futr_exog_list": tune.choice([fcc_list]),
+    #     "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
+    #     "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
+    #     "random_seed": tune.randint(1, 20)
+    # }
     
 
     models = {  
     "AutoRNN": {"config": rnn_config},
-    "AutoLSTM": {"config": lstm_config},
-    "AutoGRU": {"config": gru_config},
-    "AutoTCN": {"config": tcn_config},
-    "AutoDilatedRNN": {"config": dilated_rnn_config}
+    # "AutoLSTM": {"config": lstm_config},
+    # "AutoGRU": {"config": gru_config},
+    # "AutoTCN": {"config": tcn_config},
+    # "AutoDilatedRNN": {"config": dilated_rnn_config}
     }
 
     model_instances = []
@@ -175,7 +175,7 @@ def forecast_vintage(vintage_file, horizon=4):
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
         # instance = model_class(h=horizon, num_samples=1, search_alg=HyperOptSearch(), loss=MAE(), **kwargs) 
-        instance = model_class(h=horizon, num_samples=20, loss=MAE(), **kwargs) 
+        instance = model_class(h=horizon, num_samples=1, loss=MAE(), **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -207,17 +207,26 @@ total_vintages = len(vintage_files)
 
 start_time_whole = time.time()
 
-for i, vintage_file in enumerate(vintage_files):
-    print(f"Processing {vintage_file} ({i+1}/{total_vintages})")
-    vintage_comparison, vintage_results = forecast_vintage(vintage_file)
+def write_to_csv(df, block_number):
+    df.to_csv(f'results/rnn_results_{block_number}.csv', index=False)
 
-    vintage_file_name = os.path.basename(vintage_file)  
-    vintage_file_name = os.path.splitext(vintage_file_name)[0] 
-    vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
+block_size = 2
+for i in range(0, len(vintage_files), block_size):
+    block = vintage_files[i:i+block_size]
+    for j, vintage_file in enumerate(block):
+        print(f"Processing {vintage_file} ({j+1}/{block_size}) in block {i//block_size + 1}")
+        vintage_comparison, vintage_results = forecast_vintage(vintage_file)
+
+        vintage_file_name = os.path.basename(vintage_file)  
+        vintage_file_name = os.path.splitext(vintage_file_name)[0] 
+        vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
+
+        comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
+        
+        results.update(vintage_results)
     
-    comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
-    
-    results.update(vintage_results)
+    write_to_csv(comparison, i//block_size + 1)
+
 
 
 end_time_whole = time.time()
