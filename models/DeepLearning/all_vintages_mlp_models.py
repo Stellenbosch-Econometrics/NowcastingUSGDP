@@ -88,7 +88,7 @@ def forecast_vintage(vintage_file, horizon=4):
                .iloc[-1:])
 
     mlp_config = {
-        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
         "hidden_size": tune.choice([256, 512, 1024]),
         "num_layers": tune.randint(2, 6),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -102,7 +102,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeats_config = {
-        "input_size": tune.choice([20]), # think about this tuning choice
+        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),
@@ -110,7 +110,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeatsx_config = {
-        "input_size": tune.choice([20]), # think about this tuning choice
+        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),
@@ -118,7 +118,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nhits_config = {
-        "input_size": tune.choice([20]), # think about this tuning choice
+        "input_size": tune.choice([2, 4, 8, 12]), # think about this tuning choice
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([100]),

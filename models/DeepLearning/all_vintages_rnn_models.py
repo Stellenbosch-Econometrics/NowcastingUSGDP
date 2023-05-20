@@ -85,7 +85,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
     # Checked
     rnn_config = {
-        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
@@ -95,14 +95,14 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20), 
     }
 
     # Checked
     lstm_config = {
-        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
@@ -112,14 +112,14 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "max_steps": tune.choice([500, 1000), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20), 
     }
 
     # Checked
     gru_config = {
-        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
@@ -129,14 +129,13 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20), 
     }
-
     # Checked   
     tcn_config = {
-        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
@@ -144,14 +143,14 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20)
     }
 
     # Checked
     dilated_rnn_config = {
-        "input_size": tune.choice([-1, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "cell_type": tune.choice(["LSTM", "GRU"]),
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "dilations": tune.choice([[[1, 2], [4, 8]], [[1, 2, 4, 8]]]),
@@ -161,7 +160,7 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500]), # 500 seems to be a good default
+        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20)
     }
@@ -181,7 +180,7 @@ def forecast_vintage(vintage_file, horizon=4):
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
         # instance = model_class(h=horizon, num_samples=1, search_alg=HyperOptSearch(), loss=MAE(), **kwargs) 
-        instance = model_class(h=horizon, num_samples=30, loss=MAE(), **kwargs) 
+        instance = model_class(h=horizon, num_samples=20, loss=MAE(), **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
@@ -201,7 +200,7 @@ results = {}
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2023, 2024)
+    for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
@@ -236,4 +235,4 @@ print(f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(
 
 # comparison.to_csv('../DeepLearning/results/all_rnn_models_single_vintage.csv', index=True)
 # comparison.to_csv('../DeepLearning/results/all_rnn_models_all_vintages.csv', index=True)
-comparison.to_csv('results/all_rnn_models_all_vintages.csv', index=True)
+# comparison.to_csv('results/all_rnn_models_all_vintages.csv', index=True)
