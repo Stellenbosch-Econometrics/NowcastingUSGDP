@@ -128,7 +128,6 @@ def forecast_vintage(vintage_file, horizon=4):
         "max_steps": tune.choice([500, 1000]),
         "random_seed": tune.randint(1, 20)
     }
-    }
 
     nhits_config = {
         "n_pool_kernel_size": tune.choice(
