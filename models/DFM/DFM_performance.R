@@ -18,10 +18,6 @@ global_res %>% fwrite("models/DFM/results/global_dfm_long.csv")
 
 }
 
-########################
-# Performance Evaluation
-########################
-
 blocked_res <- fread("models/DFM/results/blocked_dfm_long.csv") %>% 
                fsubset(as.integer(substr(year_month, 5, 7)) %% 3L == 0L)
 global_res <- fread("models/DFM/results/global_dfm_long.csv") %>% 
@@ -70,7 +66,10 @@ qtab(res$model)
 fwrite(res, "models/DFM/results/All_DFM_results_long.csv")
 
 
-# Now the evaluation
+########################
+# Performance Evaluation
+########################
+
 metrics <- function(x, y) list(r_squared = cor(x, y)^2, MAE_pgr = mean(abs(x - y)*100))
 
 res[trel == -2L, metrics(value, GDPC1), by = model]
