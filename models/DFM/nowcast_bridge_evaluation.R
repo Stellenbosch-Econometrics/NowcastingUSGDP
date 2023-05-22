@@ -26,9 +26,10 @@ nc_data_diff <- list(gdp = list(), blocked = list(), global = list())
 
 # Outcome variable
 ynam <- "GDPC1"
+idio_ar1 <- TRUE
 
-# Nowcasting Loop
-for (i in vintages_m) {
+# Nowcasting Loop 
+for (i in vintages_m) { 
   
   it <- substr(i, 9, 15)
   print(it)
@@ -36,12 +37,12 @@ for (i in vintages_m) {
   data <- fread(paste0("data/FRED/MD/", i)) %>% 
     fmutate(V1 = am_as_date(V1)) %>% 
     frename(prepcode) %>% 
-    fsubset(V1 >= "1990-01-01") %>% as.xts()
-
+    fsubset(V1 >= "1990-01-01") %>% as.xts() 
+    
   gdp <- fread(paste0("data/FRED/QD/", i)) %>% 
     fmutate(V1 = am_as_date(V1)) %>% 
     frename(prepcode) %>% 
-    fsubset(V1 >= "1990-01-01", V1, GDPC1) %>% as.xts()
+    fsubset(V1 >= "1990-01-01", V1, GDPC1) %>% as.xts() %>% na.omit()
   
   nc_data_diff$gdp[[it]] <- gdp
   
@@ -53,7 +54,7 @@ for (i in vintages_m) {
   dfm_glob <- new.env()
   dfm_glob$data <- dfm$data
   
-  dfm_glob$mod <- DFM(data, 9, 4, idio.ar1 = TRUE)
+  dfm_glob$mod <- DFM(data, 9, 4, idio.ar1 = idio_ar1)
   dfm_glob$factors <- dfm_glob$mod$F_qml %>% copy() %>% copyMostAttrib(data)
   
   # By Broad Sectors
@@ -61,31 +62,31 @@ for (i in vintages_m) {
                      lapply(function(x) data[, x])
   
   # Global Factors
-  dfm$mod_gl <- DFM(data, 2, 4, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_gl <- DFM(data, 2, 4, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Consumption, Orders, and Inventories Factors
-  dfm$mod_coi <- DFM(dfm$data_groups$`Consumption, Orders, and Inventories`, 2, 4, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_coi <- DFM(dfm$data_groups$`Consumption, Orders, and Inventories`, 2, 4, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Housing Factors
-  dfm$mod_h <- DFM(dfm$data_groups$Housing, 1, 2, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_h <- DFM(dfm$data_groups$Housing, 1, 2, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Interest and Exchange Rates Factors
-  dfm$mod_ie <- DFM(dfm$data_groups$`Interest and Exchange Rates`, 2, 3, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_ie <- DFM(dfm$data_groups$`Interest and Exchange Rates`, 2, 3, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Labor Market Factors
-  dfm$mod_l <- DFM(dfm$data_groups$`Labor Market`, 1, 1, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_l <- DFM(dfm$data_groups$`Labor Market`, 1, 1, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Money and Credit Factors
-  dfm$mod_mc <- DFM(dfm$data_groups$`Money and Credit`, 2, 4, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_mc <- DFM(dfm$data_groups$`Money and Credit`, 2, 4, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Output and Income Factors
-  dfm$mod_oi <- DFM(dfm$data_groups$`Output and Income`, 1, 2, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_oi <- DFM(dfm$data_groups$`Output and Income`, 1, 2, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Prices Factors
-  dfm$mod_p <- DFM(dfm$data_groups$Prices, 1, 1, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_p <- DFM(dfm$data_groups$Prices, 1, 1, max.missing = 1, idio.ar1 = idio_ar1)
   
   # Stock Market Factors
-  dfm$mod_sm <- DFM(dfm$data_groups$`Stock Market`, 1, 1, max.missing = 1, idio.ar1 = TRUE)
+  dfm$mod_sm <- DFM(dfm$data_groups$`Stock Market`, 1, 1, max.missing = 1, idio.ar1 = idio_ar1)
 
   # Combining factors
   dfm$factors <- cbind(dfm$mod$F_qml %>% add_stub("gl_"), 
@@ -168,9 +169,9 @@ for (i in vintages_m) {
   # Saving results
   nc_data_diff$blocked[[it]] <- dfm$fcst_data
   nc_data_diff$global[[it]] <- dfm_glob$fcst_data
-}
+  saveRDS(nc_data_diff, "models/DFM/results/bridge_models_results.rds")
 
-saveRDS(nc_data_diff, "models/DFM/results/bridge_models_results.rds")
+}
 
 # Evaluation
 metrics <- function(x, y) c(r_squared = cor(x, y, use = "complete.obs")^2, MAE = mean(abs(x - y), na.rm = TRUE))
