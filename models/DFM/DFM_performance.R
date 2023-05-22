@@ -31,33 +31,21 @@ qytodate <- function(x) as.Date(paste(substr(x, 1, 4), substr(as.integer(substr(
 
 res <- list(global = global_res, blocked = blocked_res) %>% 
        rbindlist(idcol = "model") %>% 
-       ftransform(year_quarter = yearqtr(as.Date(paste0(year_month, "-01"))),
-                  latest_gdp = yearqtr(qytodate(latest_gdp)), 
-                  vintage_quarter = yearqtr(as.Date(paste0(sub("_", "-", vintage), "-01"))))
-
-
-
-# GDP ground truth Estimates
-gdp <- fread("data/FRED/QD/vintage_2023_02.csv", select = 1:2) %>% 
-       ftransform(year_quarter = yearqtr(qytodate(V1)), V1 = NULL)
-
-res %<>% merge(gdp, by = "year_quarter")
-
-res[, trel := as.integer((year_quarter - latest_gdp) * 4)]
-res[, trel := as.integer((year_quarter - vintage_quarter) * 4)] # This is better (as discussed)
-descr(res$trel)
+       ftransform(year_quarter = data.table::yearqtr(as.Date(paste0(year_month, "-01"))),
+                  latest_gdp = data.table::yearqtr(qytodate(latest_gdp)), 
+                  vintage_quarter = data.table::yearqtr(as.Date(paste0(sub("_", "-", vintage), "-01"))))
 
 # Reduce and add other models
-res %<>% fselect(model, year_quarter, vintage, vintage_quarter, latest_gdp, GDPC1, value = mean)
+res %<>% fselect(model, year_quarter, vintage, vintage_quarter, latest_gdp, value = mean)
 
 bridge_models_results <- readRDS("models/DFM/results/bridge_models_results.rds")
 
 bridge_res <- bridge_models_results[-1] %>% 
   rapply2d(as.data.table) %>% 
   unlist2d(c("spec", "vintage"), DT = TRUE) %>% 
-  fmutate(year_quarter = yearqtr(index),
-          vintage_quarter = yearqtr(as.Date(paste0(sub("_", "-", vintage), "-01"))),
-          index = replace(yearqtr(index), is.na(GDPC1), NA_real_),
+  fmutate(year_quarter = data.table::yearqtr(index),
+          vintage_quarter = data.table::yearqtr(as.Date(paste0(sub("_", "-", vintage), "-01"))),
+          index = replace(data.table::yearqtr(index), is.na(GDPC1), NA_real_),
           latest_gdp = fmax(index, list(spec, vintage), 1),
           index = NULL, GDPC1 = NULL) %>%
   melt(.c(spec, vintage, vintage_quarter, year_quarter, latest_gdp), 
@@ -66,10 +54,18 @@ bridge_res <- bridge_models_results[-1] %>%
              spec = NULL) %>% 
   as_character_factor()
 
-res %<>% rbind(bridge_res, fill = TRUE) %>% 
-  fmutate(GDPC1 = ffirst(GDPC1, year_quarter, 1))
+res %<>% rbind(bridge_res, fill = TRUE)
 
+# GDP ground truth Estimates
+gdp <- fread("data/FRED/QD/vintage_2023_02.csv", select = 1:2) %>% 
+       ftransform(year_quarter = data.table::yearqtr(qytodate(V1)), V1 = NULL)
+
+res %<>% merge(gdp, by = "year_quarter") %>% fsubset(year_quarter >= 2000)
+
+# res[, trel := as.integer((year_quarter - latest_gdp) * 4)]
 res[, trel := as.integer((year_quarter - vintage_quarter) * 4)] # This is better (as discussed)
+descr(res$trel)
+qtab(res$model)
 
 fwrite(res, "models/DFM/results/All_DFM_results_long.csv")
 
