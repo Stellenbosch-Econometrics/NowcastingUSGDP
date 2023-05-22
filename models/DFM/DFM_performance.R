@@ -63,7 +63,7 @@ res[, trel := as.integer((year_quarter - vintage_quarter) * 4)] # This is better
 descr(res$trel)
 qtab(res$model)
 
-fwrite(res, "models/DFM/results/All_DFM_results_long.csv")
+fwrite(res, "results/DFM/All_DFM_results_long.csv")
 
 
 ########################
