@@ -60,30 +60,29 @@ Contact us after the presentation to discuss model details. We would love to kno
 
 ## Contribution
 
-ARIMA forecasting benchmark versus ML and DL models.
+ARIMA forecasting benchmark versus DFM, ML and DL
 
 ::: columns
 ::: {.column width="50%" style="text-align: center;"}
 
-**ML models**
+**DFM and ML models**
 
 ::: goal
-1. SVR (U & M)
-2. RF (U & M)
-3. GBM (U & M)
+1. DFM (M)
+2. SVR (M)
+3. RF (M)
+4. GBM (M)
 :::
 :::
 
 ::: {.column width="50%" style="text-align: center;"}
 
-**DL models**
+**MLP models**
 
 ::: goal
-1. RNN-LSTM (M)
-2. RNN-GRU (M)
-3. N-BEATS (U & M)
-4. N-HiTS (U & M)
-5. TCN (M)
+5. MLP (M)
+6. N-BEATS (U & M)
+7. N-HiTS (M)
 
 ::: aside
 U = Univariate and M = Multivariate
@@ -93,6 +92,45 @@ U = Univariate and M = Multivariate
 :::
 :::
 :::
+
+## Contribution
+
+ARIMA forecasting benchmark versus DFM, ML and DL
+
+::: columns
+::: {.column width="50%" style="text-align: center;"}
+
+**RNN models**
+
+::: goal
+8. RNN (M)
+9. RNN-LSTM (M)
+10. RNN-GRU (M)
+11. TCN (M)
+12. DilatedRNN (M)
+:::
+:::
+
+::: {.column width="50%" style="text-align: center;"}
+
+**Transformer models**
+
+::: goal
+13. Temporal Fusion Transformer (U)
+14. Autoformer (M)
+15. Informer (M)
+16. FREDformer (M)
+17. PatchTST (M)
+
+::: aside
+U = Univariate and M = Multivariate
+:::
+
+
+:::
+:::
+:::
+
 
 
 ## Useful libraries
