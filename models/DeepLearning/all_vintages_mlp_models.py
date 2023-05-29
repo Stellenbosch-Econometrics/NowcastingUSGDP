@@ -101,67 +101,67 @@ def forecast_vintage(vintage_file, horizon=4):
         "scaler_type": tune.choice(["robust"]),
     }
 
-    nbeats_config = {
-        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "scaler_type": tune.choice(["robust"]),
-        "batch_size": tune.choice([32, 64, 128, 256]),
-        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
-        # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
-        #"hist_exog_list": tune.choice([pcc_list]),
-        #"futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
-        "random_seed": tune.randint(1, 20)
-    }
+    # nbeats_config = {
+    #     "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+    #     "scaler_type": tune.choice(["robust"]),
+    #     "batch_size": tune.choice([32, 64, 128, 256]),
+    #     "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+    #     #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+    #     # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
+    #     #"hist_exog_list": tune.choice([pcc_list]),
+    #     #"futr_exog_list": tune.choice([fcc_list]),
+    #     "max_steps": tune.choice([500, 1000]),
+    #     "random_seed": tune.randint(1, 20)
+    # }
 
-    nbeatsx_config = {
-        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "scaler_type": tune.choice(["robust"]),
-        "batch_size": tune.choice([32, 64, 128, 256]),
-        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
-        # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
-        "random_seed": tune.randint(1, 20)
-    }
+    # nbeatsx_config = {
+    #     "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+    #     "scaler_type": tune.choice(["robust"]),
+    #     "batch_size": tune.choice([32, 64, 128, 256]),
+    #     "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+    #     #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+    #     # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
+    #     "hist_exog_list": tune.choice([pcc_list]),
+    #     "futr_exog_list": tune.choice([fcc_list]),
+    #     "max_steps": tune.choice([500, 1000]),
+    #     "random_seed": tune.randint(1, 20)
+    # }
 
-    nhits_config = {
-        "n_pool_kernel_size": tune.choice(
-            [[2, 2, 1], 3 * [1], 3 * [2], 3 * [4], [8, 4, 1], [16, 8, 1]]
-        ),
-        "n_freq_downsample": tune.choice(
-            [
-                [168, 24, 1],
-                [24, 12, 1],
-                [180, 60, 1],
-                [60, 8, 1],
-                [40, 20, 1],
-                [1, 1, 1],
-            ]
-        ),
-        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
-        "learning_rate": tune.loguniform(1e-4, 1e-1),
-        "scaler_type": tune.choice(["robust"]),
-        "batch_size": tune.choice([32, 64, 128, 256]),
-        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
-        #"early_stop_patience_steps": tune.choice([-1, 2, 5]),
-        "hist_exog_list": tune.choice([pcc_list]),
-        "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
-        "random_seed": tune.randint(lower=1, upper=20),
-    }
+    # nhits_config = {
+    #     "n_pool_kernel_size": tune.choice(
+    #         [[2, 2, 1], 3 * [1], 3 * [2], 3 * [4], [8, 4, 1], [16, 8, 1]]
+    #     ),
+    #     "n_freq_downsample": tune.choice(
+    #         [
+    #             [168, 24, 1],
+    #             [24, 12, 1],
+    #             [180, 60, 1],
+    #             [60, 8, 1],
+    #             [40, 20, 1],
+    #             [1, 1, 1],
+    #         ]
+    #     ),
+    #     "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
+    #     "scaler_type": tune.choice(["robust"]),
+    #     "batch_size": tune.choice([32, 64, 128, 256]),
+    #     "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+    #     #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+    #     #"early_stop_patience_steps": tune.choice([-1, 2, 5]),
+    #     "hist_exog_list": tune.choice([pcc_list]),
+    #     "futr_exog_list": tune.choice([fcc_list]),
+    #     "max_steps": tune.choice([500, 1000]),
+    #     "random_seed": tune.randint(lower=1, upper=20),
+    # }
 
     # Define models and their configurations
     models = {  
     "AutoMLP": {"config": mlp_config},
-    "AutoNBEATS": {"config": nbeats_config},
-    "AutoNBEATSx": {"config": nbeatsx_config},
-    "AutoNHITS": {"config": nhits_config},
+    # "AutoNBEATS": {"config": nbeats_config},
+    # "AutoNBEATSx": {"config": nbeatsx_config},
+    # "AutoNHITS": {"config": nhits_config},
     }
 
 
@@ -175,7 +175,7 @@ def forecast_vintage(vintage_file, horizon=4):
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
-    nf.fit(df=df)
+    nf.fit(df=df, val_size = 4)
 
     Y_hat_df = nf.predict(futr_df=futr_df)
 
@@ -192,7 +192,7 @@ results = {}
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
+    for year in range(2023, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
@@ -205,7 +205,7 @@ total_vintages = len(vintage_files)
 start_time_whole = time.time()
 
 def write_to_csv(df, block_number):
-    df.to_csv(f'results/mlp_results_{block_number}.csv', index=False)
+    df.to_csv(f'mlp_results_new_{block_number}.csv', index=False)
 
 block_size = 2
 for i in range(0, len(vintage_files), block_size):
