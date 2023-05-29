@@ -1,0 +1,189 @@
+---
+title: "Uncovering Machine Learning's Potential in Nowcasting GDP"
+#author: "SEM Presentation"
+# date: "29 June 2023"
+format:
+  revealjs: 
+    theme: slides.scss
+    slide-number: true
+    transition: fade
+    background-transition: fade
+code-link: true
+code-fold: true
+execute:
+  echo: true
+  freeze: auto
+jupyter: python3
+---
+
+# Introduction
+
+## Collaborators
+
+We have a team of people that consists of statisticians, econometricians and data scientists / engineers.
+
+-   **Dawie van Lill** 🗣️
+-   François Kamper 
+-   Hylton Hollander
+-   Sebastian Krantz
+
+::: aside
+📧 dvanlill@sun.ac.za
+:::
+
+## Research question(s)
+
+There are two parts to our research question. One part relates to performance, the other to ease of use. 
+
+<br>
+
+> Do machine learning (and deep learning) methods contribute to forecasting performance over and above the traditional autoregressive model? Are these methods easy to implement for practitioners?
+
+
+## Managing expectations
+
+<br>
+
+This is **not** a technical talk on the methods used.
+
+The talk is more about our results and the way that our experience translates to practitioners.
+
+<br>
+
+
+:::{.callout-important}
+## Please reach out
+
+Contact us after the presentation to discuss model details. We would love to know how we can improve our models! 
+
+:::
+
+## Contribution
+
+ARIMA forecasting benchmark versus ML and DL models.
+
+::: columns
+::: {.column width="50%" style="text-align: center;"}
+
+**ML models**
+
+::: goal
+1. SVR (U & M)
+2. RF (U & M)
+3. GBM (U & M)
+:::
+:::
+
+::: {.column width="50%" style="text-align: center;"}
+
+**DL models**
+
+::: goal
+1. RNN-LSTM (M)
+2. RNN-GRU (M)
+3. N-BEATS (U & M)
+4. N-HiTS (U & M)
+5. TCN (M)
+
+::: aside
+U = Univariate and M = Multivariate
+:::
+
+
+:::
+:::
+:::
+
+
+## Useful libraries
+
+<br>
+
+![](02_figures/Scikit_learn_logo_small.svg){.absolute top=50 left=0 width="350" height="300"}
+
+![](02_figures/LightGBM_logo_black_text.svg){.absolute top=50 right=50 width="450" height="250"}
+
+![](02_figures/Darts-Time-Series-Made-Easy-in-Python-100-694x392.jpg){.absolute bottom=20 right=50 width="500" height="300"}
+
+![](02_figures/PyTorch_logo_black.svg){.absolute bottom=50 left=20 width="300" height="200"}
+
+
+# Data
+
+## Data
+
+<br> 
+ 
+
+The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1993-06-31 to 2022-03-31. 
+
+<br> 
+
+::: columns
+::: {.column width="80%"}
+Quarterly and monthly macroeconomic variables are collected using the EconData platform from Codera Analytics. 
+:::
+
+::: {.column width="20%"}
+![](02_figures/cropped-signature_large.jpg)
+:::
+:::
+
+
+::: aside
+
+Target variable is often used in machine learning, while dependent variable is more common in econometrics. 
+:::
+
+## Data preparation and cleaning
+
+<br>
+
+Remove variables with large proportion of missing data.
+
+  - Percentage of entire series
+  - Percentage of most recent observations
+
+Outliers removed (beyond 1.5 times the interquartile range)
+
+Remove variables that are scalar multiples.
+
+## Data transformations
+
+<br> 
+
+ADF test used to determine whether a unit root (or roots) is (are) present for each variable.
+
+- I(0) variables: level
+- I(1) variables: **growth rate**
+- I(2) variables: **rate of growth**
+
+
+All variables are standardized following transformation.
+
+::: aside
+Ignore compounding effects when annualizing growth rate and rate of growth.
+:::
+
+## Data transformations (cont.)
+
+:::{.callout-important}
+## Suggestions
+
+Space for improvement possible here. Suggestions are welcome. 
+
+:::
+
+<br>
+
+Create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.
+
+**Alternative**: Monthly variables aggregated to a quarterly level using the mean of the monthly values (after which transformations and standardizations are applied)
+
+
+
+
+
+
+
+
