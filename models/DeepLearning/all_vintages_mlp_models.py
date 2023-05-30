@@ -13,8 +13,6 @@ import matplotlib.pyplot as plt
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoMLP, AutoNBEATS, AutoNBEATSx, AutoNHITS
 
-# AutoPatchTST
-
 ### Ignore warnings ###
 
 logging.getLogger("pytorch_lightning").setLevel(logging.WARNING)
@@ -22,7 +20,6 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["TUNE_DISABLE_STRICT_METRIC_CHECKING"] = "1"
 
 ### Data preprocessing ###
-
 
 def load_data(file_path):
     df = (pd.read_csv(file_path)
@@ -33,7 +30,6 @@ def load_data(file_path):
         [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
     # df['ds'] = df['ds'] - pd.Timedelta(days=1)
     return df[columns_order]
-
 
 def separate_covariates(df, point_in_time):
     covariates = df.drop(columns=["unique_id", "ds", "y"])
@@ -49,15 +45,12 @@ def separate_covariates(df, point_in_time):
 
     return past_covariates, future_covariates
 
-
 def impute_missing_values_interpolate(data, method='linear'):
     imputed_data = data.copy()
     imputed_data.fillna(method='bfill', inplace=True)
     return imputed_data.interpolate(method=method)
 
-
 ### Different vintages ###
-
 
 def forecast_vintage(vintage_file, horizon=4):
     results = {}
@@ -205,10 +198,8 @@ total_vintages = len(vintage_files)
 
 start_time_whole = time.time()
 
-
 def write_to_csv(df, block_number):
     df.to_csv(f'mlp_results_{block_number}.csv', index=False)
-
 
 block_size = 1
 for i in range(0, len(vintage_files), block_size):
@@ -230,7 +221,6 @@ for i in range(0, len(vintage_files), block_size):
 
     write_to_csv(comparison, i//block_size + 1)
 
-
 end_time_whole = time.time()
 
 time_diff = end_time_whole - start_time_whole
@@ -239,3 +229,4 @@ minutes, seconds = divmod(remainder, 60)
 
 print(
     f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")
+
