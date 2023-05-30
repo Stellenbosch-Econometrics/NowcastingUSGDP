@@ -219,7 +219,9 @@ Create new variables from the values of the 1st, 2nd, and 3rd month of each quar
 **Alternative**: Monthly variables aggregated to a quarterly level using the mean of the monthly values (after which transformations and standardizations are applied)
 
 
+## MLP model architecture
 
+![](02_figures/mlp_model.png){}
 
 
 
