@@ -88,8 +88,7 @@ def forecast_vintage(vintage_file, horizon=4):
                .iloc[-1:])
 
     mlp_config = {
-        # think about this tuning choice
-        "input_size": tune.choice([-1, 2, 4, 12, 20]),
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
         "hidden_size": tune.choice([256, 512, 1024]),
         "num_layers": tune.randint(2, 6),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -103,12 +102,12 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeats_config = {
-        "input_size": tune.choice([-1, 2, 4, 12, 20]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
         # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
         #"hist_exog_list": tune.choice([pcc_list]),
         #"futr_exog_list": tune.choice([fcc_list]),
@@ -117,12 +116,12 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeatsx_config = {
-        "input_size": tune.choice([-1, 2, 4, 12, 20]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
         # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
@@ -144,12 +143,12 @@ def forecast_vintage(vintage_file, horizon=4):
                 [1, 1, 1],
             ]
         ),
-        "input_size": tune.choice([-1, 2, 4, 12, 20]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
         #"early_stop_patience_steps": tune.choice([-1, 2, 5]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),

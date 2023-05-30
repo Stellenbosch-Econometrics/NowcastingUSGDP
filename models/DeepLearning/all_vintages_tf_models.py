@@ -97,7 +97,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     vanilla_config = {
-        "input_size": tune.choice([2, 4, 8]),
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([750]),
@@ -111,7 +111,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     informer_config = {
-        "input_size": tune.choice([2, 4, 8]),
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
         "hidden_size": tune.choice([64, 128, 256]),
         "n_head": tune.choice([4, 8]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -119,13 +119,13 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
         "random_seed": tune.randint(1, 20),
-        # "hist_exog_list": tune.choice([pcc_list]),
+        "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([750]),
     }
 
     autoformer_config = {
-        "input_size": tune.choice([2, 4, 8]),
+        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
         "hidden_size": tune.choice([64, 128, 256]),
         "n_head": tune.choice([4, 8]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -133,7 +133,7 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
         "random_seed": tune.randint(1, 20),
-        # "hist_exog_list": tune.choice([pcc_list]),
+        "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([750]),
     }
@@ -142,8 +142,8 @@ def forecast_vintage(vintage_file, horizon=4):
     models = {  
     "AutoTFT": {"config": tft_config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
     # "AutoVanillaTransformer": {"config": vanilla_config}, # Does not support historic values
-    # "AutoInformer": {"config": informer_config}, # Does not support historic values
-    # "AutoAutoformer": {"config": autoformer_config}, # Does not support historic values
+    "AutoInformer": {"config": informer_config}, # Does not support historic values
+    "AutoAutoformer": {"config": autoformer_config}, # Does not support historic values
     }
     
 
@@ -153,11 +153,11 @@ def forecast_vintage(vintage_file, horizon=4):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=15, verbose=False, **kwargs) 
+        instance = model_class(h=horizon, num_samples=30, verbose=False, **kwargs) 
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
-    nf.fit(df=df)
+    nf.fit(df=df, val_size = 24)
 
     Y_hat_df = nf.predict(futr_df=futr_df)
 
@@ -178,7 +178,7 @@ vintage_files = [
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
-        (year == 2023 and month > 1)
+        (year == 2023 and month > 2)
     )
 ]
 
@@ -189,7 +189,7 @@ start_time_whole = time.time()
 def write_to_csv(df, block_number):
     df.to_csv(f'results/tft_results_{block_number}.csv', index=False)
 
-block_size = 2
+block_size = 1
 for i in range(0, len(vintage_files), block_size):
     block = vintage_files[i:i+block_size]
     for j, vintage_file in enumerate(block):
