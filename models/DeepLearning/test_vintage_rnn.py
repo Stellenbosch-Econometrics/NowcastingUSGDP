@@ -34,7 +34,6 @@ def load_data(file_path):
                   ds=lambda df: pd.to_datetime(df['ds'])))
     columns_order = ["unique_id", "ds", "y"] + \
         [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
-    df['ds'] = df['ds'] - pd.Timedelta(days=1)
     return df[columns_order]
 
 
@@ -72,15 +71,11 @@ vintage_files = [
     )
 ]
 
-# Thinking about this, one could have the traing test split here instead of these awkward names.
-
-vintage_of_interest = vintage_files[-12] # four quarter ahead forecast
-latest_vintage = vintage_files[-1]
 
 ### Forecast across last usable vintage ###
 
 
-def forecast_vintage(vintage_file, horizon=4):
+def forecast_vintage(vintage_file, horizon=2):
     results = {}
 
     df = load_data(vintage_file)
@@ -104,11 +99,12 @@ def forecast_vintage(vintage_file, horizon=4):
           .iloc[:-1])
 
     futr_df = (target_df
-               .merge(future_covariates, left_index=True, right_index=True)
+               .merge(df_fc, left_index=True, right_index=True)
                .drop(columns="y")
                .iloc[-1:])
 
     config = {
+        "input_size": tune.choice([-1]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([500]),
@@ -122,64 +118,15 @@ def forecast_vintage(vintage_file, horizon=4):
                     config=config, num_samples=1, verbose=False)
 
     nf = NeuralForecast(models=[model], freq='Q')
-    nf.fit(df=df)
+    nf.fit(df=df, val_size=24)
 
     Y_hat_df = nf.predict(futr_df=futr_df)
+    Y_hat_df = Y_hat_df.reset_index()
+    Y_hat_df['ds'] = Y_hat_df['ds'] + pd.Timedelta(days = 1)
 
-    forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
+    return Y_hat_df
 
-    results[vintage_file] = forecast_value
+vintage_file = "../../data/FRED/blocked/vintage_2020_05.csv"
 
-    return results
+forecast_vintage(vintage_file)
 
-
-# Generate forecasts for the vintage_of_interest
-vintage_of_interest_forecast = forecast_vintage(vintage_of_interest)
-
-vintage_of_interest_df = load_data(vintage_of_interest)
-
-# Load latest_vintage data
-latest_vintage_df = load_data(latest_vintage)
-
-# Extract the true y values from the latest_vintage_df
-true_y_values = latest_vintage_df.loc[latest_vintage_df.index.isin(
-    latest_vintage_df.index[-4:]), 'y'].tolist()
-
-# Extract the date column (ds) from the latest_vintage_df
-date_column = latest_vintage_df.loc[latest_vintage_df.index.isin(
-    latest_vintage_df.index[-4:]), 'ds'].tolist()
-
-# Create a DataFrame with the date column, true y values, and forecasted values
-comparison_df = pd.DataFrame({
-    'ds': date_column,
-    'true_y': true_y_values,
-    'forecasted_y': vintage_of_interest_forecast[vintage_of_interest]
-})
-
-# Shift the forecasted_y column back by one time period
-comparison_df['forecasted_y_shifted'] = comparison_df['forecasted_y'].shift(-1)
-
-# Drop the original forecasted_y column
-comparison_df.drop(columns='forecasted_y', inplace=True)
-
-print(comparison_df)
-
-
-## simple plot
-
-# Extracting data for the plot
-dates = comparison_df['ds']
-y_true = comparison_df['true_y']
-y_forecasted = comparison_df['forecasted_y_shifted']
-
-# Plotting the data
-plt.figure(figsize=(10, 6))
-plt.plot(dates, y_true, label='True y', marker='o', linestyle='-', markersize=2)
-plt.plot(dates, y_forecasted, label='Forecasted y', marker='o', linestyle='--', markersize=2)
-
-plt.xlabel('Date')
-plt.ylabel('Values')
-plt.title('True y vs. Forecasted y')
-plt.legend()
-
-plt.show()

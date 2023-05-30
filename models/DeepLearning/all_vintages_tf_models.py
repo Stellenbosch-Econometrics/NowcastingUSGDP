@@ -166,8 +166,9 @@ def forecast_vintage(vintage_file, horizon=4):
     results[vintage_file] = forecast_value
 
     Y_hat_df = Y_hat_df.reset_index() 
+    Y_hat_df['ds'] = Y_hat_df['ds'] + pd.Timedelta(days = 1)
 
-    return Y_hat_df, results 
+    return Y_hat_df
 
 comparison = pd.DataFrame()
 results = {}
