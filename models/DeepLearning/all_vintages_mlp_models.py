@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from neuralforecast import NeuralForecast
 from neuralforecast.auto import AutoMLP, AutoNBEATS, AutoNBEATSx, AutoNHITS
 
-#AutoPatchTST
+# AutoPatchTST
 
 ### Ignore warnings ###
 
@@ -31,7 +31,7 @@ def load_data(file_path):
                   ds=lambda df: pd.to_datetime(df['ds'])))
     columns_order = ["unique_id", "ds", "y"] + \
         [col for col in df.columns if col not in ["unique_id", "ds", "y"]]
-    df['ds'] = df['ds'] - pd.Timedelta(days=1)
+    # df['ds'] = df['ds'] - pd.Timedelta(days=1)
     return df[columns_order]
 
 
@@ -66,7 +66,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
     target_df = df[["unique_id", "ds", "y"]]
 
-    point_in_time = df.index[-2] # explain later
+    point_in_time = df.index[-2]  # explain later
 
     past_covariates, future_covariates = separate_covariates(
         df, point_in_time)
@@ -83,12 +83,13 @@ def forecast_vintage(vintage_file, horizon=4):
           .iloc[:-1])
 
     futr_df = (target_df
-               .merge(future_covariates, left_index=True, right_index=True)
+               .merge(df_fc, left_index=True, right_index=True)
                .drop(columns="y")
                .iloc[-1:])
 
     mlp_config = {
-        "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
+        # think about this tuning choice
+        "input_size": tune.choice([-1, 2, 4, 12, 20]),
         "hidden_size": tune.choice([256, 512, 1024]),
         "num_layers": tune.randint(2, 6),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -101,69 +102,68 @@ def forecast_vintage(vintage_file, horizon=4):
         "scaler_type": tune.choice(["robust"]),
     }
 
-    # nbeats_config = {
-    #     "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
-    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
-    #     "scaler_type": tune.choice(["robust"]),
-    #     "batch_size": tune.choice([32, 64, 128, 256]),
-    #     "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-    #     #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
-    #     # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
-    #     #"hist_exog_list": tune.choice([pcc_list]),
-    #     #"futr_exog_list": tune.choice([fcc_list]),
-    #     "max_steps": tune.choice([500, 1000]),
-    #     "random_seed": tune.randint(1, 20)
-    # }
-
-    # nbeatsx_config = {
-    #     "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
-    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
-    #     "scaler_type": tune.choice(["robust"]),
-    #     "batch_size": tune.choice([32, 64, 128, 256]),
-    #     "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-    #     #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
-    #     # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
-    #     "hist_exog_list": tune.choice([pcc_list]),
-    #     "futr_exog_list": tune.choice([fcc_list]),
-    #     "max_steps": tune.choice([500, 1000]),
-    #     "random_seed": tune.randint(1, 20)
-    # }
-
-    # nhits_config = {
-    #     "n_pool_kernel_size": tune.choice(
-    #         [[2, 2, 1], 3 * [1], 3 * [2], 3 * [4], [8, 4, 1], [16, 8, 1]]
-    #     ),
-    #     "n_freq_downsample": tune.choice(
-    #         [
-    #             [168, 24, 1],
-    #             [24, 12, 1],
-    #             [180, 60, 1],
-    #             [60, 8, 1],
-    #             [40, 20, 1],
-    #             [1, 1, 1],
-    #         ]
-    #     ),
-    #     "input_size": tune.choice([2, 4, 12, 20]), # think about this tuning choice
-    #     "learning_rate": tune.loguniform(1e-4, 1e-1),
-    #     "scaler_type": tune.choice(["robust"]),
-    #     "batch_size": tune.choice([32, 64, 128, 256]),
-    #     "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-    #     #"dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
-    #     #"early_stop_patience_steps": tune.choice([-1, 2, 5]),
-    #     "hist_exog_list": tune.choice([pcc_list]),
-    #     "futr_exog_list": tune.choice([fcc_list]),
-    #     "max_steps": tune.choice([500, 1000]),
-    #     "random_seed": tune.randint(lower=1, upper=20),
-    # }
-
-    # Define models and their configurations
-    models = {  
-    "AutoMLP": {"config": mlp_config},
-    # "AutoNBEATS": {"config": nbeats_config},
-    # "AutoNBEATSx": {"config": nbeatsx_config},
-    # "AutoNHITS": {"config": nhits_config},
+    nbeats_config = {
+        "input_size": tune.choice([-1, 2, 4, 12, 20]), # think about this tuning choice
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
+        #"hist_exog_list": tune.choice([pcc_list]),
+        #"futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500, 1000]),
+        "random_seed": tune.randint(1, 20)
     }
 
+    nbeatsx_config = {
+        "input_size": tune.choice([-1, 2, 4, 12, 20]), # think about this tuning choice
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500, 1000]),
+        "random_seed": tune.randint(1, 20)
+    }
+
+    nhits_config = {
+        "n_pool_kernel_size": tune.choice(
+            [[2, 2, 1], 3 * [1], 3 * [2], 3 * [4], [8, 4, 1], [16, 8, 1]]
+        ),
+        "n_freq_downsample": tune.choice(
+            [
+                [168, 24, 1],
+                [24, 12, 1],
+                [180, 60, 1],
+                [60, 8, 1],
+                [40, 20, 1],
+                [1, 1, 1],
+            ]
+        ),
+        "input_size": tune.choice([-1, 2, 4, 12, 20]), # think about this tuning choice
+        "learning_rate": tune.loguniform(1e-4, 1e-1),
+        "scaler_type": tune.choice(["robust"]),
+        "batch_size": tune.choice([32, 64, 128, 256]),
+        "windows_batch_size": tune.choice([128, 256, 512, 1024]),
+        "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        #"early_stop_patience_steps": tune.choice([-1, 2, 5]),
+        "hist_exog_list": tune.choice([pcc_list]),
+        "futr_exog_list": tune.choice([fcc_list]),
+        "max_steps": tune.choice([500, 1000]),
+        "random_seed": tune.randint(lower=1, upper=20),
+    }
+
+    # Define models and their configurations
+    models = {
+        "AutoMLP": {"config": mlp_config},
+        "AutoNBEATS": {"config": nbeats_config},
+        "AutoNBEATSx": {"config": nbeatsx_config},
+        "AutoNHITS": {"config": nhits_config},
+    }
 
     # Initialize and fit all models
     model_instances = []
@@ -171,11 +171,12 @@ def forecast_vintage(vintage_file, horizon=4):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs) 
+        instance = model_class(h=horizon, num_samples=30,
+                               verbose=False, **kwargs)
         model_instances.append(instance)
 
     nf = NeuralForecast(models=model_instances, freq='Q')
-    nf.fit(df=df, val_size = 4)
+    nf.fit(df=df, val_size=24)
 
     Y_hat_df = nf.predict(futr_df=futr_df)
 
@@ -183,20 +184,21 @@ def forecast_vintage(vintage_file, horizon=4):
 
     results[vintage_file] = forecast_value
 
-    Y_hat_df = Y_hat_df.reset_index() 
+    Y_hat_df = Y_hat_df.reset_index()
 
-    return Y_hat_df, results 
+    return Y_hat_df, results
+
 
 comparison = pd.DataFrame()
 results = {}
 
 vintage_files = [
     f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2023, 2024)
+    for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
-        (year == 2023 and month > 1)
+        (year == 2023 and month > 2)
     )
 ]
 
@@ -204,26 +206,30 @@ total_vintages = len(vintage_files)
 
 start_time_whole = time.time()
 
-def write_to_csv(df, block_number):
-    df.to_csv(f'mlp_results_new_{block_number}.csv', index=False)
 
-block_size = 2
+def write_to_csv(df, block_number):
+    df.to_csv(f'mlp_results_{block_number}.csv', index=False)
+
+
+block_size = 1
 for i in range(0, len(vintage_files), block_size):
     block = vintage_files[i:i+block_size]
     for j, vintage_file in enumerate(block):
-        print(f"Processing {vintage_file} ({j+1}/{block_size}) in block {i//block_size + 1}")
+        print(
+            f"Processing {vintage_file} ({j+1}/{block_size}) in block {i//block_size + 1}")
         vintage_comparison, vintage_results = forecast_vintage(vintage_file)
 
-        vintage_file_name = os.path.basename(vintage_file)  
-        vintage_file_name = os.path.splitext(vintage_file_name)[0] 
-        vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
+        vintage_file_name = os.path.basename(vintage_file)
+        vintage_file_name = os.path.splitext(vintage_file_name)[0]
+        vintage_comparison = vintage_comparison.assign(
+            vintage_file=vintage_file_name)
 
-        comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
-        
+        comparison = pd.concat(
+            [comparison, vintage_comparison], ignore_index=True)
+
         results.update(vintage_results)
-    
-    write_to_csv(comparison, i//block_size + 1)
 
+    write_to_csv(comparison, i//block_size + 1)
 
 
 end_time_whole = time.time()
@@ -232,4 +238,5 @@ time_diff = end_time_whole - start_time_whole
 hours, remainder = divmod(time_diff, 3600)
 minutes, seconds = divmod(remainder, 60)
 
-print(f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")
+print(
+    f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")
