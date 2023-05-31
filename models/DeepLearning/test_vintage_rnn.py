@@ -8,7 +8,9 @@
 
 ### Package imports ###
 
+
 from ray import tune
+import time
 import logging
 import os
 import numpy as np
@@ -58,24 +60,12 @@ def impute_missing_values_interpolate(data, method='linear'):
     return imputed_data.interpolate(method=method)
 
 
-### Different vintages ###
-
-
-vintage_files = [
-    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
-    for year in range(2018, 2024)
-    for month in range(1, 13)
-    if not (
-        (year == 2018 and month < 5) or
-        (year == 2023 and month > 2)
-    )
-]
 
 
 ### Forecast across last usable vintage ###
 
 
-def forecast_vintage(vintage_file, horizon=2):
+def forecast_vintage(vintage_file, horizon=1):
     results = {}
 
     df = load_data(vintage_file)
@@ -104,11 +94,15 @@ def forecast_vintage(vintage_file, horizon=2):
                .iloc[-1:])
 
     config = {
-        "input_size": tune.choice([-1]),
+        "input_size": tune.choice([4, 8, 12, 16]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500]),
-        "scaler_type": tune.choice(["robust"])
+        "learning_rate": tune.choice([1e-3]),
+        # "activation": tune.choice(['ReLU']),
+        "max_steps": tune.choice([1000]),
+        "val_check_steps": tune.choice([100]),
+        "scaler_type": tune.choice(["robust"]),
+        "random_seed": tune.randint(1, 10),
     }
 
     # Some other parts of configuration to consider
@@ -117,16 +111,70 @@ def forecast_vintage(vintage_file, horizon=2):
     model = AutoRNN(h=horizon,
                     config=config, num_samples=1, verbose=False)
 
+    n_time = len(df.ds.unique())
+    val_size = int(.2 * n_time)
+
     nf = NeuralForecast(models=[model], freq='Q')
-    nf.fit(df=df, val_size=24)
+    nf.fit(df=df, val_size=val_size)
+
+    # best_config = nf.models[0].results.get_best_result().config
 
     Y_hat_df = nf.predict(futr_df=futr_df)
     Y_hat_df = Y_hat_df.reset_index()
+    forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
     Y_hat_df['ds'] = Y_hat_df['ds'] + pd.Timedelta(days = 1)
 
-    return Y_hat_df
+    results[vintage_file] = forecast_value
 
-vintage_file = "../../data/FRED/blocked/vintage_2020_05.csv"
+    return Y_hat_df, results
 
-forecast_vintage(vintage_file)
 
+### Different vintages ###
+
+
+comparison = pd.DataFrame()
+results = {}
+
+vintage_files = [
+    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
+    for year in range(2018, 2024)
+    for month in range(1, 13)
+    if not (
+        (year == 2018 and month < 5) or
+        (year == 2023 and month > 2)
+    )
+]
+
+total_vintages = len(vintage_files)
+
+start_time_whole = time.time()
+
+def write_to_csv(df, block_number):
+    df.to_csv(f'prelim_results/rnn_results_test_{block_number}.csv', index=False)
+
+block_size = 1
+for i in range(0, len(vintage_files), block_size):
+    block = vintage_files[i:i+block_size]
+    for j, vintage_file in enumerate(block):
+        print(f"Processing {vintage_file} ({j+1}/{block_size}) in block {i//block_size + 1}")
+        vintage_comparison, vintage_results = forecast_vintage(vintage_file)
+
+        vintage_file_name = os.path.basename(vintage_file)  
+        vintage_file_name = os.path.splitext(vintage_file_name)[0] 
+        vintage_comparison = vintage_comparison.assign(vintage_file = vintage_file_name)
+
+        comparison = pd.concat([comparison, vintage_comparison], ignore_index=True)
+        
+        results.update(vintage_results)
+    
+    write_to_csv(comparison, i//block_size + 1)
+
+
+
+end_time_whole = time.time()
+
+time_diff = end_time_whole - start_time_whole
+hours, remainder = divmod(time_diff, 3600)
+minutes, seconds = divmod(remainder, 60)
+
+print(f"Time taken to run the code: {int(hours)} hour(s), {int(minutes)} minute(s), and {seconds:.2f} seconds")

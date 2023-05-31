@@ -95,7 +95,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeats_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4*3]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
@@ -109,7 +109,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeatsx_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4*3]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
@@ -136,7 +136,7 @@ def forecast_vintage(vintage_file, horizon=4):
                 [1, 1, 1],
             ]
         ),
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4*3]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
