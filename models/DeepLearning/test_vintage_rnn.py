@@ -18,7 +18,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from neuralforecast import NeuralForecast
-from neuralforecast.auto import AutoRNN
+from neuralforecast.auto import AutoRNN, AutoLSTM, AutoGRU, AutoTCN
 
 ### Ignore warnings ###
 
@@ -94,27 +94,37 @@ def forecast_vintage(vintage_file, horizon=1):
                .iloc[-1:])
 
     config = {
-        "input_size": tune.choice([4, 8, 12, 16]),
+        "input_size": tune.choice([4, 8, 12, 16, 20]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "learning_rate": tune.choice([1e-3]),
-        # "activation": tune.choice(['ReLU']),
-        "max_steps": tune.choice([1000]),
-        "val_check_steps": tune.choice([100]),
-        "scaler_type": tune.choice(["robust"]),
-        "random_seed": tune.randint(1, 10),
+        "max_steps": tune.choice([1000]), 
+        "scaler_type": tune.choice(["robust"]), 
     }
 
     # Some other parts of configuration to consider
-    # 
 
-    model = AutoRNN(h=horizon,
-                    config=config, num_samples=1, verbose=False)
+    models = {  
+    "AutoRNN": {"config": config}, # Does not support historic values (also quite slow to implement. Think about whether this is worth it)
+    # "AutoVanillaTransformer": {"config": vanilla_config}, # Does not support historic values
+    "AutoLSTM": {"config": config}, # Does not support historic values
+    "AutoGRU": {"config": config}, # Does not support historic values
+    }
+    
+
+    # Initialize and fit all models
+    model_instances = []
+
+    for model_name, kwargs in models.items():
+        print(f"Running model: {model_name}")
+        model_class = globals()[model_name]
+        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs) 
+        model_instances.append(instance)
+
 
     n_time = len(df.ds.unique())
     val_size = int(.2 * n_time)
 
-    nf = NeuralForecast(models=[model], freq='Q')
+    nf = NeuralForecast(models=model_instances, freq='Q')
     nf.fit(df=df, val_size=val_size)
 
     # best_config = nf.models[0].results.get_best_result().config
