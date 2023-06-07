@@ -449,29 +449,21 @@
 <section id="data-1" class="slide level2">
 <h2>Data</h2>
 <p><br></p>
-<p>The <strong>target variable</strong> is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1993-06-31 to 2022-03-31.</p>
+<p>The <strong>target variable</strong> is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q2.</p>
 <p><br></p>
 <div class="columns">
-<div class="column" style="width:80%;">
-<p>Quarterly and monthly macroeconomic variables are collected using the EconData platform from Codera Analytics.</p>
-</div><div class="column" style="width:20%;">
-<p><img data-src="02_figures/cropped-signature_large.jpg"></p>
+<p>Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases.</p>
 </div>
-</div>
+<div class="columns">
 
-<aside><div>
-<p>Target variable is often used in machine learning, while dependent variable is more common in econometrics.</p>
-</div></aside></section>
-<section id="data-preparation-and-cleaning" class="slide level2">
-<h2>Data preparation and cleaning</h2>
+</div>
+</section>
+<section id="data-preparation" class="slide level2">
+<h2>Data preparation</h2>
 <p><br></p>
-<p>Remove variables with large proportion of missing data.</p>
-<ul>
-<li>Percentage of entire series</li>
-<li>Percentage of most recent observations</li>
-</ul>
-<p>Outliers removed (beyond 1.5 times the interquartile range)</p>
-<p>Remove variables that are scalar multiples.</p>
+<p>Monthly vintage data is available.</p>
+<p><br></p>
+<p>We <strong>block</strong> the monthly data to resolve the mixed frequency problem.</p>
 </section>
 <section id="data-transformations" class="slide level2">
 <h2>Data transformations</h2>

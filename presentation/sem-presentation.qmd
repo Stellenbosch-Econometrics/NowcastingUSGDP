@@ -150,33 +150,29 @@ RNN = Recurrent neural network
 <br> 
  
 
-The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1993-06-31 to 2022-03-31. 
+The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q2. 
 
 <br> 
 
 ::: columns
-Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD. 
+Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. 
+:::
+
+::: columns
+
 :::
 
 
 
-::: aside
-
-Target variable is often used in machine learning, while dependent variable is more common in econometrics. 
-:::
-
-## Data preparation and cleaning
+## Data preparation
 
 <br>
 
-Remove variables with large proportion of missing data.
+Monthly vintage data is available.
 
-  - Percentage of entire series
-  - Percentage of most recent observations
+<br>
 
-Outliers removed (beyond 1.5 times the interquartile range)
-
-Remove variables that are scalar multiples.
+We **block** the monthly data to resolve the mixed frequency problem. 
 
 ## Data transformations
 
