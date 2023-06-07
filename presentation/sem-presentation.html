@@ -352,7 +352,7 @@
 <p>There are two parts to our research question. One part relates to performance, the other to ease of use.</p>
 <p><br></p>
 <blockquote>
-<p>Do machine learning (and deep learning) methods contribute to forecasting performance over and above the traditional autoregressive model? Are these methods easy to implement for practitioners?</p>
+<p>Do machine learning (and deep learning) methods contribute to forecasting performance over and above the traditional forecasting models? How easy are these methods to implement?</p>
 </blockquote>
 </section>
 <section id="managing-expectations" class="slide level2">
@@ -390,7 +390,7 @@
 </ol>
 </div>
 </div><div class="column" style="text-align: center;">
-<p><strong>MLP models</strong></p>
+<p><strong>MLP-based models</strong></p>
 <div class="goal">
 <ol start="5" type="1">
 <li>MLP (M)</li>
@@ -402,14 +402,14 @@
 </div>
 </div>
 <aside><div>
-<p>U = Univariate and M = Multivariate</p>
+<p>U = Univariate, M = Multivariate, MLP = Multilayer Perceptron</p>
 </div></aside></section>
 <section id="contribution-1" class="slide level2">
 <h2>Contribution</h2>
 <p>ARIMA forecasting benchmark versus DFM, ML and DL</p>
 <div class="columns">
 <div class="column" style="text-align: center;">
-<p><strong>RNN models</strong></p>
+<p><strong>RNN-based models</strong></p>
 <div class="goal">
 <ol start="8" type="1">
 <li>RNN (M)</li>
@@ -426,23 +426,20 @@
 <li>Temporal Fusion Transformer (U)</li>
 <li>Autoformer (M)</li>
 <li>Informer (M)</li>
-<li>FREDformer (M)</li>
-<li>PatchTST (M)</li>
 </ol>
 
 </div>
 </div>
 </div>
 <aside><div>
-<p>U = Univariate and M = Multivariate</p>
+<p>RNN = Recurrent neural network</p>
 </div></aside></section>
 <section id="useful-libraries" class="slide level2">
 <h2>Useful libraries</h2>
 <p><br></p>
-<p><img data-src="02_figures/Scikit_learn_logo_small.svg" class="absolute" style="top: 50px; left: 0px; width: 350px; height: 300px; "></p>
-<p><img data-src="02_figures/LightGBM_logo_black_text.svg" class="absolute" style="top: 50px; right: 50px; width: 450px; height: 250px; "></p>
-<p><img data-src="02_figures/Darts-Time-Series-Made-Easy-in-Python-100-694x392.jpg" class="absolute" style="bottom: 20px; right: 50px; width: 500px; height: 300px; "></p>
-<p><img data-src="02_figures/PyTorch_logo_black.svg" class="absolute" style="left: 20px; bottom: 50px; width: 300px; height: 200px; "></p>
+<p><img data-src="02_figures/ray_tune.png" class="absolute" style="top: 100px; left: 50px; width: 250px; height: 200px; "></p>
+<p><img data-src="02_figures/nixtla_new.png" class="absolute" style="top: 75px; right: 150px; width: 350px; height: 350px; "></p>
+<p><img data-src="02_figures/Darts-Time-Series-Made-Easy-in-Python-100-694x392.jpg" class="absolute" style="bottom: 20px; right: 300px; width: 500px; height: 300px; "></p>
 </section></section>
 <section>
 <section id="data" class="title-slide slide level1 center">
@@ -511,7 +508,6 @@
 </section>
 <section id="mlp-model-architecture" class="slide level2">
 <h2>MLP model architecture</h2>
-<p><br></p>
 
 <img data-src="02_figures/mlp_model.png" class="r-stretch"><div class="footer footer-default">
 

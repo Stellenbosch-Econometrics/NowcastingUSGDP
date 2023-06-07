@@ -85,7 +85,7 @@ def create_fredmd_blocked(vintage):
 
 # %%
 # 
-vintage_names = pd.date_range(start = "2018-05-01", end="2023-03-01", freq="M") \
+vintage_names = pd.date_range(start = "2018-05-01", end="2023-06-01", freq="M") \
                          .to_period().astype(str).to_list()
 vintage_names
 # %%
@@ -94,7 +94,7 @@ all_vintages = {v: create_fredmd_blocked(v) for v in vintage_names}
 # %%
 import pickle
 pickle.HIGHEST_PROTOCOL # is 5
-filename = f'data/FRED/FRED_MD_QD_vintages_{vintage_names[0].replace("-", "_")}_to_{vintage_names[-1].replace("-", "_")}.pickle'
+filename = f'../data/FRED/FRED_MD_QD_vintages_{vintage_names[0].replace("-", "_")}_to_{vintage_names[-1].replace("-", "_")}.pickle'
 filename
 # %%
 # Saving as Pickle
@@ -104,9 +104,9 @@ with open(filename, 'wb') as handle:
 # %%
 # Saving to CSV
 for k, v in all_vintages.items():
-    v["final_m"].to_csv("data/FRED/MD/vintage_{}.csv".format(k.replace("-", "_")))
-    v["final_q"].to_csv("data/FRED/QD/vintage_{}.csv".format(k.replace("-", "_")))
-    v["final_mq"].to_csv("data/FRED/blocked/vintage_{}.csv".format(k.replace("-", "_")), 
+    #v["final_m"].to_csv("../data/FRED/MD/vintage_{}.csv".format(k.replace("-", "_")))
+    #v["final_q"].to_csv("../data/FRED/QD/vintage_{}.csv".format(k.replace("-", "_")))
+    v["final_mq"].to_csv("../data/FRED/blocked/vintage_{}.csv".format(k.replace("-", "_")), 
                          index_label="year_quarter")
 # -> Only version control mq !!
 
@@ -119,3 +119,5 @@ for k, v in all_vintages.items():
 # current_vintage["final_q"].to_csv("data/FRED/QD/vintage_current.csv".format(k.replace("-", "_")))
 # current_vintage["final_mq"].to_csv("data/FRED/blocked/vintage_current.csv".format(k.replace("-", "_")), index_label="year_quarter")
 
+
+# %%

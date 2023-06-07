@@ -37,14 +37,14 @@ There are two parts to our research question. One part relates to performance, t
 
 <br>
 
-> Do machine learning (and deep learning) methods contribute to forecasting performance over and above the traditional autoregressive model? Are these methods easy to implement for practitioners?
+> Do machine learning (and deep learning) methods contribute to forecasting performance over and above the traditional forecasting models? How easy are these methods to implement?
 
 
 ## Managing expectations
 
 <br>
 
-This is **not** a technical talk on the methods used.
+This is **not** a technical talk on the methods used. 
 
 The talk is more about our results and the way that our experience translates to practitioners.
 
@@ -77,7 +77,7 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 
 ::: {.column width="50%" style="text-align: center;"}
 
-**MLP models**
+**MLP-based models**
 
 ::: goal
 5. MLP (M)
@@ -85,7 +85,7 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 7. N-HiTS (M)
 
 ::: aside
-U = Univariate and M = Multivariate
+U = Univariate, M = Multivariate, MLP = Multilayer Perceptron
 :::
 
 
@@ -100,7 +100,7 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 ::: columns
 ::: {.column width="50%" style="text-align: center;"}
 
-**RNN models**
+**RNN-based models**
 
 ::: goal
 8. RNN (M)
@@ -119,11 +119,10 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 13. Temporal Fusion Transformer (U)
 14. Autoformer (M)
 15. Informer (M)
-16. FREDformer (M)
-17. PatchTST (M)
+
 
 ::: aside
-U = Univariate and M = Multivariate
+RNN = Recurrent neural network
 :::
 
 
@@ -137,13 +136,11 @@ U = Univariate and M = Multivariate
 
 <br>
 
-![](02_figures/Scikit_learn_logo_small.svg){.absolute top=50 left=0 width="350" height="300"}
+![](02_figures/ray_tune.png){.absolute top=100 left=50 width="250" height="200"}
 
-![](02_figures/LightGBM_logo_black_text.svg){.absolute top=50 right=50 width="450" height="250"}
+![](02_figures/nixtla_new.png){.absolute top=75 right=150 width="350" height="350"}
 
-![](02_figures/Darts-Time-Series-Made-Easy-in-Python-100-694x392.jpg){.absolute bottom=20 right=50 width="500" height="300"}
-
-![](02_figures/PyTorch_logo_black.svg){.absolute bottom=50 left=20 width="300" height="200"}
+![](02_figures/Darts-Time-Series-Made-Easy-in-Python-100-694x392.jpg){.absolute bottom=20 right=300 width="500" height="300"}
 
 
 # Data
@@ -158,14 +155,9 @@ The **target variable** is the seasonally adjusted annualised quarter-on-quarter
 <br> 
 
 ::: columns
-::: {.column width="80%"}
-Quarterly and monthly macroeconomic variables are collected using the EconData platform from Codera Analytics. 
+Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD. 
 :::
 
-::: {.column width="20%"}
-![](02_figures/cropped-signature_large.jpg)
-:::
-:::
 
 
 ::: aside
