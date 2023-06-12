@@ -449,10 +449,10 @@
 <section id="data-1" class="slide level2">
 <h2>Data</h2>
 <p><br></p>
-<p>The <strong>target variable</strong> is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q2.</p>
+<p>The <strong>target variable</strong> is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q5.</p>
 <p><br></p>
 <div class="columns">
-<p>Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases.</p>
+<p>Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. Suggested transformation of variables applied.</p>
 </div>
 <div class="columns">
 
@@ -464,47 +464,53 @@
 <p>Monthly vintage data is available.</p>
 <p><br></p>
 <p>We <strong>block</strong> the monthly data to resolve the mixed frequency problem.</p>
-</section>
-<section id="data-transformations" class="slide level2">
-<h2>Data transformations</h2>
 <p><br></p>
-<p>ADF test used to determine whether a unit root (or roots) is (are) present for each variable.</p>
-<ul>
-<li>I(0) variables: level</li>
-<li>I(1) variables: <strong>growth rate</strong></li>
-<li>I(2) variables: <strong>rate of growth</strong></li>
-</ul>
-<p>All variables are standardized following transformation.</p>
-
-<aside><div>
-<p>Ignore compounding effects when annualizing growth rate and rate of growth.</p>
-</div></aside></section>
-<section id="data-transformations-cont." class="slide level2">
-<h2>Data transformations (cont.)</h2>
-<div class="callout callout-important callout-captioned callout-style-default">
-<div class="callout-body">
-<div class="callout-caption">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<p><strong>Suggestions</strong></p>
-</div>
-<div class="callout-content">
-<p>Space for improvement possible here. Suggestions are welcome.</p>
-</div>
-</div>
-</div>
-<p><br></p>
-<p>Create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.</p>
-<p><strong>Alternative</strong>: Monthly variables aggregated to a quarterly level using the mean of the monthly values (after which transformations and standardizations are applied)</p>
+<p>This means that we create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.</p>
 </section>
-<section id="mlp-model-architecture" class="slide level2">
-<h2>MLP model architecture</h2>
-
-<img data-src="02_figures/mlp_model.png" class="r-stretch"><div class="footer footer-default">
-
-</div>
+<section id="dynamic-factor-model" class="slide level2">
+<h2>Dynamic factor model</h2>
+</section>
+<section id="machine-learning-models" class="slide level2">
+<h2>Machine learning models</h2>
+</section>
+<section id="mlp-based-models" class="slide level2">
+<h2>MLP-based models</h2>
+<center>
+<img data-src="02_figures/mlp_model.png" style="width:70.0%">
+</center>
+</section>
+<section id="section" class="slide level2">
+<h2></h2>
+</section>
+<section id="rnn-based-models" class="slide level2">
+<h2>RNN-based models</h2>
+<center>
+<img data-src="02_figures/rnn_model.png" style="width:70.0%">
+</center>
+</section>
+<section id="section-1" class="slide level2">
+<h2></h2>
+</section>
+<section id="transformer-models" class="slide level2">
+<h2>Transformer models</h2>
+<center>
+<img data-src="02_figures/transformer.svg" style="height:50.0%">
+</center>
+</section>
+<section id="section-2" class="slide level2">
+<h2></h2>
 </section></section>
+<section id="results" class="title-slide slide level1 center">
+<h1>Results</h1>
+
+</section>
+
+<section id="conclusion" class="title-slide slide level1 center">
+<h1>Conclusion</h1>
+<div class="footer footer-default">
+
+</div>
+</section>
     </div>
   </div>
 

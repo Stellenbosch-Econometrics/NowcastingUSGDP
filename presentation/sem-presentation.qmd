@@ -150,18 +150,17 @@ RNN = Recurrent neural network
 <br> 
  
 
-The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q2. 
+The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q5. 
 
 <br> 
 
 ::: columns
-Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. 
+Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. Suggested transformation of variables applied. 
 :::
 
 ::: columns
 
 :::
-
 
 
 ## Data preparation
@@ -172,46 +171,52 @@ Monthly vintage data is available.
 
 <br>
 
-We **block** the monthly data to resolve the mixed frequency problem. 
-
-## Data transformations
-
-<br> 
-
-ADF test used to determine whether a unit root (or roots) is (are) present for each variable.
-
-- I(0) variables: level
-- I(1) variables: **growth rate**
-- I(2) variables: **rate of growth**
-
-
-All variables are standardized following transformation.
-
-::: aside
-Ignore compounding effects when annualizing growth rate and rate of growth.
-:::
-
-## Data transformations (cont.)
-
-:::{.callout-important}
-## Suggestions
-
-Space for improvement possible here. Suggestions are welcome. 
-
-:::
+We **block** the monthly data to resolve the mixed frequency problem.
 
 <br>
 
-Create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.
 
-**Alternative**: Monthly variables aggregated to a quarterly level using the mean of the monthly values (after which transformations and standardizations are applied)
-
-
-## MLP model architecture
-
-![](02_figures/mlp_model.png){}
+This means that we create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.
 
 
+## Dynamic factor model
+
+## Machine learning models
+
+## MLP-based models
+
+<center>
+![](02_figures/mlp_model.png){
+width=70% }
+</center>
+
+## 
+
+
+## RNN-based models
+
+<center>
+![](02_figures/rnn_model.png){
+width=70% }
+</center>
+
+##
+
+## Transformer models
+
+<center>
+![](02_figures/transformer.svg){
+height=50% }
+</center>
+
+## 
+
+
+# Results
+
+
+
+# Conclusion
 
 
 
