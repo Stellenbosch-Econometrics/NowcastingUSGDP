@@ -114,7 +114,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
     # Checked
     gru_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "encoder_n_layers": tune.randint(1, 4), # Normally choice between 1, 2 and 3 is good. Avoid risk of overfitting. 
         "encoder_dropout": tune.choice([0.1, 0.3, 0.5]),
@@ -124,13 +124,13 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
+        "max_steps": tune.choice([1000]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20), 
     }
     # Checked   
     tcn_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "context_size": tune.choice([5, 10, 50]),
         "decoder_hidden_size": tune.choice([64, 128, 256, 512]),
@@ -138,14 +138,14 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
+        "max_steps": tune.choice([1000]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20)
     }
 
     # Checked
     dilated_rnn_config = {
-        "input_size": tune.choice([4, 4*2, 4*3, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]), # general rule of thumb -- input size = horizon * 5 -- however, the default for RNN is to use all input history
         "cell_type": tune.choice(["LSTM", "GRU"]),
         "encoder_hidden_size": tune.choice([50, 100, 200, 300]),
         "dilations": tune.choice([[[1, 2], [4, 8]], [[1, 2, 4, 8]]]),
@@ -155,18 +155,18 @@ def forecast_vintage(vintage_file, horizon=4):
         "batch_size": tune.choice([16, 32]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]), # 500 seems to be a good default
+        "max_steps": tune.choice([1000]), # 500 seems to be a good default
         "scaler_type": tune.choice(["robust"]), # this should be robust because of the exogenous variables being included. 
         "random_seed": tune.randint(1, 20)
     }
     
 
     models = {  
-    "AutoRNN": {"config": rnn_config},
-    "AutoLSTM": {"config": lstm_config},
-    "AutoGRU": {"config": gru_config},
-    "AutoTCN": {"config": tcn_config},
-    "AutoDilatedRNN": {"config": dilated_rnn_config}
+        "AutoRNN": {"config": rnn_config},
+        "AutoLSTM": {"config": lstm_config},
+        "AutoGRU": {"config": gru_config},
+        "AutoTCN": {"config": tcn_config},
+        "AutoDilatedRNN": {"config": dilated_rnn_config}
     }
 
     model_instances = []

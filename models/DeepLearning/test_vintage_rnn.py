@@ -117,7 +117,7 @@ def forecast_vintage(vintage_file, horizon=1):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=1, verbose=False, **kwargs) 
+        instance = model_class(h=horizon, num_samples=30, verbose=False, **kwargs) 
         model_instances.append(instance)
 
 
@@ -160,7 +160,7 @@ total_vintages = len(vintage_files)
 start_time_whole = time.time()
 
 def write_to_csv(df, block_number):
-    df.to_csv(f'prelim_results/rnn_results_test_{block_number}.csv', index=False)
+    df.to_csv(f'prelim_results/rnn_results_h1_{block_number}.csv', index=False)
 
 block_size = 1
 for i in range(0, len(vintage_files), block_size):

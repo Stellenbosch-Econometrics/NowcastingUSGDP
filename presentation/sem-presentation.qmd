@@ -24,7 +24,6 @@ We have a team of people that consists of statisticians, econometricians and dat
 
 -   **Dawie van Lill** 🗣️
 -   François Kamper 
--   Hylton Hollander
 -   Sebastian Krantz
 
 ::: aside

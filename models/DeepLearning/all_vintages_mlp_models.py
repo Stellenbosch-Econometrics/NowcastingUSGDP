@@ -52,7 +52,7 @@ def impute_missing_values_interpolate(data, method='linear'):
 
 ### Different vintages ###
 
-def forecast_vintage(vintage_file, horizon=4):
+def forecast_vintage(vintage_file, horizon=1):
     results = {}
 
     df = load_data(vintage_file)
@@ -81,7 +81,7 @@ def forecast_vintage(vintage_file, horizon=4):
                .iloc[-1:])
 
     mlp_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]),
         "hidden_size": tune.choice([256, 512, 1024]),
         "num_layers": tune.randint(2, 6),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -95,7 +95,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeats_config = {
-        "input_size": tune.choice([4, 4*2, 4*3]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4*4, 4*3, 4*5]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
@@ -109,7 +109,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     nbeatsx_config = {
-        "input_size": tune.choice([4, 4*2, 4*3]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4*4, 4*3, 4*5]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
@@ -136,7 +136,7 @@ def forecast_vintage(vintage_file, horizon=4):
                 [1, 1, 1],
             ]
         ),
-        "input_size": tune.choice([4, 4*2, 4*3]), # think about this tuning choice
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
@@ -151,10 +151,10 @@ def forecast_vintage(vintage_file, horizon=4):
 
     # Define models and their configurations
     models = {
-        "AutoMLP": {"config": mlp_config},
+        #"AutoMLP": {"config": mlp_config},
         "AutoNBEATS": {"config": nbeats_config},
         "AutoNBEATSx": {"config": nbeatsx_config},
-        "AutoNHITS": {"config": nhits_config},
+        #"AutoNHITS": {"config": nhits_config},
     }
 
     # Initialize and fit all models
@@ -163,7 +163,7 @@ def forecast_vintage(vintage_file, horizon=4):
     for model_name, kwargs in models.items():
         print(f"Running model: {model_name}")
         model_class = globals()[model_name]
-        instance = model_class(h=horizon, num_samples=30,
+        instance = model_class(h=horizon, num_samples=1,
                                verbose=False, **kwargs)
         model_instances.append(instance)
 
@@ -190,7 +190,7 @@ vintage_files = [
     for month in range(1, 13)
     if not (
         (year == 2018 and month < 5) or
-        (year == 2023 and month > 2)
+        (year == 2023 and month > 5)
     )
 ]
 

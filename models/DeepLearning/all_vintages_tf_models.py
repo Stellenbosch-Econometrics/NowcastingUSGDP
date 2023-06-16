@@ -89,7 +89,7 @@ def forecast_vintage(vintage_file, horizon=4):
 
 
     tft_config = {
-        "input_size": tune.choice([2, 4]),
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]),
         # "hist_exog_list": tune.choice([pcc_list]),
         # "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([750]),
@@ -97,7 +97,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     vanilla_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]),
         # "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
         "max_steps": tune.choice([750]),
@@ -111,7 +111,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     informer_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]),
         "hidden_size": tune.choice([64, 128, 256]),
         "n_head": tune.choice([4, 8]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -125,7 +125,7 @@ def forecast_vintage(vintage_file, horizon=4):
     }
 
     autoformer_config = {
-        "input_size": tune.choice([4, 4*2, 4* 3, 4*5]),
+        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]),
         "hidden_size": tune.choice([64, 128, 256]),
         "n_head": tune.choice([4, 8]),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -168,7 +168,7 @@ def forecast_vintage(vintage_file, horizon=4):
     Y_hat_df = Y_hat_df.reset_index() 
     Y_hat_df['ds'] = Y_hat_df['ds'] + pd.Timedelta(days = 1)
 
-    return Y_hat_df
+    return Y_hat_df, results
 
 comparison = pd.DataFrame()
 results = {}
