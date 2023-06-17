@@ -81,7 +81,7 @@ def forecast_vintage(vintage_file, horizon=1):
                .iloc[-1:])
 
     mlp_config = {
-        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]),
+        "input_size": tune.choice([1, 2, 4, 4*2, 4*3]),
         "hidden_size": tune.choice([256, 512, 1024]),
         "num_layers": tune.randint(2, 6),
         "learning_rate": tune.loguniform(1e-4, 1e-1),
@@ -90,62 +90,62 @@ def forecast_vintage(vintage_file, horizon=1):
         "random_seed": tune.randint(1, 20),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([1000]),
         "scaler_type": tune.choice(["robust"]),
     }
 
     nbeats_config = {
-        "input_size": tune.choice([4, 4*2, 4*4, 4*3, 4*5]), # think about this tuning choice
+        "input_size": tune.choice([1, 2, 4, 4*2, 4*3]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        # "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        # "dropout_prob_theta": tune.choice([0.5]),
         # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
         #"hist_exog_list": tune.choice([pcc_list]),
         #"futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([1000]),
         "random_seed": tune.randint(1, 20)
     }
 
     nbeatsx_config = {
-        "input_size": tune.choice([4, 4*2, 4*4, 4*3, 4*5]), # think about this tuning choice
+        "input_size": tune.choice([1, 2, 4, 4*2, 4*3]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        # "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        "dropout_prob_theta": tune.choice([0.5]),
         # "early_stop_patience_steps": tune.choice([-1, 2, 5]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([1000]),
         "random_seed": tune.randint(1, 20)
     }
 
     nhits_config = {
-        "n_pool_kernel_size": tune.choice(
-            [[2, 2, 1], 3 * [1], 3 * [2], 3 * [4], [8, 4, 1], [16, 8, 1]]
-        ),
-        "n_freq_downsample": tune.choice(
-            [
-                [168, 24, 1],
-                [24, 12, 1],
-                [180, 60, 1],
-                [60, 8, 1],
-                [40, 20, 1],
-                [1, 1, 1],
-            ]
-        ),
-        "input_size": tune.choice([4, 4*2, 4*3, 4*4, 4*5]), # think about this tuning choice
+        # "n_pool_kernel_size": tune.choice(
+        #     [[2, 2, 1], 3 * [1], 3 * [2], 3 * [4], [8, 4, 1], [16, 8, 1]]
+        # ),
+        # "n_freq_downsample": tune.choice(
+        #     [
+        #         [168, 24, 1],
+        #         [24, 12, 1],
+        #         [180, 60, 1],
+        #         [60, 8, 1],
+        #         [40, 20, 1],
+        #         [1, 1, 1],
+        #     ]
+        # ),
+        "input_size": tune.choice([1, 2, 4, 4*2, 4*3]), # think about this tuning choice
         "learning_rate": tune.loguniform(1e-4, 1e-1),
         "scaler_type": tune.choice(["robust"]),
         "batch_size": tune.choice([32, 64, 128, 256]),
         "windows_batch_size": tune.choice([128, 256, 512, 1024]),
-        # "dropout_prob_theta": tune.choice([0.1, 0.3, 0.5]),
+        "dropout_prob_theta": tune.choice([0.5]),
         #"early_stop_patience_steps": tune.choice([-1, 2, 5]),
         "hist_exog_list": tune.choice([pcc_list]),
         "futr_exog_list": tune.choice([fcc_list]),
-        "max_steps": tune.choice([500, 1000]),
+        "max_steps": tune.choice([1000]),
         "random_seed": tune.randint(lower=1, upper=20),
     }
 
@@ -153,7 +153,7 @@ def forecast_vintage(vintage_file, horizon=1):
     models = {
         #"AutoMLP": {"config": mlp_config},
         "AutoNBEATS": {"config": nbeats_config},
-        "AutoNBEATSx": {"config": nbeatsx_config},
+        #"AutoNBEATSx": {"config": nbeatsx_config},
         #"AutoNHITS": {"config": nhits_config},
     }
 
@@ -167,16 +167,18 @@ def forecast_vintage(vintage_file, horizon=1):
                                verbose=False, **kwargs)
         model_instances.append(instance)
 
+    n_time = len(df.ds.unique())
+    val_size = int(.2 * n_time)
+
     nf = NeuralForecast(models=model_instances, freq='Q')
-    nf.fit(df=df, val_size=24)
+    nf.fit(df=df, val_size=val_size)
 
     Y_hat_df = nf.predict(futr_df=futr_df)
-
+    Y_hat_df = Y_hat_df.reset_index()
     forecast_value = Y_hat_df.iloc[:, 1].values.tolist()
+    Y_hat_df['ds'] = Y_hat_df['ds'] + pd.Timedelta(days = 1)
 
     results[vintage_file] = forecast_value
-
-    Y_hat_df = Y_hat_df.reset_index()
 
     return Y_hat_df, results
 
@@ -185,7 +187,7 @@ comparison = pd.DataFrame()
 results = {}
 
 vintage_files = [
-    f'../../data/FRED/blocked/vintage_{year}_{month:02d}.csv'
+    f'data/FRED/blocked/vintage_{year}_{month:02d}.csv'
     for year in range(2018, 2024)
     for month in range(1, 13)
     if not (
