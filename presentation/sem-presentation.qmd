@@ -222,12 +222,10 @@ width=70% }
 height=50% }
 </center>
 
-## 
+# Results
 
 
-# Results {.smaller}
-
-Using the average nowcast from all 3 monthly vintages within the quarter
+# {.smaller}
 
 <!-- html table generated in R 4.3.0 by xtable 1.8-4 package -->
 <!-- Sun Jun 18 23:11:04 2023 -->
