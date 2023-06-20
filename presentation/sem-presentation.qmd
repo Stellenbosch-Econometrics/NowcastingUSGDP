@@ -24,71 +24,64 @@ bibliography: biblio.bib
 We have a team of people that consists of statisticians, econometricians and data scientists / engineers.
 
 -   **Dawie van Lill** 🗣️
--   François Kamper 
+-   François Kamper
 -   Sebastian Krantz
 
 ::: aside
-📧 dvanlill@sun.ac.za
+📧 dvanlill\@sun.ac.za
 :::
 
 ## Research question(s)
 
-There are two parts to our research question. One part relates to performance, the other to ease of use. 
+There are two parts to our research question. One part relates to performance, the other to ease of use.
 
 <br>
 
 > Do machine learning (and deep learning) methods contribute to forecasting performance over and above the traditional forecasting models? How easy are these methods to implement?
 
-
 ## Managing expectations
 
 <br>
 
-This is **not** a technical talk on the methods used. 
+This is **not** a technical talk on the methods used.
 
 The talk is more about our results and the way that our experience translates to practitioners.
 
 <br>
 
-
-:::{.callout-important}
+::: callout-important
 ## Please reach out
 
-Contact us after the presentation to discuss model details. We would love to know how we can improve our models! 
-
+Contact us after the presentation to discuss model details. We would love to know how we can improve our models!
 :::
 
 ## Contribution
 
-ARIMA forecasting benchmark versus DFM, ML and DL
+Naive forecasting benchmark versus DFM, ML and DL
 
 ::: columns
 ::: {.column width="50%" style="text-align: center;"}
-
 **DFM and ML models**
 
 ::: goal
-1. DFM (M)
-2. SVR (M)
-3. RF (M)
-4. GBM (M)
+1.  DFM (M)
+2.  SVR (M)
+3.  RF (M)
+4.  GBM (M)
 :::
 :::
 
 ::: {.column width="50%" style="text-align: center;"}
-
 **MLP-based models**
 
 ::: goal
-5. MLP (M)
-6. N-BEATS (U & M)
-7. N-HiTS (M)
+5.  MLP (M)
+6.  N-BEATS (U & M)
+7.  N-HiTS (M)
 
 ::: aside
 U = Univariate, M = Multivariate, MLP = Multilayer Perceptron
 :::
-
-
 :::
 :::
 :::
@@ -99,12 +92,11 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 
 ::: columns
 ::: {.column width="50%" style="text-align: center;"}
-
 **RNN-based models**
 
 ::: goal
-8. RNN (M)
-9. RNN-LSTM (M)
+8.  RNN (M)
+9.  RNN-LSTM (M)
 10. RNN-GRU (M)
 11. TCN (M)
 12. DilatedRNN (M)
@@ -112,7 +104,6 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 :::
 
 ::: {.column width="50%" style="text-align: center;"}
-
 **Transformer models**
 
 ::: goal
@@ -120,144 +111,148 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 14. Autoformer (M)
 15. Informer (M)
 
-
 ::: aside
 RNN = Recurrent neural network
 :::
-
-
 :::
 :::
 :::
-
-
 
 ## Useful libraries
 
 <br>
 
-![](02_figures/ray_tune.png){.absolute top=100 left=50 width="250" height="200"}
+![](02_figures/ray_tune.png){.absolute top="100" left="50" width="250" height="200"}
 
-![](02_figures/nixtla_new.png){.absolute top=75 right=150 width="350" height="350"}
+![](02_figures/nixtla_new.png){.absolute top="75" right="150" width="350" height="350"}
 
-![](02_figures/Darts-Time-Series-Made-Easy-in-Python-100-694x392.jpg){.absolute bottom=20 right=300 width="500" height="300"}
-
+![](02_figures/Darts-Time-Series-Made-Easy-in-Python-100-694x392.jpg){.absolute bottom="20" right="300" width="500" height="300"}
 
 # Data
 
 ## Data
 
-<br> 
- 
+<br>
 
-The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q5. 
+The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q5.
 
-<br> 
+<br>
 
-::: columns
-Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. Suggested transformation of variables applied. 
-:::
-
-::: columns
-
-:::
+Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. Suggested transformation of variables applied.
 
 
 ## Data preparation
 
 <br>
 
-Monthly vintage data is available.
+Monthly vintage data is available. GDP is available at quarterly frequency. This creates a mixed frequency problem. 
 
 <br>
 
-We **block** the monthly data to resolve the mixed frequency problem.
+We **block** the monthly data to resolve this problem. 
+
+ - This means that we create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.
+
+## Dynamic factor model {.smaller}
 
 <br>
 
+We estimate a Mixed Frequency DFM following @banbura2014maximum, using a global specification with 9 factors related through a VAR(4), or a blocked structure following @bok2018macroeconomic with 13 factors in 9 blocks:
 
-This means that we create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.
+<br>
 
-
-## Dynamic factor model  {.smaller}
-
-
-
-We estimate a Mixed Frequency DFM following @banbura2014maximum, using a global specification with 9 factors related through a VAR(4), or a blocked structure following @bok2018macroeconomic with 13 factors in 9 blocks: 
-
+::: goal
 global (2), output and income (1), labor market (1), consumption, orders, and inventories (2), housing (1), money and credit (2), interest and exchange rates (2), prices (1), and stock market (1).
+:::
 
+## Dynamic factor model {.smaller}
+
+<br> 
+
+We also estimate bridge-equation models with monthly DFMs along two methods
+
+1. Aggregating monthly factors + linear model to nowcast GDP
+2. Distributing monthly factors into multiple quarterly variables and using LASSO for nowcasting. 
+ 
 <br>
-In addition, we estimate bridge-equation models with monthly DFMs, either aggregating monthly factors + linear model to nowcast GDP, or distributing monthly factors into multiple quarterly variables and using LASSO for nowcasting. These bridge models also allow either a global or blocked factor structure (the same as in mixed-frequency models).
 
-<br>
-The purpose of having both mixed-frequency and bridge equation models is to gauge the potential gains from mixed-frequency in DFM estimation, especially for comparison with ML models which are also reduced-form specifications. 
+These bridge models also allow either a **global** or *blocked* factor structure.
 
+<br> 
+The purpose of having both mixed-frequency and bridge equation models is to gauge the potential gains from mixed-frequency in DFM estimation.
 
 ## Machine learning models
 
 ## MLP-based models
 
-<center>
-![](02_figures/mlp_model.png){
-width=70% }
-</center>
+<center>![](02_figures/mlp_model.png){width="70%"}</center>
 
 ## 
 
-
 ## RNN-based models
 
-<center>
-![](02_figures/rnn_model.png){
-width=70% }
-</center>
+<center>![](02_figures/rnn_model.png){width="70%"}</center>
 
-##
+## 
 
 ## Transformer models
 
-<center>
-![](02_figures/transformer.svg){
-height=50% }
-</center>
+<center>![](02_figures/transformer.svg){height="50%"}</center>
 
 # Results
 
-
-# {.smaller}
+#  {.smaller}
 
 <!-- html table generated in R 4.3.0 by xtable 1.8-4 package -->
-<!-- Sun Jun 18 23:11:04 2023 -->
-<table border=1 style="font-size:16px">
-<tr> <th>  </th> <th> Bias </th> <th> RMSE </th> <th> MAE </th> <th> MAPE </th> <th> U2 </th> <th> Bias Prop. </th> <th> Var. Prop. </th> <th> Cov. Prop. </th>  </tr>
-  <tr> <td align="right"> AutoGRU </td> <td align="right"> 0.43 </td> <td align="right"> 0.85 </td> <td align="right"> 0.62 </td> <td align="right"> 100.56 </td> <td align="right"> 0.52 </td> <td align="right"> 0.26 </td> <td align="right"> 0.07 </td> <td align="right"> 0.68 </td> </tr>
-  <tr> <td align="right"> AutoRNN </td> <td align="right"> 0.40 </td> <td align="right"> 0.88 </td> <td align="right"> 0.65 </td> <td align="right"> 108.31 </td> <td align="right"> 0.54 </td> <td align="right"> 0.21 </td> <td align="right"> 0.01 </td> <td align="right"> 0.78 </td> </tr>
-  <tr> <td align="right"> AutoDilatedRNN </td> <td align="right"> 0.46 </td> <td align="right"> 0.94 </td> <td align="right"> 0.68 </td> <td align="right"> 105.64 </td> <td align="right"> 0.55 </td> <td align="right"> 0.24 </td> <td align="right"> 0.06 </td> <td align="right"> 0.70 </td> </tr>
-  <tr> <td align="right"> AutoLSTM </td> <td align="right"> 0.42 </td> <td align="right"> 0.99 </td> <td align="right"> 0.65 </td> <td align="right"> 110.16 </td> <td align="right"> 0.60 </td> <td align="right"> 0.17 </td> <td align="right"> 0.28 </td> <td align="right"> 0.55 </td> </tr>
-  <tr> <td align="right"> DFM_global </td> <td align="right"> -0.14 </td> <td align="right"> 1.02 </td> <td align="right"> 0.71 </td> <td align="right"> 115.06 </td> <td align="right"> 0.72 </td> <td align="right"> 0.02 </td> <td align="right"> 0.02 </td> <td align="right"> 0.96 </td> </tr>
-  <tr> <td align="right"> DFM_blocked </td> <td align="right"> -0.15 </td> <td align="right"> 1.34 </td> <td align="right"> 0.79 </td> <td align="right"> 117.14 </td> <td align="right"> 0.58 </td> <td align="right"> 0.01 </td> <td align="right"> 0.02 </td> <td align="right"> 0.97 </td> </tr>
-  <tr> <td align="right"> DFM_lasso_global </td> <td align="right"> -0.16 </td> <td align="right"> 1.44 </td> <td align="right"> 0.80 </td> <td align="right"> 92.40 </td> <td align="right"> 0.51 </td> <td align="right"> 0.01 </td> <td align="right"> 0.31 </td> <td align="right"> 0.68 </td> </tr>
-  <tr> <td align="right"> DFM_lasso_blocked </td> <td align="right"> -0.18 </td> <td align="right"> 1.61 </td> <td align="right"> 0.81 </td> <td align="right"> 109.57 </td> <td align="right"> 0.55 </td> <td align="right"> 0.01 </td> <td align="right"> 0.08 </td> <td align="right"> 0.91 </td> </tr>
-  <tr> <td align="right"> DFM_lm_global </td> <td align="right"> -0.45 </td> <td align="right"> 1.66 </td> <td align="right"> 1.11 </td> <td align="right"> 132.48 </td> <td align="right"> 0.77 </td> <td align="right"> 0.07 </td> <td align="right"> 0.08 </td> <td align="right"> 0.85 </td> </tr>
-  <tr> <td align="right"> DFM_lm_blocked </td> <td align="right"> -0.31 </td> <td align="right"> 1.68 </td> <td align="right"> 0.87 </td> <td align="right"> 98.37 </td> <td align="right"> 0.63 </td> <td align="right"> 0.03 </td> <td align="right"> 0.02 </td> <td align="right"> 0.95 </td> </tr>
-  <tr> <td align="right"> AutoTCN </td> <td align="right"> 0.53 </td> <td align="right"> 1.72 </td> <td align="right"> 0.88 </td> <td align="right"> 109.74 </td> <td align="right"> 0.75 </td> <td align="right"> 0.10 </td> <td align="right"> 0.59 </td> <td align="right"> 0.31 </td> </tr>
-  <tr> <td align="right"> AutoMLP_alt </td> <td align="right"> 0.18 </td> <td align="right"> 2.82 </td> <td align="right"> 1.40 </td> <td align="right"> 117.86 </td> <td align="right"> 0.87 </td> <td align="right"> 0.00 </td> <td align="right"> 0.69 </td> <td align="right"> 0.31 </td> </tr>
-  <tr> <td align="right"> AutoNBEATS </td> <td align="right"> 0.12 </td> <td align="right"> 3.05 </td> <td align="right"> 1.69 </td> <td align="right"> 158.31 </td> <td align="right"> 0.93 </td> <td align="right"> 0.00 </td> <td align="right"> 0.29 </td> <td align="right"> 0.71 </td> </tr>
-  <tr> <td align="right"> AutoInformer </td> <td align="right"> 0.38 </td> <td align="right"> 3.06 </td> <td align="right"> 1.54 </td> <td align="right"> 151.53 </td> <td align="right"> 0.96 </td> <td align="right"> 0.02 </td> <td align="right"> 0.37 </td> <td align="right"> 0.61 </td> </tr>
-  <tr> <td align="right"> AutoNHITS </td> <td align="right"> 0.21 </td> <td align="right"> 3.09 </td> <td align="right"> 1.84 </td> <td align="right"> 137.96 </td> <td align="right"> 1.06 </td> <td align="right"> 0.00 </td> <td align="right"> 0.09 </td> <td align="right"> 0.91 </td> </tr>
-  <tr> <td align="right"> AutoMLP </td> <td align="right"> 0.07 </td> <td align="right"> 3.46 </td> <td align="right"> 1.86 </td> <td align="right"> 133.97 </td> <td align="right"> 0.93 </td> <td align="right"> 0.00 </td> <td align="right"> 0.07 </td> <td align="right"> 0.93 </td> </tr>
-  <tr> <td align="right"> AutoAutoformer </td> <td align="right"> 0.41 </td> <td align="right"> 3.52 </td> <td align="right"> 1.87 </td> <td align="right"> 169.65 </td> <td align="right"> 1.23 </td> <td align="right"> 0.01 </td> <td align="right"> 0.07 </td> <td align="right"> 0.92 </td> </tr>
-  <tr> <td align="right"> AutoNHITS_alt </td> <td align="right"> 0.01 </td> <td align="right"> 3.83 </td> <td align="right"> 2.19 </td> <td align="right"> 186.29 </td> <td align="right"> 1.05 </td> <td align="right"> 0.00 </td> <td align="right"> 0.01 </td> <td align="right"> 0.99 </td> </tr>
-  <tr> <td align="right"> AutoNBEATSx </td> <td align="right"> -0.03 </td> <td align="right"> 3.85 </td> <td align="right"> 2.19 </td> <td align="right"> 172.27 </td> <td align="right"> 1.04 </td> <td align="right"> 0.00 </td> <td align="right"> 0.01 </td> <td align="right"> 0.99 </td> </tr>
-  <tr> <td align="right"> Naive </td> <td align="right"> 0.00 </td> <td align="right"> 4.62 </td> <td align="right"> 2.24 </td> <td align="right"> 152.15 </td> <td align="right"> 1.00 </td> <td align="right"> 0.00 </td> <td align="right"> 0.00 </td> <td align="right"> 1.00 </td> </tr> <tr>
-   </table>
 
+<!-- Sun Jun 18 23:11:04 2023 -->
+
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+|                   | Bias  | RMSE | MAE  | MAPE   | U2   | Bias Prop. | Var. Prop. | Cov. Prop. |
++===================+=======+======+======+========+======+============+============+============+
+| AutoGRU           | 0.43  | 0.85 | 0.62 | 100.56 | 0.52 | 0.26       | 0.07       | 0.68       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoRNN           | 0.40  | 0.88 | 0.65 | 108.31 | 0.54 | 0.21       | 0.01       | 0.78       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoDilatedRNN    | 0.46  | 0.94 | 0.68 | 105.64 | 0.55 | 0.24       | 0.06       | 0.70       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoLSTM          | 0.42  | 0.99 | 0.65 | 110.16 | 0.60 | 0.17       | 0.28       | 0.55       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| DFM_global        | -0.14 | 1.02 | 0.71 | 115.06 | 0.72 | 0.02       | 0.02       | 0.96       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| DFM_blocked       | -0.15 | 1.34 | 0.79 | 117.14 | 0.58 | 0.01       | 0.02       | 0.97       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| DFM_lasso_global  | -0.16 | 1.44 | 0.80 | 92.40  | 0.51 | 0.01       | 0.31       | 0.68       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| DFM_lasso_blocked | -0.18 | 1.61 | 0.81 | 109.57 | 0.55 | 0.01       | 0.08       | 0.91       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| DFM_lm_global     | -0.45 | 1.66 | 1.11 | 132.48 | 0.77 | 0.07       | 0.08       | 0.85       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| DFM_lm_blocked    | -0.31 | 1.68 | 0.87 | 98.37  | 0.63 | 0.03       | 0.02       | 0.95       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoTCN           | 0.53  | 1.72 | 0.88 | 109.74 | 0.75 | 0.10       | 0.59       | 0.31       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoMLP_alt       | 0.18  | 2.82 | 1.40 | 117.86 | 0.87 | 0.00       | 0.69       | 0.31       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoNBEATS        | 0.12  | 3.05 | 1.69 | 158.31 | 0.93 | 0.00       | 0.29       | 0.71       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoInformer      | 0.38  | 3.06 | 1.54 | 151.53 | 0.96 | 0.02       | 0.37       | 0.61       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoNHITS         | 0.21  | 3.09 | 1.84 | 137.96 | 1.06 | 0.00       | 0.09       | 0.91       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoMLP           | 0.07  | 3.46 | 1.86 | 133.97 | 0.93 | 0.00       | 0.07       | 0.93       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoAutoformer    | 0.41  | 3.52 | 1.87 | 169.65 | 1.23 | 0.01       | 0.07       | 0.92       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoNHITS_alt     | 0.01  | 3.83 | 2.19 | 186.29 | 1.05 | 0.00       | 0.01       | 0.99       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| AutoNBEATSx       | -0.03 | 3.85 | 2.19 | 172.27 | 1.04 | 0.00       | 0.01       | 0.99       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+| Naive             | 0.00  | 4.62 | 2.24 | 152.15 | 1.00 | 0.00       | 0.00       | 1.00       |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
+|                   |       |      |      |        |      |            |            |            |
++-------------------+-------+------+------+--------+------+------------+------------+------------+
 
 # Conclusion
 
-
-# References 
-
-
-
+# References
