@@ -21,7 +21,7 @@ bibliography: biblio.bib
 
 ## Collaborators
 
-We have a team of people that consists of statisticians, econometricians and data scientists / engineers.
+We have a team of people that consists of statisticians, econometricians and data scientists.
 
 -   **Dawie van Lill** 🗣️
 -   François Kamper
@@ -66,8 +66,8 @@ Naive forecasting benchmark versus DFM, ML and DL
 ::: goal
 1.  DFM (M)
 2.  SVR (M)
-3.  RF (M)
-4.  GBM (M)
+3.  RF (M) *
+4.  GBM (M) *
 :::
 :::
 
