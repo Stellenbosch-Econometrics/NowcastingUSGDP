@@ -88,7 +88,7 @@ U = Univariate, M = Multivariate, MLP = Multilayer Perceptron
 
 ## Contribution
 
-ARIMA forecasting benchmark versus DFM, ML and DL
+Naive forecasting benchmark versus DFM, ML and DL
 
 ::: columns
 ::: {.column width="50%" style="text-align: center;"}
@@ -108,8 +108,8 @@ ARIMA forecasting benchmark versus DFM, ML and DL
 
 ::: goal
 13. Temporal Fusion Transformer (U)
-14. Autoformer (M)
-15. Informer (M)
+14. Informer (M)
+15. Autoformer (M)
 
 ::: aside
 RNN = Recurrent neural network
@@ -134,7 +134,7 @@ RNN = Recurrent neural network
 
 <br>
 
-The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q5.
+The **target variable** is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q2.
 
 <br>
 
@@ -181,11 +181,27 @@ These bridge models also allow either a **global** or *blocked* factor structure
 <br> 
 The purpose of having both mixed-frequency and bridge equation models is to gauge the potential gains from mixed-frequency in DFM estimation.
 
+##
+
 ## Machine learning models
+
+## Support vector regression
+
+
+
+## 
 
 ## MLP-based models
 
 <center>![](02_figures/mlp_model.png){width="70%"}</center>
+
+## MLP-based models
+
+We consider three types of MLP-based models
+
+1. MLP
+2. N-BEATS and N-BEATSx
+3. N-HiTS
 
 ## 
 
@@ -193,11 +209,33 @@ The purpose of having both mixed-frequency and bridge equation models is to gaug
 
 <center>![](02_figures/rnn_model.png){width="70%"}</center>
 
+## RNN-based models
+
+We consider five types of RNN-based models
+
+1. RNN
+2. RNN-LSTM
+3. RNN-GRU
+4. TCN
+5. Dilated RNN
+
 ## 
 
 ## Transformer models
 
 <center>![](02_figures/transformer.svg){height="50%"}</center>
+
+## Transformer models
+
+We consider three types of transformer based models
+
+1. Temporal fusion transformer
+2. Informer
+3. Autoformer
+
+
+##
+
 
 # Results
 
