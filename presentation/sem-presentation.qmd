@@ -192,7 +192,33 @@ Our goal in using both mixed-frequency and bridge equation models is to assess p
 
 ## Support vector regression
 
-Different kernels for SVR model...
+<br> 
+Traditional machine learning models for regression can be used for forecasting by stacking lagged values 
+of the target, past- and future covariates into a single covariate vector.
+
+<br>
+In support vector regression we fit a function from a reproducing kernel Hilbert space (RKHS) to the data 
+via the epsilon insensitive loss function. 
+
+<br>
+The fit is regularized via the so-called cost parameter, to be selected 
+via temporal cross-validation, and we set epsilon = 1 throughout.
+
+<br> 
+We consider forming RKHS via the linear, radial basis and sigmoid kernels. The latter two kernels require 
+spesification of a hyper-parameter to be selected via temporal cross-validation. Based on our experiments, 
+using a polynomial kernel with degree exceeding 1 did not give good results. 
+
+<br>
+We found that including all the available predictive features in the fitting process to adversely effect
+results.
+
+<br>
+To circumvent this, we applied a simple screening process to data from the training period only. We only include
+variables with absolute correlation with the target (over the training period) exceeding a specified threshold. The 
+threshold is chosen using temporal cross-validation.
+
+
 
 ## 
 
