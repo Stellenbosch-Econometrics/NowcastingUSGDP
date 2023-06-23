@@ -467,18 +467,18 @@
 <section id="data-1" class="slide level2">
 <h2>Data</h2>
 <p><br></p>
-<p>The <strong>target variable</strong> is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q2.</p>
+<p>The <strong>target variable</strong> represents the seasonally adjusted, annualized quarter-on-quarter GDP growth rate from 1959Q2 to 2023Q2</p>
 <p><br></p>
-<p>Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. Suggested transformation of variables applied.</p>
+<p>Data for quarterly and monthly macroeconomic variables are gathered from the FRED-QD and FRED-MD databases, with suggested transformations applied.</p>
 </section>
 <section id="data-preparation" class="slide level2">
 <h2>Data preparation</h2>
 <p><br></p>
-<p>Monthly vintage data is available. GDP is available at quarterly frequency. This creates a mixed frequency problem.</p>
+<p>Monthly vintage data is available, while GDP data is at a quarterly frequency, presenting a mixed frequency issue</p>
 <p><br></p>
-<p>We <strong>block</strong> the monthly data to resolve this problem.</p>
+<p>To resolve this problem, we <strong>block</strong> the monthly data.</p>
 <ul>
-<li>This means that we create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.</li>
+<li>This entails creating new variables from the values of the first, second, and third month of each quarter.</li>
 </ul>
 </section></section>
 <section>
@@ -489,8 +489,9 @@
 <section id="dynamic-factor-models-1" class="slide level2 smaller">
 <h2>Dynamic factor models</h2>
 <p><br></p>
-<p>We estimate a Mixed Frequency DFM following <span class="citation" data-cites="banbura2014maximum">Bańbura and Modugno (<a href="#/references" role="doc-biblioref" onclick="">2014</a>)</span>, using a global specification with 9 factors related through a VAR(4), or a blocked structure following <span class="citation" data-cites="bok2018macroeconomic">Bok et al. (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> with 13 factors in 9 blocks:</p>
+<p>We employ a Mixed Frequency DFM per <span class="citation" data-cites="banbura2014maximum">Bańbura and Modugno (<a href="#/references" role="doc-biblioref" onclick="">2014</a>)</span>’s global VAR(4) specification with 9 factors</p>
 <p><br></p>
+<p>We also use <span class="citation" data-cites="bok2018macroeconomic">Bok et al. (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span>’s blocked structure with 13 factors in 9 blocks, covering various economic sectors. The blocks and and factors are presented below,</p>
 <div class="goal">
 <p>global (2), output and income (1), labor market (1), consumption, orders, and inventories (2), housing (1), money and credit (2), interest and exchange rates (2), prices (1), and stock market (1).</p>
 </div>
@@ -498,14 +499,15 @@
 <section id="dynamic-factor-models-2" class="slide level2 smaller">
 <h2>Dynamic factor models</h2>
 <p><br></p>
-<p>We also estimate bridge-equation models with monthly DFMs along two methods</p>
+<p>Finally, we estimate bridge-equation models with monthly DFMs using two methods:</p>
 <ol type="1">
-<li>Aggregating monthly factors + linear model to nowcast GDP</li>
-<li>Distributing monthly factors into multiple quarterly variables and using LASSO for nowcasting.</li>
+<li>Aggregating monthly factors to nowcast GDP via a linear model</li>
+<li>Distributing monthly factors into various quarterly variables and applying LASSO for nowcasting</li>
 </ol>
 <p><br></p>
-<p>These bridge models also allow either a <strong>global</strong> or <em>blocked</em> factor structure.</p>
-<p><br> The purpose of having both mixed-frequency and bridge equation models is to gauge the potential gains from mixed-frequency in DFM estimation.</p>
+<p>These bridge models allow for both <strong>global</strong> and <em>blocked</em> factor structures.</p>
+<p><br></p>
+<p>Our goal in using both mixed-frequency and bridge equation models is to assess potential gains from mixed-frequency in DFM estimation.</p>
 </section>
 <section id="section" class="slide level2">
 <h2></h2>
@@ -528,16 +530,17 @@
 <img data-src="02_figures/mlp_model.png" style="width:70.0%">
 </center>
 </section>
-<section id="mlp-based-models-1" class="slide level2">
+<section id="mlp-based-models-1" class="slide level2 smaller">
 <h2>MLP-based models</h2>
-<p>We consider three types of MLP-based models</p>
+<p><br></p>
+<p>We explore three types of MLP-based models:</p>
 <ol type="1">
-<li>MLP</li>
+<li>Standard MLP</li>
 <li>N-BEATS and N-BEATSx</li>
 <li>N-HiTS</li>
 </ol>
 <p><br></p>
-<p>N-BEATS and N-HiTS employ learnable architecture that directly learns the historical data’s backward and forward-looking components</p>
+<p>Both N-BEATS and N-HiTS utilize a learnable architecture to directly capture the historical data’s backward and forward-looking components.</p>
 </section>
 <section id="section-2" class="slide level2">
 <h2></h2>
@@ -550,22 +553,26 @@
 </section>
 <section id="rnn-based-models-1" class="slide level2 smaller">
 <h2>RNN-based models</h2>
-<p>We consider five types of RNN-based models</p>
+<p><br></p>
+<p>We examine five types of RNN-based models:</p>
 <ol type="1">
-<li>RNN</li>
-<li>RNN-LSTM</li>
-<li>RNN-GRU</li>
+<li>Standard RNN</li>
+<li>RNN with LSTM</li>
+<li>RNN with GRU</li>
 <li>TCN</li>
 <li>Dilated RNN</li>
 </ol>
 <p><br></p>
-<p>LSTM and GRU differ from traditional RNNs in that LSTM and GRU incorporate gating mechanisms to mitigate the vanishing gradient problem, allowing them to capture long-term dependencies.</p>
+<p>This class of model is our top performer among deep learning models.</p>
 </section>
 <section id="rnn-based-models-2" class="slide level2 smaller">
 <h2>RNN-based models</h2>
-<p>Dilated RNN uses dilation in time (skipped steps) to capture longer sequences without increasing the number of parameters.</p>
 <p><br></p>
-<p>TCNs use dilated causal convolutions to process sequences, allowing them to efficiently handle long-term dependencies and offering more parallelism.</p>
+<p>LSTM and GRU leverage gating mechanisms, distinguishing them from standard RNNs by addressing the vanishing gradient issue and facilitating long-term dependency capture.</p>
+<p><br></p>
+<p>Dilated RNN employs time dilation (skipped steps) for efficient long-sequence capture without parameter increase.</p>
+<p><br></p>
+<p>TCNs, on the other hand, utilize dilated causal convolutions, offering efficient long-term dependency management and enhanced parallelism.</p>
 </section>
 <section id="section-3" class="slide level2">
 <h2></h2>
@@ -576,25 +583,30 @@
 <img data-src="02_figures/transformer.svg" style="height:50.0%">
 </center>
 </section>
-<section id="transformer-models-1" class="slide level2">
+<section id="transformer-models-1" class="slide level2 smaller">
 <h2>Transformer models</h2>
-<p>We consider three types of transformer based models</p>
+<p><br></p>
+<p>We examine three transformer-based models:</p>
 <ol type="1">
-<li>Temporal fusion transformer</li>
+<li>Temporal Fusion Transformer</li>
 <li>Informer</li>
 <li>Autoformer</li>
 </ol>
+<p><br></p>
+<p>These models, unlike RNNs, utilize self-attention, enhancing dependency management and parallel processing.</p>
+<p><br></p>
+<p>Despite this, their high computational demands, large dataset requirements, and difficulty with sequential data may limit their time series forecasting efficacy.</p>
 </section>
 <section id="section-4" class="slide level2">
 <h2></h2>
 </section></section>
+<section>
 <section id="results" class="title-slide slide level1 center">
 <h1>Results</h1>
 
 </section>
-
-<section id="section-5" class="title-slide slide level1 smaller center">
-<h1></h1>
+<section id="section-5" class="slide level2 smaller">
+<h2></h2>
 
 <!-- html table generated in R 4.3.0 by xtable 1.8-4 package -->
 <!-- Sun Jun 18 23:11:04 2023 -->
@@ -857,8 +869,7 @@
 </tr>
 </tbody>
 </table>
-</section>
-
+</section></section>
 <section id="conclusion" class="title-slide slide level1 center">
 <h1>Conclusion</h1>
 
