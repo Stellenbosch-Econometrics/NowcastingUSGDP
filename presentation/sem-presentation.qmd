@@ -230,9 +230,14 @@ We consider five types of RNN-based models
 
 LSTM and GRU differ from traditional RNNs in that LSTM and GRU incorporate gating mechanisms to mitigate the vanishing gradient problem, allowing them to capture long-term dependencies. 
 
-<br>
+## RNN-based models
+
 
 Dilated RNN uses dilation in time (skipped steps) to capture longer sequences without increasing the number of parameters.
+
+<br>
+
+TCNs use dilated causal convolutions to process sequences, allowing them to efficiently handle long-term dependencies and offering more parallelism.
 
 ## 
 
@@ -247,6 +252,8 @@ We consider three types of transformer based models
 1. Temporal fusion transformer
 2. Informer
 3. Autoformer
+
+Transformer-based models differ from traditional Recurrent Neural Networks (RNNs) by employing self-attention mechanisms for sequence processing, which allows them to capture dependencies regardless of their position in the sequence, offering improved parallelization capabilities and mitigating issues with long-term dependencies, as opposed to RNNs which process sequences step-by-step and can struggle with long-term dependencies due to the vanishing gradient problem.
 
 
 ##
