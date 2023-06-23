@@ -355,7 +355,7 @@
 </section>
 <section id="collaborators" class="slide level2">
 <h2>Collaborators</h2>
-<p>We have a team of people that consists of statisticians, econometricians and data scientists / engineers.</p>
+<p>We have a team of people that consists of statisticians, econometricians and data scientists.</p>
 <ul>
 <li><strong>Dawie van Lill</strong> 🗣️</li>
 <li>François Kamper</li>
@@ -403,8 +403,8 @@
 <ol type="1">
 <li>DFM (M)</li>
 <li>SVR (M)</li>
-<li>RF (M)</li>
-<li>GBM (M)</li>
+<li>RF (M) *</li>
+<li>GBM (M) *</li>
 </ol>
 </div>
 </div><div class="column" style="text-align: center;">
@@ -424,7 +424,7 @@
 </div></aside></section>
 <section id="contribution-1" class="slide level2">
 <h2>Contribution</h2>
-<p>ARIMA forecasting benchmark versus DFM, ML and DL</p>
+<p>Naive forecasting benchmark versus DFM, ML and DL</p>
 <div class="columns">
 <div class="column" style="text-align: center;">
 <p><strong>RNN-based models</strong></p>
@@ -442,8 +442,8 @@
 <div class="goal">
 <ol start="13" type="1">
 <li>Temporal Fusion Transformer (U)</li>
-<li>Autoformer (M)</li>
 <li>Informer (M)</li>
+<li>Autoformer (M)</li>
 </ol>
 
 </div>
@@ -467,7 +467,7 @@
 <section id="data-1" class="slide level2">
 <h2>Data</h2>
 <p><br></p>
-<p>The <strong>target variable</strong> is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q5.</p>
+<p>The <strong>target variable</strong> is the seasonally adjusted annualised quarter-on-quarter growth rate of GDP covering the period from 1959Q2 to 2023Q2.</p>
 <p><br></p>
 <p>Quarterly and monthly macroeconomic variables are collected using data from the FRED-QD and FRED-MD databases. Suggested transformation of variables applied.</p>
 </section>
@@ -480,9 +480,14 @@
 <ul>
 <li>This means that we create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.</li>
 </ul>
+</section></section>
+<section>
+<section id="dynamic-factor-models" class="title-slide slide level1 center">
+<h1>Dynamic factor models</h1>
+
 </section>
-<section id="dynamic-factor-model" class="slide level2 smaller">
-<h2>Dynamic factor model</h2>
+<section id="dynamic-factor-models-1" class="slide level2 smaller">
+<h2>Dynamic factor models</h2>
 <p><br></p>
 <p>We estimate a Mixed Frequency DFM following <span class="citation" data-cites="banbura2014maximum">Bańbura and Modugno (<a href="#/references" role="doc-biblioref" onclick="">2014</a>)</span>, using a global specification with 9 factors related through a VAR(4), or a blocked structure following <span class="citation" data-cites="bok2018macroeconomic">Bok et al. (<a href="#/references" role="doc-biblioref" onclick="">2018</a>)</span> with 13 factors in 9 blocks:</p>
 <p><br></p>
@@ -490,8 +495,8 @@
 <p>global (2), output and income (1), labor market (1), consumption, orders, and inventories (2), housing (1), money and credit (2), interest and exchange rates (2), prices (1), and stock market (1).</p>
 </div>
 </section>
-<section id="dynamic-factor-model-1" class="slide level2 smaller">
-<h2>Dynamic factor model</h2>
+<section id="dynamic-factor-models-2" class="slide level2 smaller">
+<h2>Dynamic factor models</h2>
 <p><br></p>
 <p>We also estimate bridge-equation models with monthly DFMs along two methods</p>
 <ol type="1">
@@ -502,8 +507,20 @@
 <p>These bridge models also allow either a <strong>global</strong> or <em>blocked</em> factor structure.</p>
 <p><br> The purpose of having both mixed-frequency and bridge equation models is to gauge the potential gains from mixed-frequency in DFM estimation.</p>
 </section>
-<section id="machine-learning-models" class="slide level2">
-<h2>Machine learning models</h2>
+<section id="section" class="slide level2">
+<h2></h2>
+</section></section>
+<section>
+<section id="machine-learning-models" class="title-slide slide level1 center">
+<h1>Machine learning models</h1>
+
+</section>
+<section id="support-vector-regression" class="slide level2">
+<h2>Support vector regression</h2>
+<p>Different kernels for SVR model…</p>
+</section>
+<section id="section-1" class="slide level2">
+<h2></h2>
 </section>
 <section id="mlp-based-models" class="slide level2">
 <h2>MLP-based models</h2>
@@ -511,7 +528,18 @@
 <img data-src="02_figures/mlp_model.png" style="width:70.0%">
 </center>
 </section>
-<section id="section" class="slide level2">
+<section id="mlp-based-models-1" class="slide level2">
+<h2>MLP-based models</h2>
+<p>We consider three types of MLP-based models</p>
+<ol type="1">
+<li>MLP</li>
+<li>N-BEATS and N-BEATSx</li>
+<li>N-HiTS</li>
+</ol>
+<p><br></p>
+<p>N-BEATS and N-HiTS employ learnable architecture that directly learns the historical data’s backward and forward-looking components</p>
+</section>
+<section id="section-2" class="slide level2">
 <h2></h2>
 </section>
 <section id="rnn-based-models" class="slide level2">
@@ -520,7 +548,22 @@
 <img data-src="02_figures/rnn_model.png" style="width:70.0%">
 </center>
 </section>
-<section id="section-1" class="slide level2">
+<section id="rnn-based-models-1" class="slide level2 smaller">
+<h2>RNN-based models</h2>
+<p>We consider five types of RNN-based models</p>
+<ol type="1">
+<li>RNN</li>
+<li>RNN-LSTM</li>
+<li>RNN-GRU</li>
+<li>TCN</li>
+<li>Dilated RNN</li>
+</ol>
+<p><br></p>
+<p>LSTM and GRU differ from traditional RNNs in that LSTM and GRU incorporate gating mechanisms to mitigate the vanishing gradient problem, allowing them to capture long-term dependencies.</p>
+<p><br></p>
+<p>Dilated RNN uses dilation in time (skipped steps) to capture longer sequences without increasing the number of parameters.</p>
+</section>
+<section id="section-3" class="slide level2">
 <h2></h2>
 </section>
 <section id="transformer-models" class="slide level2">
@@ -528,13 +571,25 @@
 <center>
 <img data-src="02_figures/transformer.svg" style="height:50.0%">
 </center>
+</section>
+<section id="transformer-models-1" class="slide level2">
+<h2>Transformer models</h2>
+<p>We consider three types of transformer based models</p>
+<ol type="1">
+<li>Temporal fusion transformer</li>
+<li>Informer</li>
+<li>Autoformer</li>
+</ol>
+</section>
+<section id="section-4" class="slide level2">
+<h2></h2>
 </section></section>
 <section id="results" class="title-slide slide level1 center">
 <h1>Results</h1>
 
 </section>
 
-<section id="section-2" class="title-slide slide level1 smaller center">
+<section id="section-5" class="title-slide slide level1 smaller center">
 <h1></h1>
 
 <!-- html table generated in R 4.3.0 by xtable 1.8-4 package -->

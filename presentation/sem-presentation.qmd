@@ -153,7 +153,9 @@ We **block** the monthly data to resolve this problem.
 
  - This means that we create new variables from the values of the 1st, 2nd, and 3rd month of each quarter.
 
-## Dynamic factor model {.smaller}
+# Dynamic factor models
+
+## Dynamic factor models {.smaller}
 
 <br>
 
@@ -165,7 +167,7 @@ We estimate a Mixed Frequency DFM following @banbura2014maximum, using a global 
 global (2), output and income (1), labor market (1), consumption, orders, and inventories (2), housing (1), money and credit (2), interest and exchange rates (2), prices (1), and stock market (1).
 :::
 
-## Dynamic factor model {.smaller}
+## Dynamic factor models {.smaller}
 
 <br> 
 
@@ -183,11 +185,11 @@ The purpose of having both mixed-frequency and bridge equation models is to gaug
 
 ##
 
-## Machine learning models
+# Machine learning models
 
 ## Support vector regression
 
-
+Different kernels for SVR model...
 
 ## 
 
@@ -203,13 +205,18 @@ We consider three types of MLP-based models
 2. N-BEATS and N-BEATSx
 3. N-HiTS
 
+<br>
+
+N-BEATS and N-HiTS employ learnable architecture that directly learns the historical data's backward and forward-looking components
+
+
 ## 
 
 ## RNN-based models
 
 <center>![](02_figures/rnn_model.png){width="70%"}</center>
 
-## RNN-based models
+## RNN-based models {.smaller}
 
 We consider five types of RNN-based models
 
@@ -218,6 +225,14 @@ We consider five types of RNN-based models
 3. RNN-GRU
 4. TCN
 5. Dilated RNN
+
+<br>
+
+LSTM and GRU differ from traditional RNNs in that LSTM and GRU incorporate gating mechanisms to mitigate the vanishing gradient problem, allowing them to capture long-term dependencies. 
+
+<br>
+
+Dilated RNN uses dilation in time (skipped steps) to capture longer sequences without increasing the number of parameters.
 
 ## 
 
