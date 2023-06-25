@@ -66,8 +66,8 @@ Naive forecasting benchmark versus DFM, ML and DL
 ::: goal
 1.  DFM (M)
 2.  SVR (M)
-3.  RF (M) *
-4.  GBM (M) *
+3.  RF (M) **
+4.  GBM (M) **
 :::
 :::
 
@@ -192,35 +192,93 @@ Our goal in using both mixed-frequency and bridge equation models is to assess p
 
 ## Support vector regression
 
+<center>![](02_figures/svr.png){width="75%"}</center>
+
+## Support vector regression {.smaller}
+
+<br>
+In support vector regression (SVR) we fit a function from a reproducing kernel Hilbert space (RKHS) to the data 
+via the epsilon ($\epsilon$) insensitive loss function. 
+
+<br>
+The fit is regularized via the so-called cost parameter, to be selected via temporal cross-validation, and we set $\epsilon = 1$ throughout.
+
 <br> 
-Traditional machine learning models for regression can be used for forecasting by stacking lagged values 
-of the target, past- and future covariates into a single covariate vector.
+We consider forming RKHS via the **linear, radial basis** and **sigmoid** kernels. The latter two kernels require 
+specification of a hyper-parameter to be selected via temporal cross-validation. 
+
+## Support vector regression {.smaller}
 
 <br>
-In support vector regression we fit a function from a reproducing kernel Hilbert space (RKHS) to the data 
-via the epsilon insensitive loss function. 
+We found that including all the available predictive features in the fitting process to adversely effect results.To circumvent this, we applied a simple screening process to data from the training period only.
 
 <br>
-The fit is regularized via the so-called cost parameter, to be selected 
-via temporal cross-validation, and we set epsilon = 1 throughout.
-
-<br> 
-We consider forming RKHS via the linear, radial basis and sigmoid kernels. The latter two kernels require 
-spesification of a hyper-parameter to be selected via temporal cross-validation. Based on our experiments, 
-using a polynomial kernel with degree exceeding 1 did not give good results. 
-
-<br>
-We found that including all the available predictive features in the fitting process to adversely effect
-results.
-
-<br>
-To circumvent this, we applied a simple screening process to data from the training period only. We only include
-variables with absolute correlation with the target (over the training period) exceeding a specified threshold. The 
-threshold is chosen using temporal cross-validation.
+We only include variables with absolute correlation with the target (over the training period) exceeding a specified threshold. The threshold is chosen using temporal cross-validation.
 
 
 
 ## 
+
+```{python}
+# | label: fig-svr
+# | fig-cap: "SVR models"
+
+
+# Load your data
+data = pd.read_csv('../presentation/01_data/tidy_svr.csv')
+
+# Convert 'ds' to datetime
+data['ds'] = pd.to_datetime(data['ds'])
+
+# Define the models to plot
+models_to_plot = ['SVR_LINEAR', 'SVR_RBF',
+                  'SVR_SIGMOID']
+
+# Filter data for selected models
+filtered_data = data[data['Model'].isin(models_to_plot)]
+
+# Group by model and select every third row
+grouped = filtered_data.groupby('Model')
+
+selected_data = pd.concat([group.iloc[::3] for _, group in grouped])
+
+# Map models to colors
+model_color_dict = {
+    'SVR_LINEAR': 'red',
+    'SVR_RBF': 'green',
+    'SVR_SIGMOID': 'blue',
+}
+
+
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Change this line to set x ticks every year
+ax.xaxis.set_major_locator(YearLocator())
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+ax.tick_params(which="major", width=1.0)
+ax.tick_params(which="major", length=10)
+ax.tick_params(which="minor", width=1.0, labelsize=10)
+ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
+
+ax.set_ylabel("Estimate", weight="medium")
+ax.set_xlabel("Date", weight="medium")
+
+for model in selected_data['Model'].unique():
+    subset = selected_data[selected_data['Model'] == model]
+    ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
+               edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
+
+# Display the legend
+ax.legend(frameon=False)
+
+plt.show()
+```
+
 
 ## MLP-based models
 
@@ -242,6 +300,69 @@ Both N-BEATS and N-HiTS utilize a learnable architecture to directly capture the
 
 
 ## 
+
+```{python}
+# | label: fig-mlp
+# | fig-cap: "MLP models"
+
+
+# Load your data
+data = pd.read_csv('../presentation/01_data/tidy_results.csv')
+
+# Convert 'ds' to datetime
+data['ds'] = pd.to_datetime(data['ds'])
+
+# Define the models to plot
+models_to_plot = ['AutoMLP', 'AutoNHITS',
+                  'AutoNBEATS', 'AutoNBEATSx']
+
+# Filter data for selected models
+filtered_data = data[data['Model'].isin(models_to_plot)]
+
+# Group by model and select every third row
+grouped = filtered_data.groupby('Model')
+
+selected_data = pd.concat([group.iloc[::3] for _, group in grouped])
+
+# Map models to colors
+model_color_dict = {
+    'AutoMLP': 'red',
+    'AutoNHITS': 'green',
+    'AutoNBEATS': 'blue',
+    'AutoNBEATSx': 'cyan'
+}
+
+
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Change this line to set x ticks every year
+ax.xaxis.set_major_locator(YearLocator())
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+ax.tick_params(which="major", width=1.0)
+ax.tick_params(which="major", length=10)
+ax.tick_params(which="minor", width=1.0, labelsize=10)
+ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
+
+ax.set_ylabel("Estimate", weight="medium")
+ax.set_xlabel("Date", weight="medium")
+
+for model in selected_data['Model'].unique():
+    subset = selected_data[selected_data['Model'] == model]
+    ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
+               edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
+
+# Display the legend
+ax.legend(frameon=False)
+
+plt.show()
+```
+
+
 
 ## RNN-based models
 
@@ -280,6 +401,68 @@ TCNs, on the other hand, utilize dilated causal convolutions, offering efficient
 
 ## 
 
+```{python}
+# | label: fig-rnn
+# | fig-cap: "RNN models"
+
+
+# Load your data
+data = pd.read_csv('../presentation/01_data/tidy_results.csv')
+
+# Convert 'ds' to datetime
+data['ds'] = pd.to_datetime(data['ds'])
+
+# Define the models to plot
+models_to_plot = ['AutoDilatedRNN', 'AutoGRU',
+                  'AutoRNN', 'AutoTCN', 'AutoLSTM']
+
+# Filter data for selected models
+filtered_data = data[data['Model'].isin(models_to_plot)]
+
+# Group by model and select every third row
+grouped = filtered_data.groupby('Model')
+
+selected_data = pd.concat([group.iloc[::3] for _, group in grouped])
+
+# Map models to colors
+model_color_dict = {
+    'AutoDilatedRNN': 'red',
+    'AutoGRU': 'green',
+    'AutoRNN': 'blue',
+    'AutoTCN': 'cyan',
+    'AutoLSTM': 'purple'
+}
+
+
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Change this line to set x ticks every year
+ax.xaxis.set_major_locator(YearLocator())
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+ax.tick_params(which="major", width=1.0)
+ax.tick_params(which="major", length=10)
+ax.tick_params(which="minor", width=1.0, labelsize=10)
+ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
+
+ax.set_ylabel("Estimate", weight="medium")
+ax.set_xlabel("Date", weight="medium")
+
+for model in selected_data['Model'].unique():
+    subset = selected_data[selected_data['Model'] == model]
+    ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
+               edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
+
+# Display the legend
+ax.legend(frameon=False)
+
+plt.show()
+```
+
 ## Transformer models
 
 <center>![](02_figures/transformer.svg){height="50%"}</center>
@@ -304,6 +487,66 @@ Despite this, their high computational demands, large dataset requirements, and 
 
 ##
 
+```{python}
+# | label: fig-transformer
+# | fig-cap: "Transformer models"
+
+
+# Load your data
+data = pd.read_csv('../presentation/01_data/tidy_results.csv')
+
+# Convert 'ds' to datetime
+data['ds'] = pd.to_datetime(data['ds'])
+
+# Define the models to plot
+models_to_plot = ['AutoTFT', 'AutoInformer',
+                  'AutoAutoformer']
+
+# Filter data for selected models
+filtered_data = data[data['Model'].isin(models_to_plot)]
+
+# Group by model and select every third row
+grouped = filtered_data.groupby('Model')
+
+selected_data = pd.concat([group.iloc[::3] for _, group in grouped])
+
+# Map models to colors
+model_color_dict = {
+    'AutoTFT': 'red',
+    'AutoInformer': 'green',
+    'AutoAutoformer': 'blue',
+}
+
+
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Change this line to set x ticks every year
+ax.xaxis.set_major_locator(YearLocator())
+
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+
+ax.tick_params(which="major", width=1.0)
+ax.tick_params(which="major", length=10)
+ax.tick_params(which="minor", width=1.0, labelsize=10)
+ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
+
+ax.set_ylabel("Estimate", weight="medium")
+ax.set_xlabel("Date", weight="medium")
+
+for model in selected_data['Model'].unique():
+    subset = selected_data[selected_data['Model'] == model]
+    ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
+               edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
+
+# Display the legend
+ax.legend(frameon=False)
+
+plt.show()
+```
+
 
 # Results 
 
@@ -313,28 +556,28 @@ Despite this, their high computational demands, large dataset requirements, and 
 <!-- Fri Jun 23 20:51:14 2023 -->
 |     | Bias | RMSE | MAE | MAPE | U2  | Bias Prop. | Var. Prop. | Cov. Prop. |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AutoDilatedRNN | 0.43 | 0.86 | 0.61 | 107.59 | 0.54 | 0.25 | 0.16 | 0.59 |
-| AutoLSTM | 0.40 | 0.89 | 0.59 | 100.75 | 0.52 | 0.20 | 0.24 | 0.55 |
-| AutoRNN | 0.41 | 0.93 | 0.61 | 101.24 | 0.55 | 0.20 | 0.24 | 0.56 |
-| AutoGRU | 0.46 | 1.02 | 0.67 | 114.39 | 0.61 | 0.21 | 0.35 | 0.44 |
-| DFM_global | -0.14 | 1.02 | 0.71 | 115.06 | 0.72 | 0.02 | 0.02 | 0.96 |
-| SVR_linear | -0.10 | 1.15 | 0.74 | 121.20 | 0.70 | 0.01 | 0.27 | 0.72 |
-| SVR_sigmoid | -0.08 | 1.25 | 0.81 | 108.77 | 0.68 | 0.00 | 0.47 | 0.53 |
-| DFM_blocked | -0.15 | 1.34 | 0.79 | 117.14 | 0.58 | 0.01 | 0.02 | 0.97 |
-| SVR_rbf | 0.15 | 1.35 | 0.92 | 127.70 | 0.76 | 0.01 | 0.71 | 0.28 |
+| DilatedRNN | 0.43 | 0.86 | 0.61 | 107.59 | 0.54 | 0.25 | 0.16 | 0.59 |
+| LSTM | 0.40 | 0.89 | 0.59 | 100.75 | 0.52 | 0.20 | 0.24 | 0.55 |
+| RNN | 0.41 | 0.93 | 0.61 | 101.24 | 0.55 | 0.20 | 0.24 | 0.56 |
+| GRU | 0.46 | 1.02 | 0.67 | 114.39 | 0.61 | 0.21 | 0.35 | 0.44 |
+| DFM Global | -0.14 | 1.02 | 0.71 | 115.06 | 0.72 | 0.02 | 0.02 | 0.96 |
+| SVR Linear | -0.10 | 1.15 | 0.74 | 121.20 | 0.70 | 0.01 | 0.27 | 0.72 |
+| SVR Sigmoid | -0.08 | 1.25 | 0.81 | 108.77 | 0.68 | 0.00 | 0.47 | 0.53 |
+| DFM Blocked | -0.15 | 1.34 | 0.79 | 117.14 | 0.58 | 0.01 | 0.02 | 0.97 |
+| SVR RBF | 0.15 | 1.35 | 0.92 | 127.70 | 0.76 | 0.01 | 0.71 | 0.28 |
 | DFM\_lasso\_global | -0.16 | 1.44 | 0.80 | 92.40 | 0.51 | 0.01 | 0.31 | 0.68 |
 | DFM\_lasso\_blocked | -0.18 | 1.61 | 0.81 | 109.57 | 0.55 | 0.01 | 0.08 | 0.91 |
 | DFM\_lm\_global | -0.45 | 1.66 | 1.11 | 132.48 | 0.77 | 0.07 | 0.08 | 0.85 |
-| DFM\_lm\_blocked | -0.31 | 1.68 | 0.87 | 98.37 | 0.63 | 0.03 | 0.02 | 0.95 |
-| AutoTCN | 0.52 | 1.99 | 0.99 | 113.40 | 0.78 | 0.07 | 0.75 | 0.18 |
-| AutoInformer | 0.15 | 2.99 | 1.43 | 112.38 | 0.97 | 0.00 | 0.68 | 0.32 |
-| AutoTFT | 0.07 | 3.03 | 1.41 | 96.10 | 0.87 | 0.00 | 0.54 | 0.46 |
-| AutoNBEATS | 0.12 | 3.05 | 1.69 | 158.31 | 0.93 | 0.00 | 0.29 | 0.71 |
-| AutoNHITS | 0.14 | 3.33 | 1.86 | 154.64 | 0.97 | 0.00 | 0.04 | 0.96 |
-| AutoNBEATSx | -0.03 | 3.85 | 2.19 | 172.27 | 1.04 | 0.00 | 0.01 | 0.99 |
-| AutoMLP | 0.08 | 4.09 | 2.03 | 139.90 | 0.98 | 0.00 | 0.01 | 0.99 |
+| DFM\_lm\_blocked  | -0.31 | 1.68 | 0.87 | 98.37 | 0.63 | 0.03 | 0.02 | 0.95 |
+| TCN | 0.52 | 1.99 | 0.99 | 113.40 | 0.78 | 0.07 | 0.75 | 0.18 |
+| Informer | 0.15 | 2.99 | 1.43 | 112.38 | 0.97 | 0.00 | 0.68 | 0.32 |
+| TFT | 0.07 | 3.03 | 1.41 | 96.10 | 0.87 | 0.00 | 0.54 | 0.46 |
+| NBEATS | 0.12 | 3.05 | 1.69 | 158.31 | 0.93 | 0.00 | 0.29 | 0.71 |
+| NHITS | 0.14 | 3.33 | 1.86 | 154.64 | 0.97 | 0.00 | 0.04 | 0.96 |
+| NBEATSx | -0.03 | 3.85 | 2.19 | 172.27 | 1.04 | 0.00 | 0.01 | 0.99 |
+| MLP | 0.08 | 4.09 | 2.03 | 139.90 | 0.98 | 0.00 | 0.01 | 0.99 |
 | Naive | 0.00 | 4.62 | 2.24 | 152.15 | 1.00 | 0.00 | 0.00 | 1.00 |
-| AutoAutoformer | -2.59 | 10.49 | 4.27 | 501.43 | 7.52 | 0.06 | 0.42 | 0.52 |
+| Autoformer | -2.59 | 10.49 | 4.27 | 501.43 | 7.52 | 0.06 | 0.42 | 0.52 |
 
 ## Model Performance: Final Month of Quarter, Sorted by RMSE {style="font-size:17px"}
 
@@ -342,29 +585,48 @@ Despite this, their high computational demands, large dataset requirements, and 
 <!-- Fri Jun 23 21:02:50 2023 -->
 |     | Bias | RMSE | MAE | MAPE | U2  | Bias Prop. | Var. Prop. | Cov. Prop. |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| DFM_global | 0.12 | 0.74 | 0.54 | 106.35 | 0.59 | 0.03 | 0.09 | 0.88 |
+| DFM Global | 0.12 | 0.74 | 0.54 | 106.35 | 0.59 | 0.03 | 0.09 | 0.88 |
 | DFM\_lm\_global | 0.21 | 0.79 | 0.54 | 90.45 | 0.48 | 0.07 | 0.04 | 0.89 |
-| DFM_blocked | 0.15 | 0.84 | 0.59 | 115.70 | 0.54 | 0.03 | 0.07 | 0.90 |
-| AutoRNN | 0.24 | 0.86 | 0.56 | 83.97 | 0.41 | 0.08 | 0.58 | 0.34 |
-| AutoDilatedRNN | 0.34 | 0.88 | 0.64 | 84.65 | 0.41 | 0.15 | 0.31 | 0.54 |
-| SVR_sigmoid | 0.04 | 0.88 | 0.62 | 80.97 | 0.60 | 0.00 | 0.43 | 0.57 |
-| SVR_linear | 0.01 | 0.93 | 0.60 | 108.01 | 0.64 | 0.00 | 0.19 | 0.81 |
-| AutoGRU | 0.25 | 1.06 | 0.74 | 97.64 | 0.50 | 0.06 | 0.67 | 0.28 |
-| AutoTCN | 0.36 | 1.07 | 0.65 | 95.19 | 0.51 | 0.11 | 0.43 | 0.46 |
-| AutoLSTM | 0.29 | 1.13 | 0.64 | 74.43 | 0.45 | 0.06 | 0.67 | 0.26 |
-| SVR_rbf | 0.30 | 1.46 | 0.88 | 119.53 | 0.75 | 0.04 | 0.76 | 0.20 |
+| DFM Blocked | 0.15 | 0.84 | 0.59 | 115.70 | 0.54 | 0.03 | 0.07 | 0.90 |
+| RNN | 0.24 | 0.86 | 0.56 | 83.97 | 0.41 | 0.08 | 0.58 | 0.34 |
+| DilatedRNN | 0.34 | 0.88 | 0.64 | 84.65 | 0.41 | 0.15 | 0.31 | 0.54 |
+| SVR Sigmoid | 0.04 | 0.88 | 0.62 | 80.97 | 0.60 | 0.00 | 0.43 | 0.57 |
+| SVR Linear | 0.01 | 0.93 | 0.60 | 108.01 | 0.64 | 0.00 | 0.19 | 0.81 |
+| GRU | 0.25 | 1.06 | 0.74 | 97.64 | 0.50 | 0.06 | 0.67 | 0.28 |
+| TCN | 0.36 | 1.07 | 0.65 | 95.19 | 0.51 | 0.11 | 0.43 | 0.46 |
+| LSTM | 0.29 | 1.13 | 0.64 | 74.43 | 0.45 | 0.06 | 0.67 | 0.26 |
+| SVR RBF | 0.30 | 1.46 | 0.88 | 119.53 | 0.75 | 0.04 | 0.76 | 0.20 |
 | DFM\_lm\_blocked | -0.09 | 1.51 | 0.90 | 78.04 | 0.65 | 0.00 | 0.41 | 0.58 |
 | DFM\_lasso\_blocked | 0.32 | 1.94 | 1.02 | 101.59 | 0.69 | 0.03 | 0.80 | 0.17 |
 | DFM\_lasso\_global | 0.05 | 2.02 | 1.06 | 98.01 | 0.61 | 0.00 | 0.67 | 0.33 |
-| AutoInformer | 0.20 | 3.01 | 1.37 | 95.55 | 1.00 | 0.00 | 0.65 | 0.35 |
-| AutoTFT | 0.00 | 3.13 | 1.47 | 105.24 | 0.86 | 0.00 | 0.44 | 0.56 |
-| AutoNBEATS | 0.21 | 3.21 | 1.89 | 184.95 | 2.31 | 0.00 | 0.17 | 0.83 |
-| AutoNHITS | 0.37 | 3.36 | 1.90 | 160.45 | 0.92 | 0.01 | 0.02 | 0.97 |
-| AutoMLP | 0.13 | 3.67 | 1.98 | 143.29 | 1.00 | 0.00 | 0.05 | 0.95 |
-| AutoNBEATSx | -0.05 | 3.91 | 2.20 | 178.69 | 1.04 | 0.00 | 0.00 | 1.00 |
+| Informer | 0.20 | 3.01 | 1.37 | 95.55 | 1.00 | 0.00 | 0.65 | 0.35 |
+| TFT | 0.00 | 3.13 | 1.47 | 105.24 | 0.86 | 0.00 | 0.44 | 0.56 |
+| NBEATS | 0.21 | 3.21 | 1.89 | 184.95 | 2.31 | 0.00 | 0.17 | 0.83 |
+| NHITS | 0.37 | 3.36 | 1.90 | 160.45 | 0.92 | 0.01 | 0.02 | 0.97 |
+| MLP | 0.13 | 3.67 | 1.98 | 143.29 | 1.00 | 0.00 | 0.05 | 0.95 |
+| NBEATSx | -0.05 | 3.91 | 2.20 | 178.69 | 1.04 | 0.00 | 0.00 | 1.00 |
 | Naive | 0.00 | 4.62 | 2.24 | 152.15 | 1.00 | 0.00 | 0.00 | 1.00 |
-| AutoAutoformer | -7.59 | 29.83 | 9.35 | 1202.56 | 22.44 | 0.06 | 0.75 | 0.19 |
+| Autoformer | -7.59 | 29.83 | 9.35 | 1202.56 | 22.44 | 0.06 | 0.75 | 0.19 |
 
 # Conclusion
+
+## Conclusion {.smaller}
+
+<br>
+
+DFMs, RNN-based models and SVRs do the best in terms of nowcasting performance. 
+
+<br>
+
+Newer MLP and transformer based models do markedly worse. 
+
+<br>
+
+The latter class of models take the longest to tune. Computational cost is high. 
+
+<br>
+
+Our prediction is that these models will become valuable in future, but greater investment required in trying to understand how they apply to time series forecasting. 
+
 
 # References
