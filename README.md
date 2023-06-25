@@ -1,10 +1,9 @@
 # NowcastingUSGDP
 
-GDP nowcast for the US
+Nowcasting GDP for the US using a variety of different models. These include
 
-# Models
+1. Dynamic factor models
+2. Machine learning models
+3. Deep learning models
 
-1. Statistical models
-2. Dynamic factor model
-3. Machine learning model
-4. Deep learning model
+You can find a presentation of the most recent results [here](https://rawcdn.githack.com/Stellenbosch-Econometrics/NowcastingUSGDP/4ee94e0582b093428d0e242eb723cdf2335f0682/presentation/sem-presentation.html) 
