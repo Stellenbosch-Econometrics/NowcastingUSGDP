@@ -223,36 +223,34 @@ We only include variables with absolute correlation with the target (over the tr
 # | label: fig-svr
 # | fig-cap: "SVR models"
 
+from matplotlib.ticker import MultipleLocator, AutoMinorLocator
+from matplotlib.dates import YearLocator
+import matplotlib.pyplot as plt
+import pandas as pd
 
-# Load your data
 data = pd.read_csv('../presentation/01_data/tidy_svr.csv')
 
-# Convert 'ds' to datetime
 data['ds'] = pd.to_datetime(data['ds'])
 
-# Define the models to plot
 models_to_plot = ['SVR_LINEAR', 'SVR_RBF',
-                  'SVR_SIGMOID']
+                  'SVR_SIGMOID', 'GDP']
 
-# Filter data for selected models
 filtered_data = data[data['Model'].isin(models_to_plot)]
 
-# Group by model and select every third row
 grouped = filtered_data.groupby('Model')
 
 selected_data = pd.concat([group.iloc[::3] for _, group in grouped])
 
-# Map models to colors
 model_color_dict = {
     'SVR_LINEAR': 'red',
     'SVR_RBF': 'green',
     'SVR_SIGMOID': 'blue',
+    'GDP': 'black'
 }
 
 
 fig, ax = plt.subplots(figsize=(12, 6))
 
-# Change this line to set x ticks every year
 ax.xaxis.set_major_locator(YearLocator())
 
 ax.spines['top'].set_visible(False)
@@ -266,17 +264,22 @@ ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
 ax.set_ylabel("Estimate", weight="medium")
 ax.set_xlabel("Date", weight="medium")
 
+default_linewidth = 1.2
+gdp_linewidth = 2
+
 for model in selected_data['Model'].unique():
     subset = selected_data[selected_data['Model'] == model]
     ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
                edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
-    ax.plot(subset['ds'], subset['Estimate'],
-            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
 
-# Display the legend
+    linewidth = gdp_linewidth if model == 'GDP' else default_linewidth
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=linewidth, alpha=0.5, label=model)
+
 ax.legend(frameon=False)
 
 plt.show()
+
 ```
 
 
@@ -305,21 +308,15 @@ Both N-BEATS and N-HiTS utilize a learnable architecture to directly capture the
 # | label: fig-mlp
 # | fig-cap: "MLP models"
 
-
-# Load your data
 data = pd.read_csv('../presentation/01_data/tidy_results.csv')
 
-# Convert 'ds' to datetime
 data['ds'] = pd.to_datetime(data['ds'])
 
-# Define the models to plot
 models_to_plot = ['AutoMLP', 'AutoNHITS',
-                  'AutoNBEATS', 'AutoNBEATSx']
+                  'AutoNBEATS', 'AutoNBEATSx', 'GDP']
 
-# Filter data for selected models
 filtered_data = data[data['Model'].isin(models_to_plot)]
 
-# Group by model and select every third row
 grouped = filtered_data.groupby('Model')
 
 selected_data = pd.concat([group.iloc[::3] for _, group in grouped])
@@ -329,13 +326,13 @@ model_color_dict = {
     'AutoMLP': 'red',
     'AutoNHITS': 'green',
     'AutoNBEATS': 'blue',
-    'AutoNBEATSx': 'cyan'
+    'AutoNBEATSx': 'cyan',
+    'GDP': 'black'
 }
 
 
 fig, ax = plt.subplots(figsize=(12, 6))
 
-# Change this line to set x ticks every year
 ax.xaxis.set_major_locator(YearLocator())
 
 ax.spines['top'].set_visible(False)
@@ -349,14 +346,18 @@ ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
 ax.set_ylabel("Estimate", weight="medium")
 ax.set_xlabel("Date", weight="medium")
 
+default_linewidth = 1.2
+gdp_linewidth = 2
+
 for model in selected_data['Model'].unique():
     subset = selected_data[selected_data['Model'] == model]
     ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
                edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
-    ax.plot(subset['ds'], subset['Estimate'],
-            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
 
-# Display the legend
+    linewidth = gdp_linewidth if model == 'GDP' else default_linewidth
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=linewidth, alpha=0.5, label=model)
+
 ax.legend(frameon=False)
 
 plt.show()
@@ -405,21 +406,15 @@ TCNs, on the other hand, utilize dilated causal convolutions, offering efficient
 # | label: fig-rnn
 # | fig-cap: "RNN models"
 
-
-# Load your data
 data = pd.read_csv('../presentation/01_data/tidy_results.csv')
 
-# Convert 'ds' to datetime
 data['ds'] = pd.to_datetime(data['ds'])
 
-# Define the models to plot
 models_to_plot = ['AutoDilatedRNN', 'AutoGRU',
-                  'AutoRNN', 'AutoTCN', 'AutoLSTM']
+                  'AutoRNN', 'AutoTCN', 'AutoLSTM', 'GDP']
 
-# Filter data for selected models
 filtered_data = data[data['Model'].isin(models_to_plot)]
 
-# Group by model and select every third row
 grouped = filtered_data.groupby('Model')
 
 selected_data = pd.concat([group.iloc[::3] for _, group in grouped])
@@ -430,13 +425,13 @@ model_color_dict = {
     'AutoGRU': 'green',
     'AutoRNN': 'blue',
     'AutoTCN': 'cyan',
-    'AutoLSTM': 'purple'
+    'AutoLSTM': 'purple',
+    'GDP': 'black'
 }
 
 
 fig, ax = plt.subplots(figsize=(12, 6))
 
-# Change this line to set x ticks every year
 ax.xaxis.set_major_locator(YearLocator())
 
 ax.spines['top'].set_visible(False)
@@ -450,14 +445,18 @@ ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
 ax.set_ylabel("Estimate", weight="medium")
 ax.set_xlabel("Date", weight="medium")
 
+default_linewidth = 1.2
+gdp_linewidth = 2
+
 for model in selected_data['Model'].unique():
     subset = selected_data[selected_data['Model'] == model]
     ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
                edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
-    ax.plot(subset['ds'], subset['Estimate'],
-            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
 
-# Display the legend
+    linewidth = gdp_linewidth if model == 'GDP' else default_linewidth
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=linewidth, alpha=0.5, label=model)
+
 ax.legend(frameon=False)
 
 plt.show()
@@ -492,17 +491,13 @@ Despite this, their high computational demands, large dataset requirements, and 
 # | fig-cap: "Transformer models"
 
 
-# Load your data
 data = pd.read_csv('../presentation/01_data/tidy_results.csv')
 
-# Convert 'ds' to datetime
 data['ds'] = pd.to_datetime(data['ds'])
 
-# Define the models to plot
 models_to_plot = ['AutoTFT', 'AutoInformer',
-                  'AutoAutoformer']
+                  'AutoAutoformer', 'GDP']
 
-# Filter data for selected models
 filtered_data = data[data['Model'].isin(models_to_plot)]
 
 # Group by model and select every third row
@@ -515,12 +510,12 @@ model_color_dict = {
     'AutoTFT': 'red',
     'AutoInformer': 'green',
     'AutoAutoformer': 'blue',
+    'GDP': 'black'
 }
 
 
 fig, ax = plt.subplots(figsize=(12, 6))
 
-# Change this line to set x ticks every year
 ax.xaxis.set_major_locator(YearLocator())
 
 ax.spines['top'].set_visible(False)
@@ -534,14 +529,18 @@ ax.tick_params(which="minor", length=5, labelsize=10, labelcolor="0.25")
 ax.set_ylabel("Estimate", weight="medium")
 ax.set_xlabel("Date", weight="medium")
 
+default_linewidth = 1.2
+gdp_linewidth = 2
+
 for model in selected_data['Model'].unique():
     subset = selected_data[selected_data['Model'] == model]
     ax.scatter(subset['ds'], subset['Estimate'], s=10, color=model_color_dict[model],
                edgecolor=model_color_dict[model], linewidth=1, zorder=-20, alpha=0.3)
-    ax.plot(subset['ds'], subset['Estimate'],
-            c=model_color_dict[model], linewidth=1, alpha=0.5, label=model)
 
-# Display the legend
+    linewidth = gdp_linewidth if model == 'GDP' else default_linewidth
+    ax.plot(subset['ds'], subset['Estimate'],
+            c=model_color_dict[model], linewidth=linewidth, alpha=0.5, label=model)
+
 ax.legend(frameon=False)
 
 plt.show()
