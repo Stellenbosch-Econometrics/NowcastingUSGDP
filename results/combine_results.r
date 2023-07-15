@@ -50,10 +50,13 @@ outcome = GDP[ckmatch(nowcasts_wide$average$year_quarter, year_quarter)]
 # Average nowcast (3 vintages per quarter)
 eval_forecasts(outcome$GDPC1 * 100, fselect(nowcasts_wide$average, -year_quarter) %c*% 100) %>% t() %>% qDF() %>% 
   fselect(-`R-Squared`, -MSE, -SE, -MPE, -U1) %>% roworder(RMSE) %>% round(2) %>% 
-  xtable::xtable() %>% print(type = "html")
+  xtable::xtable() %>% # print(type = "html") # Or
+  print(type = "latex", booktabs = TRUE)
+
   
 
 # Latest nowcast (final vintage)
 eval_forecasts(outcome$GDPC1 * 100, fselect(nowcasts_wide$last, -year_quarter) %c*% 100) %>% t() %>% qDF() %>% 
   fselect(-`R-Squared`, -MSE, -SE, -MPE, -U1) %>% roworder(RMSE) %>% round(2) %>% 
-  xtable::xtable() %>% print(type = "html")
+  xtable::xtable() %>% # print(type = "html") # Or
+  print(type = "latex", booktabs = TRUE)
